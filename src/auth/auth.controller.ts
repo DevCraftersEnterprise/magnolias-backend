@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Ip, Post, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { User } from 'src/users/entities/user.entity';
+import { sanitizeUser } from 'src/users/utils/sanitized-user.util';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/curret-user.decorator';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -52,11 +53,7 @@ export class AuthController {
   } {
     return {
       valid: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
+      user: sanitizeUser(user),
     };
   }
 }
