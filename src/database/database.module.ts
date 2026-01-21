@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       ssl: true,
       extra: {
         ssl: { rejectUnauthorized: false },
+        timezone: '-c timezone=UTC',
       },
       type: 'postgres',
       host: process.env.DB_HOST,

@@ -10,13 +10,10 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: process.env.NODE_ENV === 'production' ? true : false,
+  ssl: true,
   extra: {
-    ssl:
-      process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
-        : null,
-    timezone: 'UTC', // Forzar UTC en PostgreSQL
+    ssl: { rejectUnauthorized: false },
+    timezone: '-c timezone=UTC',
   },
   synchronize: false,
   entities: ['src/**/*.entity.ts'],
