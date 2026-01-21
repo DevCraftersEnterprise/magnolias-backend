@@ -1,11 +1,22 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { CustomJwtModule } from './custom-jwt/custom-jwt.module';
+import { CustomPassportModule } from './custom-passport/custom-passport.module';
+import { CustomThrottlerModule } from './custom-throttler/custom-throttler.module';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [CommonModule, DatabaseModule, UsersModule, AuthModule],
+  imports: [
+    AuthModule,
+    CommonModule,
+    CustomJwtModule,
+    CustomPassportModule,
+    CustomThrottlerModule,
+    DatabaseModule,
+    UsersModule,
+  ],
   controllers: [],
   providers: [],
 })

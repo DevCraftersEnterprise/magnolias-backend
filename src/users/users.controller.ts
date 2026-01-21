@@ -8,12 +8,12 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { User } from './entities/user.entity';
 import { FilterDto } from '../common/dto/filter.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {

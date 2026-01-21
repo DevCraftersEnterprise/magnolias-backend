@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { RegisterUserDto } from './register-user.dto';
-import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
+import { RegisterUserDto } from './register-user.dto';
 
 export class UpdateUserDto extends PartialType(RegisterUserDto) {
   @IsUUID()

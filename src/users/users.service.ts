@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { RegisterUserDto } from './dto/register-user.dto';
 import * as argon2 from 'argon2';
+import { isUUID } from 'class-validator';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { isUUID } from 'class-validator';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
