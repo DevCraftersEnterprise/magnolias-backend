@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/assets/magnolias_monograma.svg" width="200" alt="Magnolias Logo" />
+  <img src="assets/magnolias_monograma.svg" width="800" alt="Magnolias Logo"/>
 </p>
 
 <h1 align="center">Magnolias Backend</h1>

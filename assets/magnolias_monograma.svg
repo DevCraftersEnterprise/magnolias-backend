@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <g fill-rule="evenodd">
+  <g fill-rule="evenodd" transform="translate(512,512) scale(1.1) translate(-512 -512)">
     <path
       d="m492 313-40 9-27 12-33 23-19 19-21 31-13 31-7 33v36l8 37 13 29 21 30 25 24 26 17 37 15 30 6h38l32-6 39-16 25-17 24-23 17-23 16-34 8-35v-44l-10-40-12-25-19-27-29-27-36-21-26-9-39-6Z" />
     <path fill="#fff" d="m497 546 13 64 1 18-5 14-9 9-9 3h-9l-10-3-11-10-6-14v-13l7-19Z" />
