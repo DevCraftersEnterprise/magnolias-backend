@@ -102,6 +102,7 @@ export class UsersService {
         name: true,
         lastname: true,
         username: true,
+        userkey: true,
         role: true,
         isActive: true,
         createdAt: true,
@@ -112,9 +113,12 @@ export class UsersService {
     if (!user) throw new BadRequestException('User not found');
 
     return {
+      id: user.id,
       name: user.name,
       lastname: user.lastname,
       username: user.username,
+      userkey: user.userkey,
+      isActive: user.isActive,
       role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

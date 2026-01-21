@@ -8,14 +8,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Auth } from '../auth/decorators/auth.decorator';
 import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { UserRoles } from './enums/user-role';
 import { UsersService } from './users.service';
 
 @Controller('users')
+@Auth([UserRoles.SUPER, UserRoles.ADMIN])
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
