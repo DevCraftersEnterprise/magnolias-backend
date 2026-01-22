@@ -3,9 +3,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Branch } from '../../branches/entities/branch.entity';
 import { UserRoles } from '../enums/user-role';
 
 @Entity({ name: 'users' })
@@ -35,6 +38,10 @@ export class User {
 
   @Column({ default: true, type: 'boolean' })
   isActive: boolean;
+
+  @ManyToOne(() => Branch, { nullable: true })
+  @JoinColumn({ name: 'branchId' })
+  branch: Branch;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

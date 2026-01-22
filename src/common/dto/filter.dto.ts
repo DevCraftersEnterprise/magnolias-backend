@@ -10,6 +10,9 @@ export class FilterDto extends PaginationDto {
   lastname?: string;
 
   @IsOptional()
+  address?: string;
+
+  @IsOptional()
   username?: string;
 
   @IsOptional()

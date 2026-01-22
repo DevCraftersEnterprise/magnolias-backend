@@ -16,6 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UserRoles } from './enums/user-role';
 import { UsersService } from './users.service';
+import { CurrentUser } from 'src/auth/decorators/curret-user.decorator';
 
 @Controller('users')
 @Auth([UserRoles.SUPER, UserRoles.ADMIN])
@@ -42,12 +43,18 @@ export class UsersController {
   }
 
   @Patch()
-  updateUser(@Body() updateUserDto: UpdateUserDto): Promise<Partial<User>> {
-    return this.usersService.updateUser(updateUserDto);
+  updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() user: User,
+  ): Promise<Partial<User>> {
+    return this.usersService.updateUser(updateUserDto, user);
   }
 
   @Delete()
-  deleteUser(@Body() updateUserDto: UpdateUserDto): Promise<void> {
-    return this.usersService.deleteUser(updateUserDto);
+  deleteUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return this.usersService.deleteUser(updateUserDto, user);
   }
 }

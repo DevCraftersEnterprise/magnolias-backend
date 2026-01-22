@@ -1,4 +1,10 @@
-import { IsEnum, IsNotEmpty, Matches, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  Matches,
+  MinLength,
+} from 'class-validator';
 import { UserRoles } from '../enums/user-role';
 
 export class RegisterUserDto {
@@ -19,4 +25,8 @@ export class RegisterUserDto {
   @IsNotEmpty()
   @IsEnum(UserRoles, { message: 'role must be a valid UserRoles value' })
   role: UserRoles;
+
+  @IsOptional()
+  @IsNotEmpty()
+  branchId?: string;
 }

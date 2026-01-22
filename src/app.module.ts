@@ -6,6 +6,7 @@ import { CustomPassportModule } from './custom-passport/custom-passport.module';
 import { CustomThrottlerModule } from './custom-throttler/custom-throttler.module';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
+import { BranchesModule } from './branches/branches.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from './users/users.module';
     CustomThrottlerModule,
     DatabaseModule,
     UsersModule,
+    BranchesModule,
   ],
   controllers: [],
   providers: [],
