@@ -180,28 +180,38 @@ npm run build
 
 ```
 src/
-├── auth/                    # Módulo de autenticación
-│   ├── decorators/         # Decoradores personalizados (Auth, RoleProtected, etc.)
-│   ├── dto/                # Objetos de Transferencia de Datos
-│   ├── guards/             # Guards (JWT, basado en roles, Throttling)
-│   ├── responses/          # Interfaces de respuesta
-│   └── strategies/         # Estrategias de Passport
-├── common/                  # Módulo compartido
-│   ├── dto/                # DTOs comunes (Paginación, Filtros)
-│   └── responses/          # Interfaces de respuesta comunes
-├── custom-jwt/             # Configuración personalizada del módulo JWT
-├── custom-passport/        # Configuración personalizada del módulo Passport
-├── custom-throttler/       # Configuración personalizada del módulo Throttler
-├── database/               # Configuración de base de datos
-│   ├── migrations/         # Migraciones de TypeORM
-│   └── data-source.ts      # Configuración de fuente de datos
-├── users/                  # Módulo de usuarios
-│   ├── dto/                # DTOs de usuario
-│   ├── entities/           # Entidad de usuario
-│   ├── enums/              # Enums de usuario (roles, etc.)
-│   └── utils/              # Utilidades de usuario
-├── app.module.ts           # Módulo raíz de la aplicación
-└── main.ts                 # Punto de entrada de la aplicación
+├── app.module.ts               # Módulo raíz de la aplicación
+├── main.ts                     # Punto de entrada de la aplicación
+├── auth/                       # Módulo de autenticación
+│   ├── decorators/             # Decoradores personalizados (Auth, RoleProtected, etc.)
+│   ├── dto/                    # DTOs de autenticación
+│   ├── guards/                 # Guards (JWT, roles, throttling)
+│   ├── responses/              # Respuestas de autenticación
+│   └── strategies/             # Estrategias de Passport
+├── branches/                   # Módulo de sucursales (branches)
+│   ├── dto/                    # DTOs de sucursales
+│   ├── entities/               # Entidad de sucursal
+│   ├── branches.controller.ts  # Controlador de sucursales
+│   ├── branches.module.ts      # Módulo de sucursales
+│   └── branches.service.ts     # Servicio de sucursales
+├── common/                     # Módulo compartido
+│   ├── dto/                    # DTOs comunes (paginación, filtros)
+│   └── responses/              # Respuestas comunes
+├── custom-jwt/                 # Configuración personalizada de JWT
+├── custom-passport/            # Configuración personalizada de Passport
+├── custom-throttler/           # Configuración personalizada de Throttler
+├── database/                   # Configuración de base de datos
+│   ├── migrations/             # Migraciones de TypeORM
+│   ├── data-source.ts          # Fuente de datos principal
+│   └── database.module.ts      # Módulo de base de datos
+├── users/                      # Módulo de usuarios
+│   ├── dto/                    # DTOs de usuario
+│   ├── entities/               # Entidad de usuario
+│   ├── enums/                  # Enums de usuario (roles, etc.)
+│   ├── utils/                  # Utilidades de usuario
+│   ├── users.controller.ts     # Controlador de usuarios
+│   ├── users.module.ts         # Módulo de usuarios
+│   └── users.service.ts        # Servicio de usuarios
 ```
 
 ## 🗄️ Migraciones de Base de Datos
