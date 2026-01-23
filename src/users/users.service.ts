@@ -157,7 +157,14 @@ export class UsersService {
 
     if (!user) throw new BadRequestException('User does not exist');
 
-    // TODO: Proteger que no se puedan cambiar roles entre super y admin
+    const currentUserLevel = this.getRoleLevel(currentUser.role as UserRoles);
+    const targetUserLevel = this.getRoleLevel(user.role as UserRoles);
+
+    if (currentUserLevel <= targetUserLevel) {
+      throw new BadRequestException(
+        'You do not have permission to update this user',
+      );
+    }
 
     user.name = name ?? user.name;
     user.lastname = lastname ?? user.lastname;
@@ -190,8 +197,32 @@ export class UsersService {
       );
     }
 
-    // TODO: Proteger que un super no pueda eliminar a otro super o admin, o que un admin elimine a otro admin o super
+    const currentUserLevel = this.getRoleLevel(currentUser.role as UserRoles);
+    const targetUserLevel = this.getRoleLevel(isUserActive.role as UserRoles);
+
+    if (currentUserLevel <= targetUserLevel) {
+      throw new BadRequestException(
+        'You do not have permission to deactivate this user',
+      );
+    }
 
     await this.userRepository.update(id, { isActive: false });
+  }
+
+  private getRoleLevel(role: UserRoles): number {
+    switch (role) {
+      case UserRoles.SUPER:
+        return 5;
+      case UserRoles.ADMIN:
+        return 4;
+      case UserRoles.EMPLOYEE:
+        return 3;
+      case UserRoles.BAKER:
+        return 2;
+      case UserRoles.ASSISTANT:
+        return 1;
+      default:
+        return 0;
+    }
   }
 }
