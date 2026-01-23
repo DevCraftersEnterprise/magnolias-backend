@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BranchesModule } from 'src/branches/branches.module';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { CommonModule } from '../common/common.module';
 import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
@@ -10,7 +11,12 @@ import { UsersService } from './users.service';
 @Module({
   controllers: [UsersController],
   providers: [UsersService, JwtStrategy],
-  imports: [TypeOrmModule.forFeature([User]), CommonModule, CustomJwtModule],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    CommonModule,
+    CustomJwtModule,
+    BranchesModule,
+  ],
   exports: [UsersService, TypeOrmModule],
 })
 export class UsersModule {}
