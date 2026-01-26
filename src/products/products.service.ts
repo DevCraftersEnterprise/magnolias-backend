@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
@@ -198,5 +203,22 @@ export class ProductsService {
     await this.productPictureRepository.save(pictures);
 
     return this.findProductByTerm(id) as Promise<Product>;
+  }
+
+  async hideProductPicture(id: string, user: User): Promise<void> {
+    if (!isUUID(id)) throw new BadRequestException('Invalid UUID format');
+
+    const pictureVisible = await this.productPictureRepository.findOne({
+      where: { id, isActive: true },
+    });
+
+    if (!pictureVisible) {
+      throw new NotFoundException('Picture not found or already hidden');
+    }
+
+    pictureVisible.isActive = false;
+    pictureVisible.updatedBy = user;
+
+    await this.productPictureRepository.save(pictureVisible);
   }
 }
