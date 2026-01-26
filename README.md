@@ -204,6 +204,12 @@ src/
 │   ├── migrations/             # Migraciones de TypeORM
 │   ├── data-source.ts          # Fuente de datos principal
 │   └── database.module.ts      # Módulo de base de datos
+├── products/                   # Módulo de productos
+│   ├── dto/                    # DTOs de productos
+│   ├── entities/               # Entidad de producto
+│   ├── products.controller.ts  # Controlador de productos
+│   ├── products.module.ts      # Módulo de productos
+│   └── products.service.ts     # Servicio de productos
 ├── users/                      # Módulo de usuarios
 │   ├── dto/                    # DTOs de usuario
 │   ├── entities/               # Entidad de usuario
