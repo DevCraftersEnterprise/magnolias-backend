@@ -69,7 +69,10 @@ export class BranchesService {
   }
 
   async findAllBranches(): Promise<Branch[]> {
-    return this.branchRepository.find();
+    return this.branchRepository.find({
+      where: { isActive: true },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async findBranchByTerm(term: string): Promise<Branch | null> {
