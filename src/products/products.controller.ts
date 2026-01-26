@@ -7,7 +7,10 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
 import { FilterDto } from '../common/dto/filter.dto';
@@ -23,6 +26,7 @@ import { ProductsService } from './products.service';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  // Products
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   createProduct(
@@ -65,5 +69,21 @@ export class ProductsController {
     @CurrentUser() user: User,
   ): Promise<void> {
     return this.productsService.deleteProduct(updateProductDto, user);
+  }
+
+  // Product Pictures
+  @Post('picture')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.ASSISTANT])
+  @UseInterceptors(FileInterceptor('file'))
+  uploadProductPicture(
+    @Body() updateProductDto: UpdateProductDto,
+    @CurrentUser() user: User,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.productsService.uploadProductPicture(
+      files,
+      updateProductDto,
+      user,
+    );
   }
 }
