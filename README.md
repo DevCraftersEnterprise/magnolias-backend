@@ -196,7 +196,9 @@ src/
 │   └── branches.service.ts     # Servicio de sucursales
 ├── common/                     # Módulo compartido
 │   ├── dto/                    # DTOs comunes (paginación, filtros)
-│   └── responses/              # Respuestas comunes
+|   ├── responses/              # Respuestas comunes
+│   └── utils/                  # Utilidades compartidas
+|-- config/                     # Configuración de servicios de terceros
 ├── custom-jwt/                 # Configuración personalizada de JWT
 ├── custom-passport/            # Configuración personalizada de Passport
 ├── custom-throttler/           # Configuración personalizada de Throttler
