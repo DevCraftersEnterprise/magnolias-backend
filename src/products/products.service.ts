@@ -1,13 +1,20 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
+import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
 import { User } from '../users/entities/user.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-import { isUUID } from 'class-validator';
+import { ProductPicture } from './entities/product-picture.entity';
 
 @Injectable()
 export class ProductsService {
@@ -16,6 +23,8 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(ProductPicture)
+    private readonly productPictureRepository: Repository<ProductPicture>,
   ) {}
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
@@ -42,7 +51,13 @@ export class ProductsService {
     if (description) whereConditions.description = ILike(`%${description}%`);
 
     const [products, total] = await this.productRepository.findAndCount({
-      where: whereConditions,
+      where: {
+        ...whereConditions,
+        pictures: { isActive: true },
+      },
+      relations: {
+        pictures: true,
+      },
       select: {
         id: true,
         name: true,
@@ -50,6 +65,9 @@ export class ProductsService {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        pictures: {
+          imageUrl: true,
+        },
       },
       order: { createdAt: 'DESC' },
       skip: offset,
@@ -70,7 +88,19 @@ export class ProductsService {
 
   async findAllProducts(): Promise<Product[]> {
     const products = await this.productRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, pictures: { isActive: true } },
+      relations: { pictures: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        pictures: {
+          imageUrl: true,
+        },
+      },
       order: { name: 'ASC' },
     });
 
@@ -78,13 +108,25 @@ export class ProductsService {
   }
 
   async findProductByTerm(term: string): Promise<Product | null> {
-    const whereCOnditions: FindOptionsWhere<Product>[] = [];
+    const whereConditions: FindOptionsWhere<Product>[] = [];
 
-    if (isUUID(term)) whereCOnditions.push({ id: term });
-    whereCOnditions.push({ name: ILike(`%${term}%`) });
+    if (isUUID(term)) whereConditions.push({ id: term });
+    whereConditions.push({ name: ILike(`%${term}%`) });
 
     const product = await this.productRepository.findOne({
-      where: whereCOnditions,
+      where: { ...whereConditions, pictures: { isActive: true } },
+      relations: { pictures: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        pictures: {
+          imageUrl: true,
+        },
+      },
     });
 
     return product;
@@ -124,5 +166,59 @@ export class ProductsService {
       isActive: false,
       updatedBy: user,
     });
+  }
+
+  async uploadProductPicture(
+    files: Express.Multer.File[],
+    dto: UpdateProductDto,
+    user: User,
+  ): Promise<Product> {
+    const { id } = dto;
+
+    const product = await this.findProductByTerm(id);
+
+    if (!product) throw new NotFoundException('Product does not exist');
+
+    const folder =
+      process.env.NODE_ENV === 'development'
+        ? `dev/product/pictures/${id}`
+        : `product/pictures/${id}`;
+
+    const picturesPromises = files.map((file) => {
+      const fileName = `${Date.now()}-${id}`;
+      return uploadPictureToCloudinary(file.buffer, folder, fileName);
+    });
+
+    const imageUrls = await Promise.all(picturesPromises);
+
+    const pictures = imageUrls.map((url) =>
+      this.productPictureRepository.create({
+        imageUrl: url,
+        createdBy: user,
+        updatedBy: user,
+        product,
+      }),
+    );
+
+    await this.productPictureRepository.save(pictures);
+
+    return this.findProductByTerm(id) as Promise<Product>;
+  }
+
+  async hideProductPicture(id: string, user: User): Promise<void> {
+    if (!isUUID(id)) throw new BadRequestException('Invalid UUID format');
+
+    const pictureVisible = await this.productPictureRepository.findOne({
+      where: { id, isActive: true },
+    });
+
+    if (!pictureVisible) {
+      throw new NotFoundException('Picture not found or already hidden');
+    }
+
+    pictureVisible.isActive = false;
+    pictureVisible.updatedBy = user;
+
+    await this.productPictureRepository.save(pictureVisible);
   }
 }

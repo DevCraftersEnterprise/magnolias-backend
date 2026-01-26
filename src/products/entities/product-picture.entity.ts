@@ -4,24 +4,20 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
-import { ProductPicture } from './product-picture.entity';
+import { Product } from './product.entity';
 
-@Entity({ name: 'products' })
-export class Product {
+@Entity({ name: 'product_pictures' })
+export class ProductPicture {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar' })
-  name: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  description?: string;
+  imageUrl: string;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
@@ -40,6 +36,7 @@ export class Product {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @OneToMany(() => ProductPicture, (picture) => picture.product)
-  pictures: ProductPicture[];
+  @ManyToOne(() => Product, (product) => product.pictures, { nullable: false })
+  @JoinColumn({ name: 'productId' })
+  product: Product;
 }
