@@ -136,13 +136,12 @@ export class OrdersService {
   }
 
   async updateOrder(dto: UpdateOrderDto, user: User): Promise<Order> {
-    const { id, status, clientName, clientPhone, deliveryDate } = dto;
+    const { id, clientName, clientPhone, deliveryDate } = dto;
 
     const order = await this.orderRepository.preload({ id });
 
     if (!order) throw new NotFoundException('Order not found');
 
-    if (status) order.status = status;
     if (clientName) order.clientName = clientName;
     if (clientPhone) order.clientPhone = clientPhone;
     if (deliveryDate) order.deliveryDate = deliveryDate;
@@ -154,7 +153,22 @@ export class OrdersService {
     return this.getOrderByTerm(id);
   }
 
-  async cancelOrder(dto: CancelOrderDto, user: User): Promise<Order> {
+  async markOrderAsDone(dto: UpdateOrderDto, user: User): Promise<Order> {
+    const { id } = dto;
+
+    const order = await this.orderRepository.preload({ id });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    order.status = OrderStatus.DONE;
+    order.updatedBy = user;
+
+    await this.orderRepository.update(id, order);
+
+    return this.getOrderByTerm(id);
+  }
+
+  async markOrderAsCancel(dto: CancelOrderDto, user: User): Promise<Order> {
     const { id } = dto;
 
     const order = await this.orderRepository.preload({ id });
