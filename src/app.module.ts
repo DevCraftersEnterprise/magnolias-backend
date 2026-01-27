@@ -8,6 +8,7 @@ import { CustomThrottlerModule } from './custom-throttler/custom-throttler.modul
 import { DatabaseModule } from './database/database.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     BranchesModule,
     ProductsModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [],
