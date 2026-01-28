@@ -1,11 +1,13 @@
 import { 
-  IsHexColor, 
+  Matches, 
   IsOptional, 
   IsString 
 } from 'class-validator';
 
 export class CreateColorDto {
-  @IsHexColor()
+  @Matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
+    message: 'It is not hexadecimal color',
+  })
   value: string;
 
   @IsOptional()
