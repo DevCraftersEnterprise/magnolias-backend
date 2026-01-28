@@ -4,12 +4,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Branch } from '../../branches/entities/branch.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderStatus } from '../enums/order-status.enum';
+import { OrderDetail } from './order-detail.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -45,4 +47,7 @@ export class Order {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
+  details: OrderDetail[];
 }

@@ -1,5 +1,6 @@
-import { IsDate, IsEnum, IsNotEmpty } from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsNotEmpty } from 'class-validator';
 import { OrderStatus } from '../enums/order-status.enum';
+import { CreateOrderDetailDto } from './create-order-detail.dto';
 
 export class CreateOrderDto {
   @IsNotEmpty()
@@ -20,4 +21,8 @@ export class CreateOrderDto {
 
   @IsNotEmpty()
   branchId: string;
+
+  @IsArray()
+  @IsNotEmpty({ each: true })
+  details: CreateOrderDetailDto[];
 }

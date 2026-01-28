@@ -4,28 +4,35 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { BranchesService } from '../branches/branches.service';
+import { ColorsService } from '../colors/colors.service';
 import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { Order } from './entities/order.entity';
-import { isUUID } from 'class-validator';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import { OrderStatus } from './enums/order-status.enum';
 import { CancelOrderDto } from './dto/cancel-order.dto';
+import { CreateOrderDetailDto } from './dto/create-order-detail.dto';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderDetail } from './entities/order-detail.entity';
+import { Order } from './entities/order.entity';
+import { OrderStatus } from './enums/order-status.enum';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    @InjectRepository(OrderDetail)
+    private readonly orderDetailRepository: Repository<OrderDetail>,
     private readonly branchesService: BranchesService,
+    private readonly colorsService: ColorsService,
   ) {}
 
   async createOrder(dto: CreateOrderDto, user: User): Promise<Order> {
-    const { clientName, clientPhone, deliveryDate, status, branchId } = dto;
+    const { clientName, clientPhone, deliveryDate, status, branchId, details } =
+      dto;
 
     const branch = await this.branchesService.findBranchByTerm(branchId);
 
@@ -41,7 +48,11 @@ export class OrdersService {
       updatedBy: user,
     });
 
-    return this.orderRepository.save(orderData);
+    const order = await this.orderRepository.save(orderData);
+
+    await this.createOrderDetails(order, details);
+
+    return await this.getOrderByTerm(order.id);
   }
 
   async getOrders(
@@ -107,6 +118,12 @@ export class OrdersService {
 
     const order = await this.orderRepository.findOne({
       where: { id: term },
+      relations: {
+        branch: true,
+        createdBy: true,
+        updatedBy: true,
+        details: true,
+      },
       select: {
         id: true,
         clientName: true,
@@ -126,6 +143,15 @@ export class OrdersService {
         updatedBy: {
           name: true,
           lastname: true,
+        },
+        details: {
+          id: true,
+          product: {
+            name: true,
+            description: true,
+          },
+          quantity: true,
+          price: true,
         },
       },
     });
@@ -183,5 +209,29 @@ export class OrdersService {
     // TODO: Logica de creacion de registro en tabla de cancelaciones
 
     return this.getOrderByTerm(id);
+  }
+
+  private async createOrderDetails(
+    order: Order,
+    details: CreateOrderDetailDto[],
+  ): Promise<void> {
+    const { createdBy, updatedBy } = order;
+
+    const colors = await this.colorsService.findAll();
+
+    const orderDetails = details.map((detail) =>
+      this.orderDetailRepository.create({
+        color: colors.find((color) => color.id === detail.colorId),
+        createdBy,
+        updatedBy,
+        order,
+        notes: detail.notes,
+        price: detail.price,
+        quantity: detail.quantity,
+        product: { id: detail.productId },
+      }),
+    );
+
+    await this.orderDetailRepository.save(orderDetails);
   }
 }
