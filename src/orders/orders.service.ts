@@ -18,6 +18,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
+import { OrderCancellation } from './entities/order-cancellation.entity';
 
 @Injectable()
 export class OrdersService {
@@ -26,6 +27,8 @@ export class OrdersService {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderDetail)
     private readonly orderDetailRepository: Repository<OrderDetail>,
+    @InjectRepository(OrderCancellation)
+    private readonly cancellationRepository: Repository<OrderCancellation>,
     private readonly branchesService: BranchesService,
     private readonly colorsService: ColorsService,
   ) {}
@@ -195,18 +198,34 @@ export class OrdersService {
   }
 
   async markOrderAsCancel(dto: CancelOrderDto, user: User): Promise<Order> {
-    const { id } = dto;
+    const { id, reason } = dto;
 
     const order = await this.orderRepository.preload({ id });
 
     if (!order) throw new NotFoundException('Order not found');
 
+    const alreadyCanceled = await this.cancellationRepository.findOne({
+      where: {order},
+    });
+
+    if (alreadyCanceled) {
+      throw new BadRequestException(
+        'This order has already been canceled',
+      );
+    }
+
+    const cancellation = this.cancellationRepository.create({
+      order,
+      description: reason,
+      canceledBy: user,
+    });
+
+    await this.cancellationRepository.save(cancellation);
+
     order.status = OrderStatus.CANCELED;
     order.updatedBy = user;
 
     await this.orderRepository.update(id, order);
-
-    // TODO: Logica de creacion de registro en tabla de cancelaciones
 
     return this.getOrderByTerm(id);
   }
@@ -234,4 +253,7 @@ export class OrdersService {
 
     await this.orderDetailRepository.save(orderDetails);
   }
+
+  
+
 }
