@@ -8,32 +8,28 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Branch } from './branch.entity';
 import { User } from '../../users/entities/user.entity';
-import { Phone } from './phone.entity';
-import { Expose } from 'class-transformer';
 
-@Entity({ name: 'branches' })
-export class Branch {
+@Entity({ name: 'phones' })
+export class Phone {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 255, nullable: false })
-  name: string;
+  @Column({ name: 'phone1', type: 'text', nullable: false })
+  phone1: string;
 
-  @Column({ length: 255, nullable: false })
-  address: string;
+  @Column({ name: 'phone2', type: 'text', nullable: true })
+  phone2?: string;
 
-  @Column({ default: true, type: 'boolean' })
-  isActive: boolean;
+  @Column({ name: 'whatsapp', type: 'text', nullable: true })
+  whatsapp?: string;
 
-  @OneToOne(() => Phone, (phone) => phone.branch, {
-    cascade: true,
-    eager: true,
-    nullable: true,
+  @OneToOne(() => Branch, (branch) => branch.phones, {
+    nullable: false,
   })
-  @JoinColumn({ name: 'phoneId' })
-  @Expose()
-  phones: Phone;
+  @JoinColumn({ name: 'branchId' })
+  branch: Branch;
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
