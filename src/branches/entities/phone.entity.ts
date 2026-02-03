@@ -10,29 +10,19 @@ import {
 } from 'typeorm';
 import { Branch } from './branch.entity';
 import { User } from '../../users/entities/user.entity';
-import { Expose } from 'class-transformer';
 
 @Entity({ name: 'phones' })
 export class Phone {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'phone1_encrypted', type: 'text', nullable: false })
-  phone1Encrypted: string;
+  @Column({ name: 'phone1', type: 'text', nullable: false })
+  phone1: string;
 
-  @Column({ name: 'phone2_encrypted', type: 'text', nullable: true })
-  phone2Encrypted?: string;
-
-  @Column({ name: 'whatsapp_encrypted', type: 'text', nullable: true })
-  whatsappEncrypted?: string;
-
-  @Expose()
-  phone1?: string;
-
-  @Expose()
+  @Column({ name: 'phone2', type: 'text', nullable: true })
   phone2?: string;
 
-  @Expose()
+  @Column({ name: 'whatsapp', type: 'text', nullable: true })
   whatsapp?: string;
 
   @OneToOne(() => Branch, (branch) => branch.phones, {

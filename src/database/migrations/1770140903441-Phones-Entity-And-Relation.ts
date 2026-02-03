@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class PhonesEntityAndRelation1770139173611 implements MigrationInterface {
-    name = 'PhonesEntityAndRelation1770139173611'
+export class PhonesEntityAndRelation1770140903441 implements MigrationInterface {
+    name = 'PhonesEntityAndRelation1770140903441'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "phones" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "phone1_encrypted" text NOT NULL, "phone2_encrypted" text, "whatsapp_encrypted" text, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "branchId" uuid NOT NULL, "createdBy" uuid NOT NULL, "updatedBy" uuid NOT NULL, CONSTRAINT "REL_b5a41150ed03b76c81de795815" UNIQUE ("branchId"), CONSTRAINT "PK_30d7fc09a458d7a4d9471bda554" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "phones" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "phone1" text NOT NULL, "phone2" text, "whatsapp" text, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "branchId" uuid NOT NULL, "createdBy" uuid NOT NULL, "updatedBy" uuid NOT NULL, CONSTRAINT "REL_b5a41150ed03b76c81de795815" UNIQUE ("branchId"), CONSTRAINT "PK_30d7fc09a458d7a4d9471bda554" PRIMARY KEY ("id"))`);
         await queryRunner.query(`ALTER TABLE "branches" ADD "phoneId" uuid`);
         await queryRunner.query(`ALTER TABLE "branches" ADD CONSTRAINT "UQ_4fc2dfa7df2b760d9f452f8f9d6" UNIQUE ("phoneId")`);
         await queryRunner.query(`ALTER TABLE "order_details" ALTER COLUMN "price" SET DEFAULT '0'`);

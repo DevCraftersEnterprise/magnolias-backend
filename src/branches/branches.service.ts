@@ -1,13 +1,16 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Branch } from './entities/branch.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
 import { isUUID } from 'class-validator';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
-import { CreateBranchDto } from './dto/create-branch.dto';
 import { User } from '../users/entities/user.entity';
+import { CreateBranchDto } from './dto/create-branch.dto';
+import { CreatePhonesDto } from './dto/create-phones.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
+import { Branch } from './entities/branch.entity';
+import { Phone } from './entities/phone.entity';
+import { UpdatePhonesDto } from './dto/update-phones.dto';
 
 @Injectable()
 export class BranchesService {
@@ -16,6 +19,8 @@ export class BranchesService {
   constructor(
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
+    @InjectRepository(Phone)
+    private readonly phoneRepository: Repository<Phone>,
   ) {}
 
   async registerBranch(dto: CreateBranchDto, user: User) {
@@ -43,6 +48,9 @@ export class BranchesService {
 
     const [branches, total] = await this.branchRepository.findAndCount({
       where: whereConditions,
+      relations: {
+        phones: true,
+      },
       select: {
         id: true,
         name: true,
@@ -50,6 +58,11 @@ export class BranchesService {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        phones: {
+          phone1: true,
+          phone2: true,
+          whatsapp: true,
+        },
       },
       order: { createdAt: 'DESC' },
       skip: offset,
@@ -71,6 +84,20 @@ export class BranchesService {
   async findAllBranches(): Promise<Branch[]> {
     return this.branchRepository.find({
       where: { isActive: true },
+      relations: { phones: true },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        phones: {
+          phone1: true,
+          phone2: true,
+          whatsapp: true,
+        },
+      },
       order: { createdAt: 'DESC' },
     });
   }
@@ -83,6 +110,20 @@ export class BranchesService {
 
     const branch = await this.branchRepository.findOne({
       where: whereConditions,
+      relations: { phones: true },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        phones: {
+          phone1: true,
+          phone2: true,
+          whatsapp: true,
+        },
+      },
     });
 
     if (!branch) return null;
@@ -124,5 +165,60 @@ export class BranchesService {
       isActive: false,
       updatedBy: user,
     });
+  }
+
+  async addBranchPhoneNumbers(
+    dto: CreatePhonesDto,
+    user: User,
+    branchId: string,
+  ): Promise<Phone> {
+    const branch = await this.branchRepository.findOne({
+      where: { id: branchId },
+    });
+
+    if (!branch) {
+      throw new BadRequestException('Branch does not exist');
+    }
+
+    const phoneData: Partial<Phone> = {
+      phone1: dto.phone1,
+      createdBy: user,
+      updatedBy: user,
+      branch,
+    };
+
+    if (dto.phone2) phoneData.phone2 = dto.phone2;
+
+    if (dto.whatsapp) phoneData.whatsapp = dto.whatsapp;
+
+    const phones = this.phoneRepository.create(phoneData);
+
+    const savedPhones = await this.phoneRepository.save(phones);
+
+    branch.phones = savedPhones;
+    branch.updatedBy = user;
+    await this.branchRepository.save(branch);
+
+    return savedPhones;
+  }
+
+  async updateBranchPhoneNumbers(
+    dto: UpdatePhonesDto,
+    user: User,
+  ): Promise<Phone> {
+    const { id, phone1, phone2, whatsapp } = dto;
+
+    const phone = await this.phoneRepository.preload({ id });
+
+    if (!phone) throw new Error('Phone record does not exist');
+
+    phone.phone1 = phone1 ?? phone.phone1;
+    phone.phone2 = phone2 ?? phone.phone2;
+    phone.whatsapp = whatsapp ?? phone.whatsapp;
+    phone.updatedBy = user;
+
+    const updatedPhone = await this.phoneRepository.save(phone);
+
+    return updatedPhone;
   }
 }

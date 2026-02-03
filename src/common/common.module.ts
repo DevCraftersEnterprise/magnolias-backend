@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { EncryptionService } from './services/encryption.service';
 
 @Module({
   imports: [
@@ -9,7 +8,7 @@ import { EncryptionService } from './services/encryption.service';
       envFilePath: ['.env'],
     }),
   ],
-  providers: [EncryptionService],
-  exports: [EncryptionService],
+  providers: [],
+  exports: [],
 })
 export class CommonModule {}
