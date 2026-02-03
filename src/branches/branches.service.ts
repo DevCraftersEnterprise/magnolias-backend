@@ -213,8 +213,8 @@ export class BranchesService {
     if (!phone) throw new Error('Phone record does not exist');
 
     phone.phone1 = phone1 ?? phone.phone1;
-    phone.phone2 = phone2 ?? phone.phone2;
-    phone.whatsapp = whatsapp ?? phone.whatsapp;
+    phone.phone2 = phone2 === undefined ? '' : (phone2 ?? phone.phone2);
+    phone.whatsapp = whatsapp === undefined ? '' : (whatsapp ?? phone.whatsapp);
     phone.updatedBy = user;
 
     const updatedPhone = await this.phoneRepository.save(phone);
