@@ -2,15 +2,15 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
+import { BranchFilterDto } from './dto/branch-filter.dto';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { CreatePhonesDto } from './dto/create-phones.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
+import { UpdatePhonesDto } from './dto/update-phones.dto';
 import { Branch } from './entities/branch.entity';
 import { Phone } from './entities/phone.entity';
-import { UpdatePhonesDto } from './dto/update-phones.dto';
 
 @Injectable()
 export class BranchesService {
@@ -38,7 +38,9 @@ export class BranchesService {
     return branch;
   }
 
-  async findBranches(filters: FilterDto): Promise<PaginationResponse<Branch>> {
+  async findBranches(
+    filters: BranchFilterDto,
+  ): Promise<PaginationResponse<Branch>> {
     const { name, address, limit = 10, offset = 0 } = filters;
 
     const whereConditions: FindOptionsWhere<Branch> = {};

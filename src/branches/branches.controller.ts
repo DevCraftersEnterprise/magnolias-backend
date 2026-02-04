@@ -25,11 +25,11 @@ import {
 } from '@nestjs/swagger';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CurrentUser } from 'src/auth/decorators/curret-user.decorator';
-import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
 import { BranchesService } from './branches.service';
+import { BranchFilterDto } from './dto/branch-filter.dto';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { CreatePhonesDto } from './dto/create-phones.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
@@ -151,7 +151,7 @@ export class BranchesController {
     },
   })
   findBranches(
-    @Query() filterDto: FilterDto,
+    @Query() filterDto: BranchFilterDto,
   ): Promise<PaginationResponse<Branch>> {
     return this.branchesService.findBranches(filterDto);
   }
