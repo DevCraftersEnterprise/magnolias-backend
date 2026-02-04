@@ -1,4 +1,14 @@
 import { Body, Controller, Get, Ip, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiTooManyRequestsResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { User } from 'src/users/entities/user.entity';
 import { sanitizeUser } from 'src/users/utils/sanitized-user.util';
@@ -11,16 +21,6 @@ import { LoginThrottleGuard } from './guards/login-throttle.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { LoginResponse } from './responses/login.response';
 import { RefreshTokenResponse } from './responses/refresh-token.response';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-  ApiTooManyRequestsResponse,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
 
 @ApiTags('Authentication')
 @Controller('auth')

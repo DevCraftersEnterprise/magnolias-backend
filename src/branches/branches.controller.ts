@@ -12,13 +12,14 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
-  ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -48,14 +49,13 @@ export class BranchesController {
     summary: 'Register a new branch',
     description: 'Creates a new branch with the provided details.',
   })
-  @ApiResponse({
-    status: 201,
+  @ApiOkResponse({
     description: 'Branch successfully created.',
     type: Branch,
   })
-  @ApiResponse({ status: 400, description: 'Invalid branch data provided.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized access.' })
-  @ApiResponse({ status: 403, description: 'Forbidden access.' })
+  @ApiBadRequestResponse({ description: 'Invalid branch data provided.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiForbiddenResponse({ description: 'Forbidden access.' })
   registerBranch(
     @Body() createBranchDto: CreateBranchDto,
     @CurrentUser() user: User,
@@ -76,17 +76,15 @@ export class BranchesController {
     type: 'string',
     format: 'uuid',
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Phone numbers successfully created.',
     type: Phone,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid phone numbers data provided.',
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized access.' })
-  @ApiResponse({ status: 404, description: 'Branch not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiNotFoundResponse({ description: 'Branch not found.' })
   addBranchPhoneNumbers(
     @Body() createPhonesDto: CreatePhonesDto,
     @CurrentUser() user: User,
@@ -130,8 +128,7 @@ export class BranchesController {
     type: String,
     description: 'Filter branches by address',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'List of branches retrieved successfully.',
     schema: {
       type: 'object',
@@ -164,8 +161,7 @@ export class BranchesController {
     summary: 'Get all branches',
     description: 'Retrieves a list of all branches without pagination.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'List of all branches retrieved successfully.',
     type: [Branch],
   })
@@ -179,13 +175,11 @@ export class BranchesController {
     description:
       'Retrieves a branch by its unique identifier or other search term.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Branch retrieved successfully.',
     type: Branch,
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Branch not found with the provided term.',
   })
   findBranchByTerm(@Param('term') term: string): Promise<Branch | null> {
