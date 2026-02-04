@@ -4,10 +4,10 @@ import * as argon2 from 'argon2';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { BranchesService } from '../branches/branches.service';
-import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersFilterDto } from './dto/users-filter.dto';
 import { User } from './entities/user.entity';
 import { UserRoles } from './enums/user-role';
 
@@ -71,7 +71,7 @@ export class UsersService {
   }
 
   async findUsers(
-    filters: FilterDto,
+    filters: UsersFilterDto,
   ): Promise<PaginationResponse<Partial<User>>> {
     const { name, lastname, username, role, limit = 10, offset = 0 } = filters;
 
