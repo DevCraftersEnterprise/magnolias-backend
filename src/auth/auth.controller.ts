@@ -14,9 +14,12 @@ import { RefreshTokenResponse } from './responses/refresh-token.response';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
-  ApiResponse,
   ApiTags,
+  ApiTooManyRequestsResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 @ApiTags('Authentication')
@@ -34,17 +37,14 @@ export class AuthController {
     description:
       'Endpoint for user login that returns access and refresh tokens upon successful authentication.',
   })
-  @ApiResponse({
-    status: 201,
-    description: 'Successful login',
+  @ApiCreatedResponse({
+    description: 'Login successful',
     type: LoginResponse,
   })
-  @ApiResponse({
-    status: 401,
+  @ApiUnauthorizedResponse({
     description: 'Unauthorized - Invalid credentials',
   })
-  @ApiResponse({
-    status: 429,
+  @ApiTooManyRequestsResponse({
     description: 'Too Many Requests - Login attempts exceeded',
   })
   async login(
@@ -82,17 +82,14 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({
-    status: 201,
+  @ApiOkResponse({
     description: 'Access token refreshed successfully',
     type: RefreshTokenResponse,
   })
-  @ApiResponse({
-    status: 401,
+  @ApiUnauthorizedResponse({
     description: 'Unauthorized - Invalid or expired refresh token',
   })
-  @ApiResponse({
-    status: 429,
+  @ApiTooManyRequestsResponse({
     description: 'Too Many Requests - Refresh attempts exceeded',
   })
   refreshToken(
@@ -110,8 +107,7 @@ export class AuthController {
     description:
       'Endpoint to validate the access token and retrieve the current user information.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Token is valid',
     schema: {
       type: 'object',
@@ -121,8 +117,7 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({
-    status: 401,
+  @ApiUnauthorizedResponse({
     description: 'Unauthorized - Invalid or expired access token',
   })
   validateToken(@CurrentUser() user: User): {
