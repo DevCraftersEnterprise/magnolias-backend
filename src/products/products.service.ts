@@ -7,14 +7,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
 import { User } from '../users/entities/user.entity';
 import { CreateProductDto } from './dto/create-product.dto';
+import { ProductsFilterDto } from './dto/products-filter.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
 import { ProductPicture } from './entities/product-picture.entity';
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService {
@@ -42,7 +42,9 @@ export class ProductsService {
     return product;
   }
 
-  async findProducts(filters: FilterDto): Promise<PaginationResponse<Product>> {
+  async findProducts(
+    filters: ProductsFilterDto,
+  ): Promise<PaginationResponse<Product>> {
     const { name, description = '', limit = 10, offset = 0 } = filters;
 
     const whereConditions: FindOptionsWhere<Product> = {};
