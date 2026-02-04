@@ -57,6 +57,15 @@ export class OrdersController {
     return this.ordersService.updateOrder(updateOrderDto, user);
   }
 
+  @Patch('in-process')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
+  markOrderAsInProcess(
+    updateOrderDto: UpdateOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<Order> {
+    return this.ordersService.markOrderAsInProcess(updateOrderDto, user);
+  }
+
   @Patch('done')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   markOrderAsDone(

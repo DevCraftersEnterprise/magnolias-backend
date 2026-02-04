@@ -1,5 +1,4 @@
-import { IsArray, IsDate, IsEnum, IsNotEmpty } from 'class-validator';
-import { OrderStatus } from '../enums/order-status.enum';
+import { IsArray, IsDate, IsNotEmpty } from 'class-validator';
 import { CreateOrderDetailDto } from './create-order-detail.dto';
 
 export class CreateOrderDto {
@@ -12,12 +11,6 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @IsDate({ message: 'deliveryDate must be a valid date' })
   deliveryDate: Date;
-
-  @IsNotEmpty()
-  @IsEnum(OrderStatus, {
-    message: 'order status must be a valid OrderStatus value',
-  })
-  status: OrderStatus;
 
   @IsNotEmpty()
   branchId: string;

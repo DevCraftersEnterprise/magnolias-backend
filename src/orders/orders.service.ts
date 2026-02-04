@@ -34,8 +34,7 @@ export class OrdersService {
   ) {}
 
   async createOrder(dto: CreateOrderDto, user: User): Promise<Order> {
-    const { clientName, clientPhone, deliveryDate, status, branchId, details } =
-      dto;
+    const { clientName, clientPhone, deliveryDate, branchId, details } = dto;
 
     const branch = await this.branchesService.findBranchByTerm(branchId);
 
@@ -45,7 +44,7 @@ export class OrdersService {
       clientName,
       clientPhone,
       deliveryDate,
-      status,
+      status: OrderStatus.CREATED,
       branch,
       createdBy: user,
       updatedBy: user,
@@ -171,10 +170,31 @@ export class OrdersService {
 
     if (!order) throw new NotFoundException('Order not found');
 
+    if (order.status !== OrderStatus.CREATED) {
+      throw new BadRequestException(
+        'Only orders with status CREATED can be updated',
+      );
+    }
+
     if (clientName) order.clientName = clientName;
     if (clientPhone) order.clientPhone = clientPhone;
     if (deliveryDate) order.deliveryDate = deliveryDate;
 
+    order.updatedBy = user;
+
+    await this.orderRepository.update(id, order);
+
+    return this.getOrderByTerm(id);
+  }
+
+  async markOrderAsInProcess(dto: UpdateOrderDto, user: User): Promise<Order> {
+    const { id } = dto;
+
+    const order = await this.orderRepository.preload({ id });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    order.status = OrderStatus.IN_PROCESS;
     order.updatedBy = user;
 
     await this.orderRepository.update(id, order);
@@ -205,13 +225,11 @@ export class OrdersService {
     if (!order) throw new NotFoundException('Order not found');
 
     const alreadyCanceled = await this.cancellationRepository.findOne({
-      where: {order},
+      where: { order },
     });
 
     if (alreadyCanceled) {
-      throw new BadRequestException(
-        'This order has already been canceled',
-      );
+      throw new BadRequestException('This order has already been canceled');
     }
 
     const cancellation = this.cancellationRepository.create({
@@ -253,7 +271,4 @@ export class OrdersService {
 
     await this.orderDetailRepository.save(orderDetails);
   }
-
-  
-
 }
