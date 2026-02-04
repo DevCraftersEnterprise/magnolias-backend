@@ -8,17 +8,17 @@ import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { BranchesService } from '../branches/branches.service';
 import { ColorsService } from '../colors/colors.service';
-import { FilterDto } from '../common/dto/filter.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDetailDto } from './dto/create-order-detail.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderCancellation } from './entities/order-cancellation.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
-import { OrderCancellation } from './entities/order-cancellation.entity';
 
 @Injectable()
 export class OrdersService {
@@ -58,7 +58,7 @@ export class OrdersService {
   }
 
   async getOrders(
-    filter: FilterDto,
+    filter: OrdersFilterDto,
     branchId: string,
   ): Promise<PaginationResponse<Order>> {
     const {
