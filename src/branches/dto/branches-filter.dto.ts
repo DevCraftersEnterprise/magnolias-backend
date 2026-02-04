@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
-export class BranchFilterDto extends PaginationDto {
+export class BranchesFilterDto extends PaginationDto {
   @ApiProperty({
     description: 'Branch name to filter by',
     example: 'Main Branch',

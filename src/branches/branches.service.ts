@@ -4,7 +4,7 @@ import { isUUID } from 'class-validator';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
-import { BranchFilterDto } from './dto/branch-filter.dto';
+import { BranchesFilterDto } from './dto/branches-filter.dto';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { CreatePhonesDto } from './dto/create-phones.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
@@ -39,7 +39,7 @@ export class BranchesService {
   }
 
   async findBranches(
-    filters: BranchFilterDto,
+    filters: BranchesFilterDto,
   ): Promise<PaginationResponse<Branch>> {
     const { name, address, limit = 10, offset = 0 } = filters;
 
