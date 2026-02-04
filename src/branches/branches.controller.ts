@@ -231,6 +231,7 @@ export class BranchesController {
 
   @Delete()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Delete a branch',
     description: 'Deletes an existing branch from the system.',
