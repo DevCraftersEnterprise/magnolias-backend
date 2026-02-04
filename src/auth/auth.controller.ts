@@ -11,7 +11,15 @@ import { LoginThrottleGuard } from './guards/login-throttle.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { LoginResponse } from './responses/login.response';
 import { RefreshTokenResponse } from './responses/refresh-token.response';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -21,6 +29,24 @@ export class AuthController {
 
   @Post('login')
   @UseGuards(LoginThrottleGuard)
+  @ApiOperation({
+    summary: 'User login endpoint',
+    description:
+      'Endpoint for user login that returns access and refresh tokens upon successful authentication.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Successful login',
+    type: LoginResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid credentials',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too Many Requests - Login attempts exceeded',
+  })
   async login(
     @Ip() ip: string,
     @Body() loginUserDto: LoginUserDto,
@@ -38,6 +64,37 @@ export class AuthController {
   @Post('refresh-token')
   @UseGuards(RefreshTokenGuard)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Endpoint to refresh the access token using a valid refresh token.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        refreshToken: {
+          type: 'string',
+          description: 'Valid refresh token',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Access token refreshed successfully',
+    type: RefreshTokenResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired refresh token',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too Many Requests - Refresh attempts exceeded',
+  })
   refreshToken(
     @Body('refreshToken') refreshToken: string,
     @CurrentUser() user: User,
@@ -47,6 +104,27 @@ export class AuthController {
 
   @Get('validate-token')
   @UseGuards(AccessTokenGuard, JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Validate access token',
+    description:
+      'Endpoint to validate the access token and retrieve the current user information.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Token is valid',
+    schema: {
+      type: 'object',
+      properties: {
+        valid: { type: 'boolean', example: true },
+        user: { type: 'object', description: 'Sanitized user information' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired access token',
+  })
   validateToken(@CurrentUser() user: User): {
     valid: boolean;
     user: Partial<User>;
