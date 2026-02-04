@@ -37,6 +37,10 @@ export class AuthController {
     description:
       'Endpoint for user login that returns access and refresh tokens upon successful authentication.',
   })
+  @ApiBody({
+    type: LoginUserDto,
+    description: 'User credentials for authentication',
+  })
   @ApiCreatedResponse({
     description: 'Login successful',
     type: LoginResponse,
