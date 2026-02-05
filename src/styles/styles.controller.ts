@@ -55,6 +55,19 @@ export class StylesController {
     return this.stylesService.create(createStyleDto, user);
   }
 
+  @Get('all')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get all styles',
+    description: 'Retrieves all active styles.',
+  })
+  @ApiOkResponse({ description: 'Styles list.', type: [Style] })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  findAll(): Promise<Style[]> {
+    return this.stylesService.findAll();
+  }
+
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -98,10 +111,10 @@ export class StylesController {
       },
     },
   })
-  findAll(
+  paginated(
     @Query() filterDto: PaginationDto,
   ): Promise<PaginationResponse<Style>> {
-    return this.stylesService.findAll(filterDto);
+    return this.stylesService.paginated(filterDto);
   }
 
   @Get(':term')

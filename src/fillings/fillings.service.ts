@@ -41,7 +41,14 @@ export class FillingsService {
     return await this.fillingRepository.save(filling);
   }
 
-  async findAll(
+  async findAll(): Promise<Filling[]> {
+    return await this.fillingRepository.find({
+      where: { isActive: true },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async paginated(
     paginationDto: PaginationDto,
   ): Promise<PaginationResponse<Filling>> {
     const { limit = 10, offset = 0 } = paginationDto;

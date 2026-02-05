@@ -43,7 +43,14 @@ export class BreadTypesService {
     return await this.breadTypeRepository.save(breadType);
   }
 
-  async findAll(
+  async findAll(): Promise<BreadType[]> {
+    return await this.breadTypeRepository.find({
+      where: { isActive: true },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async paginated(
     paginationDto: PaginationDto,
   ): Promise<PaginationResponse<BreadType>> {
     const { limit = 10, offset = 0 } = paginationDto;

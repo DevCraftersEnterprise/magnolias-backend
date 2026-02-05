@@ -55,6 +55,19 @@ export class FrostingsController {
     return this.frostingsService.create(createFrostingDto, user);
   }
 
+  @Get('all')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get all frostings',
+    description: 'Retrieves all active frostings.',
+  })
+  @ApiOkResponse({ description: 'Frostings list.', type: [Frosting] })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  findAll(): Promise<Frosting[]> {
+    return this.frostingsService.findAll();
+  }
+
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -98,10 +111,10 @@ export class FrostingsController {
       },
     },
   })
-  findAll(
+  paginated(
     @Query() filterDto: PaginationDto,
   ): Promise<PaginationResponse<Frosting>> {
-    return this.frostingsService.findAll(filterDto);
+    return this.frostingsService.paginated(filterDto);
   }
 
   @Get(':term')

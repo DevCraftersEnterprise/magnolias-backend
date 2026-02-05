@@ -43,7 +43,14 @@ export class FrostingsService {
     return await this.frostingRepository.save(frosting);
   }
 
-  async findAll(
+  async findAll(): Promise<Frosting[]> {
+    return await this.frostingRepository.find({
+      where: { isActive: true },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async paginated(
     paginationDto: PaginationDto,
   ): Promise<PaginationResponse<Frosting>> {
     const { limit = 10, offset = 0 } = paginationDto;
