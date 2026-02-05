@@ -23,10 +23,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserRoles } from 'src/users/enums/user-role';
-import { PaginationResponse } from '../../dist/common/responses/pagination.response';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { BreadTypesService } from './bread-types.service';
 import { CreateBreadTypeDto } from './dto/create-bread-type.dto';
@@ -111,7 +111,7 @@ export class BreadTypesController {
     summary: 'Get bread type by term',
     description: 'Retrieves a specific bread type.',
   })
-  @ApiParam({ name: 'id', type: 'string' })
+  @ApiParam({ name: 'term', type: 'string' })
   @ApiOkResponse({ description: 'Bread type found.', type: BreadType })
   @ApiNotFoundResponse({ description: 'Bread type not found.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
