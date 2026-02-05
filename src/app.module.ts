@@ -14,6 +14,7 @@ import { CustomersModule } from './customers/customers.module';
 import { BreadTypesModule } from './bread-types/bread-types.module';
 import { FillingsModule } from './fillings/fillings.module';
 import { FlavorsModule } from './flavors/flavors.module';
+import { FrostingsModule } from './frostings/frostings.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { FlavorsModule } from './flavors/flavors.module';
     BreadTypesModule,
     FillingsModule,
     FlavorsModule,
+    FrostingsModule,
   ],
   controllers: [],
   providers: [],
