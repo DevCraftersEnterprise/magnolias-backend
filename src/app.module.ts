@@ -15,6 +15,7 @@ import { BreadTypesModule } from './bread-types/bread-types.module';
 import { FillingsModule } from './fillings/fillings.module';
 import { FlavorsModule } from './flavors/flavors.module';
 import { FrostingsModule } from './frostings/frostings.module';
+import { StylesModule } from './styles/styles.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { FrostingsModule } from './frostings/frostings.module';
     FillingsModule,
     FlavorsModule,
     FrostingsModule,
+    StylesModule,
   ],
   controllers: [],
   providers: [],
