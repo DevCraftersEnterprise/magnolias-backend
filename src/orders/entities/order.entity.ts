@@ -14,6 +14,7 @@ import { OrderStatus } from '../enums/order-status.enum';
 import { OrderDetail } from './order-detail.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Customer } from '../../customers/entities/customer.entity';
+import { OrderFlower } from '../../flowers/entities/order-flower.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -90,4 +91,11 @@ export class Order {
   })
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
   details: OrderDetail[];
+
+  @ApiProperty({
+    description: 'Flowers associated with the order',
+    type: () => [OrderFlower],
+  })
+  @OneToMany(() => OrderFlower, (orderFlower) => orderFlower.order)
+  orderFlowers: OrderFlower[];
 }

@@ -16,6 +16,7 @@ import { FillingsModule } from './fillings/fillings.module';
 import { FlavorsModule } from './flavors/flavors.module';
 import { FrostingsModule } from './frostings/frostings.module';
 import { StylesModule } from './styles/styles.module';
+import { FlowersModule } from './flowers/flowers.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { StylesModule } from './styles/styles.module';
     FlavorsModule,
     FrostingsModule,
     StylesModule,
+    FlowersModule,
   ],
   controllers: [],
   providers: [],
