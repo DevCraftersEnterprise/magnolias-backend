@@ -55,6 +55,19 @@ export class FlavorsController {
     return this.flavorsService.create(createFlavorDto, user);
   }
 
+  @Get('all')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get all flavor types',
+    description: 'Retrieves all active flavor types.',
+  })
+  @ApiOkResponse({ description: 'Flavor types list.', type: [Flavor] })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  findAll(): Promise<Flavor[]> {
+    return this.flavorsService.findAll();
+  }
+
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -98,10 +111,10 @@ export class FlavorsController {
       },
     },
   })
-  findAll(
+  paginated(
     @Query() filterDto: PaginationDto,
   ): Promise<PaginationResponse<Flavor>> {
-    return this.flavorsService.findAll(filterDto);
+    return this.flavorsService.paginated(filterDto);
   }
 
   @Get(':term')

@@ -41,7 +41,14 @@ export class StylesService {
     return await this.styleRepository.save(style);
   }
 
-  async findAll(
+  async findAll(): Promise<Style[]> {
+    return await this.styleRepository.find({
+      where: { isActive: true },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async paginated(
     paginationDto: PaginationDto,
   ): Promise<PaginationResponse<Style>> {
     const { limit = 10, offset = 0 } = paginationDto;

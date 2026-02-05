@@ -41,7 +41,14 @@ export class FlavorsService {
     return await this.flavorRepository.save(flavor);
   }
 
-  async findAll(
+  async findAll(): Promise<Flavor[]> {
+    return await this.flavorRepository.find({
+      where: { isActive: true },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async paginated(
     paginationDto: PaginationDto,
   ): Promise<PaginationResponse<Flavor>> {
     const { limit = 10, offset = 0 } = paginationDto;
