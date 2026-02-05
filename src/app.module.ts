@@ -12,6 +12,7 @@ import { ColorsModule } from './colors/colors.module';
 import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
 import { BreadTypesModule } from './bread-types/bread-types.module';
+import { FillingsModule } from './fillings/fillings.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BreadTypesModule } from './bread-types/bread-types.module';
     OrdersModule,
     CustomersModule,
     BreadTypesModule,
+    FillingsModule,
   ],
   controllers: [],
   providers: [],
