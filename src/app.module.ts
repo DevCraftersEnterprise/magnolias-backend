@@ -13,6 +13,7 @@ import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
 import { BreadTypesModule } from './bread-types/bread-types.module';
 import { FillingsModule } from './fillings/fillings.module';
+import { FlavorsModule } from './flavors/flavors.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FillingsModule } from './fillings/fillings.module';
     CustomersModule,
     BreadTypesModule,
     FillingsModule,
+    FlavorsModule,
   ],
   controllers: [],
   providers: [],
