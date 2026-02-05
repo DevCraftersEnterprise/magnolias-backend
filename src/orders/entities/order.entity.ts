@@ -13,6 +13,7 @@ import { User } from '../../users/entities/user.entity';
 import { OrderStatus } from '../enums/order-status.enum';
 import { OrderDetail } from './order-detail.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Customer } from '../../customers/entities/customer.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -22,20 +23,6 @@ export class Order {
   })
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @ApiProperty({
-    description: 'Name of the client who placed the order',
-    example: 'John Doe',
-  })
-  @Column({ length: 255, nullable: false })
-  clientName: string;
-
-  @ApiProperty({
-    description: 'Phone number of the client who placed the order',
-    example: '+1-234-567-8900',
-  })
-  @Column({ length: 255, nullable: false })
-  clientPhone: string;
 
   @ApiProperty({
     description: 'Date when the order is to be delivered',
@@ -50,6 +37,14 @@ export class Order {
   })
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.CREATED })
   status: OrderStatus;
+
+  @ApiProperty({
+    description: ' Customer who placed the order',
+    type: () => Customer,
+  })
+  @ManyToOne(() => Customer, (customer) => customer.orders, { nullable: false })
+  @JoinColumn({ name: 'customerId' })
+  customer: Customer;
 
   @ApiProperty({
     description: 'Branch where the order was placed',
