@@ -195,7 +195,11 @@ src/
 │   ├── branches.module.ts      # Módulo de sucursales
 │   └── branches.service.ts     # Servicio de sucursales
 ├── common/                     # Módulo compartido
-│   ├── dto/                    # DTOs comunes (paginación, filtros)
+│   ├── decorators/             # Decoradores comunes (files)
+│   ├── dto/                    # DTOs comunes (paginación)
+│   ├── enums/                  # Enums globales (área pastelero, etc.)
+│   ├── interfaces/             # Interfaces globales
+│   ├── pipes/                  # Pipes globales
 |   ├── responses/              # Respuestas comunes
 │   └── utils/                  # Utilidades compartidas
 ├── config/                     # Configuración de servicios de terceros
