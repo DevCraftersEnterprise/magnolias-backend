@@ -11,6 +11,11 @@ import { UsersModule } from './users/users.module';
 import { ColorsModule } from './colors/colors.module';
 import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
+import { BreadTypesModule } from './bread-types/bread-types.module';
+import { FillingsModule } from './fillings/fillings.module';
+import { FlavorsModule } from './flavors/flavors.module';
+import { FrostingsModule } from './frostings/frostings.module';
+import { StylesModule } from './styles/styles.module';
 
 @Module({
   imports: [
@@ -26,6 +31,11 @@ import { CustomersModule } from './customers/customers.module';
     ColorsModule,
     OrdersModule,
     CustomersModule,
+    BreadTypesModule,
+    FillingsModule,
+    FlavorsModule,
+    FrostingsModule,
+    StylesModule,
   ],
   controllers: [],
   providers: [],
