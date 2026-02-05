@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { ColorsModule } from './colors/colors.module';
 import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
+import { BreadTypesModule } from './bread-types/bread-types.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CustomersModule } from './customers/customers.module';
     ColorsModule,
     OrdersModule,
     CustomersModule,
+    BreadTypesModule,
   ],
   controllers: [],
   providers: [],
