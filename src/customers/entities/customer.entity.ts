@@ -10,6 +10,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 
 @Entity({ name: 'customers' })
 export class Customer {
@@ -31,7 +32,13 @@ export class Customer {
     description: 'Primary phone number of the customer',
     example: '+1-555-123-4567',
   })
-  @Column({ type: 'varchar', length: 20, nullable: false, unique: true })
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: false,
+    unique: true,
+    transformer: EncryptedTransformer,
+  })
   phone: string;
 
   @ApiProperty({
@@ -39,7 +46,12 @@ export class Customer {
     example: '+1-555-987-6543',
     required: false,
   })
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    transformer: EncryptedTransformer,
+  })
   alternativePhone?: string;
 
   @ApiProperty({

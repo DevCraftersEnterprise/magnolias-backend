@@ -13,6 +13,7 @@ import { Branch } from '../../branches/entities/branch.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { OrderType } from '../../common/enums/order-type.enum';
 import { ProductSize } from '../../common/enums/product-size.enum';
+import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 import { Customer } from '../../customers/entities/customer.entity';
 import { OrderFlower } from '../../flowers/entities/order-flower.entity';
 import { User } from '../../users/entities/user.entity';
@@ -94,7 +95,12 @@ export class Order {
     example: '+52 123 456 7890',
     required: false,
   })
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    transformer: EncryptedTransformer,
+  })
   pickupPersonPhone?: string;
 
   @ApiProperty({
