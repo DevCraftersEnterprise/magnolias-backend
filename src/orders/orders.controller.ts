@@ -28,6 +28,7 @@ import { UserRoles } from '../users/enums/user-role';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
+import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
@@ -224,6 +225,30 @@ export class OrdersController {
     @CurrentUser() user: User,
   ): Promise<Order> {
     return this.ordersService.markOrderAsDone(updateOrderDto, user);
+  }
+
+  @Patch(':id/pickup-person')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Set pickup person',
+    description: 'Sets the person who will pick up the order',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the order',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({ description: 'Pickup person set.', type: Order })
+  @ApiNotFoundResponse({ description: 'Order not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  setPickupPerson(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() setPickupPersonDto: SetPickupPersonDto,
+    @CurrentUser() user: User,
+  ): Promise<Order> {
+    return this.ordersService.setPickupPerson(id, setPickupPersonDto, user);
   }
 
   @Delete('cancel')
