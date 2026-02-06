@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Baker } from '../bakers/entities/baker.entity';
 import { BranchesModule } from 'src/branches/branches.module';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { CommonModule } from '../common/common.module';
@@ -12,7 +13,7 @@ import { UsersService } from './users.service';
   controllers: [UsersController],
   providers: [UsersService, JwtStrategy],
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Baker]),
     CommonModule,
     CustomJwtModule,
     BranchesModule,

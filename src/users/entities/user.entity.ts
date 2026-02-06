@@ -6,9 +6,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Baker } from '../../bakers/entities/baker.entity';
 import { Branch } from '../../branches/entities/branch.entity';
 import { UserRoles } from '../enums/user-role';
 
@@ -77,6 +79,15 @@ export class User {
   @ManyToOne(() => Branch, { nullable: true })
   @JoinColumn({ name: 'branchId' })
   branch: Branch;
+
+  @ApiProperty({
+    description: 'Baker profile linked to this user (only for BAKER role)',
+    type: () => Baker,
+    required: false,
+  })
+  @OneToOne(() => Baker, { nullable: true })
+  @JoinColumn({ name: 'bakerId' })
+  baker?: Baker;
 
   @ApiProperty({
     description: 'Creation timestamp',

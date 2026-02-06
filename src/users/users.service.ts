@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, Repository } from 'typeorm';
+import { Baker } from '../bakers/entities/baker.entity';
 import { BranchesService } from '../branches/branches.service';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -18,11 +19,13 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Baker)
+    private readonly bakerRepository: Repository<Baker>,
     private readonly branchService: BranchesService,
   ) {}
 
   async registerUser(dto: RegisterUserDto): Promise<Partial<User>> {
-    const { name, lastname, username, userkey, role, branchId } = dto;
+    const { name, lastname, username, userkey, role, branchId, bakerId } = dto;
 
     const userExist = await this.userRepository.findOne({
       where: { username },
@@ -38,7 +41,33 @@ export class UsersService {
       );
     }
 
+    // Validate bakerId is required for BAKER role
+    if (role === UserRoles.BAKER && !bakerId) {
+      throw new BadRequestException(
+        'Users with role BAKER must be linked to a baker profile',
+      );
+    }
+
     const branch = await this.branchService.findBranchByTerm(branchId!);
+
+    // Find and validate baker if bakerId is provided
+    let baker: Baker | null = null;
+    if (bakerId) {
+      baker = await this.bakerRepository.findOne({ where: { id: bakerId } });
+      if (!baker) {
+        throw new BadRequestException('Baker profile not found');
+      }
+
+      // Verify baker is not already linked to another user
+      const existingBakerUser = await this.userRepository.findOne({
+        where: { baker: { id: bakerId } },
+      });
+      if (existingBakerUser) {
+        throw new BadRequestException(
+          'This baker profile is already linked to another user',
+        );
+      }
+    }
 
     const hashedKey = await argon2.hash(userkey);
 
@@ -51,6 +80,7 @@ export class UsersService {
     };
 
     if (branch) userData.branch = branch;
+    if (baker) userData.baker = baker;
 
     const user = this.userRepository.create(userData);
 

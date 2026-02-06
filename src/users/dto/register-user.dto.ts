@@ -58,4 +58,13 @@ export class RegisterUserDto {
   @IsOptional()
   @IsNotEmpty()
   branchId?: string;
+
+  @ApiProperty({
+    description: 'UUID of the baker profile to link (required for BAKER role)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsOptional()
+  @IsNotEmpty()
+  bakerId?: string;
 }
