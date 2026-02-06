@@ -28,11 +28,7 @@ export class UsersService {
       where: { username },
     });
 
-    const requireBranchRoles = [
-      UserRoles.EMPLOYEE,
-      UserRoles.BAKER,
-      UserRoles.ASSISTANT,
-    ];
+    const requireBranchRoles = [UserRoles.EMPLOYEE, UserRoles.ASSISTANT];
 
     if (userExist) throw new BadRequestException('Username already exists');
 
