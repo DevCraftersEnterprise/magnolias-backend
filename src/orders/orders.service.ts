@@ -10,6 +10,7 @@ import { BranchesService } from '../branches/branches.service';
 import { ColorsService } from '../colors/colors.service';
 import { OrderType } from '../common/enums/order-type.enum';
 import { PaginationResponse } from '../common/responses/pagination.response';
+import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
 import { CustomersService } from '../customers/customers.service';
 import { OrderFlower } from '../flowers/entities/order-flower.entity';
 import { FlowersService } from '../flowers/flowers.service';
@@ -72,7 +73,11 @@ export class OrdersService {
     return `${prefix}-${year}-${sequence.toString().padStart(4, '0')}`;
   }
 
-  async createOrder(dto: CreateOrderDto, user: User): Promise<Order> {
+  async createOrder(
+    dto: CreateOrderDto,
+    user: User,
+    referenceImages?: Express.Multer.File[],
+  ): Promise<Order> {
     const customer = await this.customerService.findOne(dto.customerId);
 
     const branch = await this.branchesService.findBranchByTerm(dto.branchId);
@@ -120,14 +125,33 @@ export class OrdersService {
 
     const orderDetails: OrderDetail[] = [];
 
-    for (const detailDto of dto.details) {
+    const folder =
+      process.env.NODE_ENV === 'development'
+        ? `dev/magnolias/orders/reference-images`
+        : `magnolias/orders/reference-images`;
+
+    for (let i = 0; i < dto.details.length; i++) {
+      const detailDto = dto.details[i];
       const product = products.find((prd) => prd!.id === detailDto.productId);
       if (!product) continue;
+
+      let referenceImageUrl: string | undefined;
+
+      if (referenceImages && referenceImages[i]) {
+        const file = referenceImages[i];
+        const fileName = `${savedOrder.orderCode}-detail-${i + 1}-${Date.now()}`;
+        referenceImageUrl = await uploadPictureToCloudinary(
+          file.buffer,
+          folder,
+          fileName,
+        );
+      }
 
       const orderDetail = this.orderDetailRepository.create({
         ...detailDto,
         order: savedOrder,
         product,
+        referenceImageUrl,
         createdBy: user,
         updatedBy: user,
       });
