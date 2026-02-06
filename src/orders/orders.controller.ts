@@ -8,10 +8,14 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -23,6 +27,7 @@ import {
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
+import { FileValidator } from '../common/utils/file-validator';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
 import { CancelOrderDto } from './dto/cancel-order.dto';
@@ -41,9 +46,12 @@ export class OrdersController {
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
   @ApiBearerAuth('access-token')
+  @UseInterceptors(FilesInterceptor('referenceImages', 10))
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a new order',
-    description: 'Creates a new order with the provided details.',
+    description:
+      'Creates a new order with the provided details. Reference images can be uploaded for each order detail.',
   })
   @ApiOkResponse({
     description: 'Order successfully created.',
@@ -55,8 +63,16 @@ export class OrdersController {
   createOrder(
     @Body() createOrderDto: CreateOrderDto,
     @CurrentUser() user: User,
+    @UploadedFiles() referenceImages?: Express.Multer.File[],
   ): Promise<Order> {
-    return this.ordersService.createOrder(createOrderDto, user);
+    if (referenceImages?.length) {
+      FileValidator.validateImages(referenceImages);
+    }
+    return this.ordersService.createOrder(
+      createOrderDto,
+      user,
+      referenceImages,
+    );
   }
 
   @Get('branch/:branchId')

@@ -1,42 +1,144 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsUUID, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+  ValidateIf,
+} from 'class-validator';
+import { PipingLocation } from '../../common/enums/piping-location.enum';
+import { WritingLocation } from '../../common/enums/writing-location.enum';
 
 export class CreateOrderDetailDto {
   @ApiProperty({
-    description: 'Price of the product at the time of order',
-    example: 29.99,
+    description: 'ID of the product',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
   })
-  @Min(1)
-  price: number;
-
-  @ApiProperty({
-    description: 'Quantity of the product ordered',
-    example: 2,
-  })
-  @Min(1)
-  quantity: number;
-
-  @ApiProperty({
-    description: 'Unique identifier of the product',
-    example: 'a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6',
-  })
-  @IsUUID()
+  @IsNotEmpty({ message: 'Product ID is required' })
+  @IsUUID('4', { message: 'Product ID must be a valid UUID' })
   productId: string;
 
   @ApiProperty({
-    description: 'Unique identifier of the color (optional)',
-    example: 'f1g2h3i4-j5k6-l7m8-n9o0-p1q2r3s4t5u6',
+    description: 'Price of the product',
+    example: 350.0,
+  })
+  @IsNotEmpty({ message: 'Price is required' })
+  @IsNumber({}, { message: 'Price must be a number' })
+  @Min(0, { message: 'Price must be at least 0' })
+  price: number;
+
+  @ApiProperty({
+    description: 'Quantity',
+    example: 1,
+  })
+  @IsNotEmpty({ message: 'Quantity is required' })
+  @IsInt({ message: 'Quantity must be an integer' })
+  @Min(1, { message: 'Quantity must be at least 1' })
+  quantity: number;
+
+  @ApiProperty({
+    description: 'ID of the color',
+    example: 'b2c3d4e5-f6g7-8901-bcde-fg1234567890',
     required: false,
   })
   @IsOptional()
-  @IsUUID()
+  @IsUUID('4', { message: 'Color ID must be a valid UUID' })
   colorId?: string;
 
   @ApiProperty({
-    description: 'Additional notes for the order detail (optional)',
-    example: 'Please gift wrap this item.',
+    description: 'ID of the bread type',
     required: false,
   })
   @IsOptional()
+  @IsUUID('4', { message: 'Bread type ID must be a valid UUID' })
+  breadTypeId?: string;
+
+  @ApiProperty({
+    description: 'ID of the filling',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'Filling ID must be a valid UUID' })
+  fillingId?: string;
+
+  @ApiProperty({
+    description: 'ID of the flavor',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'Flavor ID must be a valid UUID' })
+  flavorId?: string;
+
+  @ApiProperty({
+    description: 'ID of the frosting',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'Frosting ID must be a valid UUID' })
+  frostingId?: string;
+
+  @ApiProperty({
+    description: 'ID of the style',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'Style ID must be a valid UUID' })
+  styleId?: string;
+
+  @ApiProperty({
+    description: 'Indicates if the item has writing',
+    example: true,
+    default: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'hasWriting must be a boolean' })
+  hasWriting?: boolean;
+
+  @ApiProperty({
+    description: 'Text to write (required if hasWriting is true)',
+    example: 'Feliz Cumpleaños María',
+    required: false,
+  })
+  @ValidateIf((o) => o.hasWriting === true)
+  @IsNotEmpty({ message: 'Writing text is required when hasWriting is true' })
+  @IsString({ message: 'Writing text must be a string' })
+  @MaxLength(255, { message: 'Writing text must not exceed 255 characters' })
+  @IsOptional()
+  writingText?: string;
+
+  @ApiProperty({
+    description: 'Location of the writing',
+    example: WritingLocation.TOP,
+    enum: WritingLocation,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(WritingLocation, { message: 'Invalid writing location' })
+  writingLocation?: WritingLocation;
+
+  @ApiProperty({
+    description: 'Location of piping decoration',
+    example: PipingLocation.TOP_BORDER,
+    enum: PipingLocation,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(PipingLocation, { message: 'Invalid piping location' })
+  pipingLocation?: PipingLocation;
+
+  @ApiProperty({
+    description: 'Additional notes',
+    example: 'Sin azúcar, para diabético',
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: 'Notes must be a string' })
   notes?: string;
 }
