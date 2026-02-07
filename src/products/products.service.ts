@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { CategoriesService } from '../categories/categories.service';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
 import { User } from '../users/entities/user.entity';
@@ -25,14 +26,18 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
-    const { name, description = '' } = dto;
+    const { name, description = '', categoryId } = dto;
+
+    const category = await this.categoriesService.findOne(categoryId);
 
     const productData: Partial<Product> = {
       name,
       description,
+      category,
       createdBy: user,
       updatedBy: user,
     };
@@ -58,6 +63,7 @@ export class ProductsService {
         pictures: { isActive: true },
       },
       relations: {
+        category: true,
         pictures: true,
       },
       select: {
@@ -67,6 +73,10 @@ export class ProductsService {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        category: {
+          id: true,
+          name: true,
+        },
         pictures: {
           imageUrl: true,
         },
@@ -117,7 +127,7 @@ export class ProductsService {
 
     const product = await this.productRepository.findOne({
       where: { ...whereConditions, pictures: { isActive: true } },
-      relations: { pictures: true },
+      relations: { pictures: true, category: true },
       select: {
         id: true,
         name: true,
@@ -125,6 +135,10 @@ export class ProductsService {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        category: {
+          id: true,
+          name: true,
+        },
         pictures: {
           imageUrl: true,
         },
@@ -135,11 +149,17 @@ export class ProductsService {
   }
 
   async updateProduct(dto: UpdateProductDto, user: User): Promise<Product> {
-    const { id, name, description, isActive } = dto;
+    const { id, name, description, isActive, categoryId } = dto;
 
     const product = await this.productRepository.preload({ id });
 
     if (!product) throw new NotFoundException('Product does not exist');
+
+    if (categoryId) {
+      const category = await this.categoriesService.findOne(categoryId);
+
+      if (product.category.id !== category.id) product.category = category;
+    }
 
     product.name = name ?? product.name;
     product.description = description ?? product.description;
