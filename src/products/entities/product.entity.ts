@@ -12,6 +12,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 
 import { ProductPicture } from './product-picture.entity';
+import { Category } from '../../categories/entities/category.entity';
 
 @Entity({ name: 'products' })
 export class Product {
@@ -43,6 +44,14 @@ export class Product {
   })
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
+
+  @ApiProperty({
+    description: 'Category of the product',
+    type: () => Category,
+  })
+  @ManyToOne(() => Category, { nullable: false })
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
 
   @ApiProperty({
     description: 'User who created the product',
