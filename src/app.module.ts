@@ -18,6 +18,7 @@ import { FrostingsModule } from './frostings/frostings.module';
 import { StylesModule } from './styles/styles.module';
 import { FlowersModule } from './flowers/flowers.module';
 import { BakersModule } from './bakers/bakers.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { BakersModule } from './bakers/bakers.module';
     StylesModule,
     FlowersModule,
     BakersModule,
+    CategoriesModule,
   ],
   controllers: [],
   providers: [],

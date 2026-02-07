@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({
@@ -17,4 +17,11 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsOptional()
   description?: string;
+
+  @ApiProperty({
+    description: 'CategoryId of the product',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @IsUUID()
+  categoryId: string;
 }
