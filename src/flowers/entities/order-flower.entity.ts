@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -26,29 +26,19 @@ export class OrderFlower {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({
-    description: 'The order this flower belongs to',
-    type: () => Order,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Order, (order) => order.orderFlowers, { nullable: false })
   @JoinColumn({ name: 'orderId' })
   order: Order;
 
-  @ApiProperty({
-    description: 'The type of flower',
-    type: () => Flower,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Flower, (flower) => flower.orderFlowers, {
     nullable: false,
   })
   @JoinColumn({ name: 'flowerId' })
   flower: Flower;
 
-  @ApiProperty({
-    description: 'Color of the flower',
-    type: () => Color,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Color, { nullable: true })
   @JoinColumn({ name: 'colorId' })
   color?: Color;
@@ -68,18 +58,12 @@ export class OrderFlower {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @ApiProperty({
-    description: 'User who created this record',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who last updated this record',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;

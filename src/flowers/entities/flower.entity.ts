@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -43,18 +43,12 @@ export class Flower {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'User who created this record',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who last updated this record',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;
@@ -73,10 +67,7 @@ export class Flower {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: 'Orders that include this flower',
-    type: () => [OrderFlower],
-  })
+  @ApiHideProperty()
   @OneToMany(() => OrderFlower, (orderFlower) => orderFlower.flower)
   orderFlowers: OrderFlower[];
 }

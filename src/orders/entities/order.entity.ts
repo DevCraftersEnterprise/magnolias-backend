@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -147,34 +147,22 @@ export class Order {
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.CREATED })
   status: OrderStatus;
 
-  @ApiProperty({
-    description: ' Customer who placed the order',
-    type: () => Customer,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Customer, (customer) => customer.orders, { nullable: false })
   @JoinColumn({ name: 'customerId' })
   customer: Customer;
 
-  @ApiProperty({
-    description: 'Branch where the order was placed',
-    type: () => Branch,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Branch, { nullable: false })
   @JoinColumn({ name: 'branchId' })
   branch: Branch;
 
-  @ApiProperty({
-    description: 'User who created the order',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who updated the order',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;
@@ -193,17 +181,11 @@ export class Order {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: 'Details associated with the order',
-    type: () => [OrderDetail],
-  })
+  @ApiHideProperty()
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
   details: OrderDetail[];
 
-  @ApiProperty({
-    description: 'Flowers associated with the order',
-    type: () => [OrderFlower],
-  })
+  @ApiHideProperty()
   @OneToMany(() => OrderFlower, (orderFlower) => orderFlower.order)
   orderFlowers: OrderFlower[];
 }

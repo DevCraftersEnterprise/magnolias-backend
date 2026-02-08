@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Order } from '../../orders/entities/order.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 
 @Entity({ name: 'customers' })
@@ -94,18 +94,12 @@ export class Customer {
   @Column({ default: true, type: 'boolean' })
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'User who created the customer',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who updated the customer',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;
@@ -124,10 +118,7 @@ export class Customer {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: 'Orders associated with the customer',
-    type: () => [Order],
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Order, (order) => order.customer)
   orders: Order[];
 }
