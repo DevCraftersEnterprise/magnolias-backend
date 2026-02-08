@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
   Column,
@@ -71,20 +71,12 @@ export class User {
   @Column({ default: true, type: 'boolean' })
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'Branch assigned to the user',
-    type: () => Branch,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Branch, { nullable: true })
   @JoinColumn({ name: 'branchId' })
   branch: Branch;
 
-  @ApiProperty({
-    description: 'Baker profile linked to this user (only for BAKER role)',
-    type: () => Baker,
-    required: false,
-  })
+  @ApiHideProperty()
   @OneToOne(() => Baker, { nullable: true })
   @JoinColumn({ name: 'bakerId' })
   baker?: Baker;
