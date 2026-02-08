@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -43,18 +43,12 @@ export class Category {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'User who created the category',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who updated the category',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;
@@ -73,10 +67,7 @@ export class Category {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: 'Products that belong to this category',
-    type: () => [Product],
-  })
+  @ApiHideProperty()
   @OneToMany(() => Product, (product) => product.category)
   products: Product[];
 }
