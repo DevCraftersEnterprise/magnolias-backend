@@ -39,6 +39,13 @@ export class Product {
   description?: string;
 
   @ApiProperty({
+    description: 'Set product as favorite of the season',
+    example: true,
+  })
+  @Column({ type: 'boolean', default: false })
+  isFavorite: boolean;
+
+  @ApiProperty({
     description: 'Active status of the product',
     example: true,
   })
