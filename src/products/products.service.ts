@@ -70,6 +70,7 @@ export class ProductsService {
         id: true,
         name: true,
         description: true,
+        isFavorite: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -107,6 +108,7 @@ export class ProductsService {
         name: true,
         description: true,
         isActive: true,
+        isFavorite: true,
         createdAt: true,
         updatedAt: true,
         pictures: {
@@ -119,7 +121,7 @@ export class ProductsService {
     return products;
   }
 
-  async findProductByTerm(term: string): Promise<Product | null> {
+  async findProductByTerm(term: string): Promise<Product> {
     const whereConditions: FindOptionsWhere<Product>[] = [];
 
     if (isUUID(term)) whereConditions.push({ id: term });
@@ -133,6 +135,7 @@ export class ProductsService {
         name: true,
         description: true,
         isActive: true,
+        isFavorite: true,
         createdAt: true,
         updatedAt: true,
         category: {
@@ -144,6 +147,38 @@ export class ProductsService {
         },
       },
     });
+
+    if (!product) {
+      throw new NotFoundException(
+        `Product not found with the provided term: ${term}`,
+      );
+    }
+
+    return product;
+  }
+  async findFavoriteProduct(): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { isFavorite: true, pictures: { isActive: true } },
+      relations: { pictures: true, category: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isActive: true,
+        isFavorite: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          id: true,
+          name: true,
+        },
+        pictures: {
+          imageUrl: true,
+        },
+      },
+    });
+
+    if (!product) throw new NotFoundException(`Favorite product not found`);
 
     return product;
   }
@@ -169,6 +204,34 @@ export class ProductsService {
     const updatedProduct = await this.productRepository.save(product);
 
     return updatedProduct;
+  }
+
+  async updateProductFavoriteStatus(
+    dto: UpdateProductDto,
+    user: User,
+  ): Promise<Product> {
+    const { id } = dto;
+
+    const oldFavoriteProduct = await this.productRepository.findOne({
+      where: { isFavorite: true },
+    });
+
+    if (oldFavoriteProduct && oldFavoriteProduct.id !== id) {
+      oldFavoriteProduct.isFavorite = false;
+      oldFavoriteProduct.updatedBy = user;
+      await this.productRepository.save(oldFavoriteProduct);
+    }
+
+    const product = await this.productRepository.preload({ id });
+
+    if (!product) throw new NotFoundException('Product does not exist');
+
+    product.isFavorite = true;
+    product.updatedBy = user;
+
+    const favorite = await this.productRepository.save(product);
+
+    return this.findProductByTerm(favorite.id);
   }
 
   async deleteProduct(dto: UpdateProductDto, user: User): Promise<void> {
@@ -224,7 +287,7 @@ export class ProductsService {
 
     await this.productPictureRepository.save(pictures);
 
-    return this.findProductByTerm(id) as Promise<Product>;
+    return this.findProductByTerm(id);
   }
 
   async hideProductPicture(id: string, user: User): Promise<void> {
