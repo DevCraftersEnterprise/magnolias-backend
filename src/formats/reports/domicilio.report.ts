@@ -341,30 +341,53 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 fontSize: 11,
                 bold: true,
                 fillColor: '#CFCFCF',
-                border: [true, true, true, false],
               },
               {
                 text: '',
                 fontSize: 10,
                 bold: false,
-                border: [true, true, true, false],
               },
               {
                 text: 'POSICIÓN POMPEADO',
                 fontSize: 11,
                 bold: true,
                 fillColor: '#CFCFCF',
-                border: [true, true, true, false],
               },
               {
                 text: '',
                 fontSize: 10,
                 bold: false,
-                border: [true, true, true, false],
               },
             ],
           ],
         },
+      },
+      // Decoración
+      {
+        columns: [
+          {
+            svg: `<svg width="120" height="200" viewBox="0 0 120 200"><ellipse cx="60" cy="15" fill="none" stroke="#000" stroke-width="1" rx="50" ry="10"/><path stroke="#000" stroke-width="1" d="M10 15v35m100-35v35"/><path fill="none" stroke="#000" stroke-width="1" d="M10 50a50 10 0 1 0 100 0"/><ellipse cx="60" cy="100" fill="none" stroke="#000" stroke-width="1" rx="55" ry="12"/><path stroke="#000" stroke-width="1" d="M5 100v40m110-40v40"/><path fill="none" stroke="#000" stroke-width="1" d="M5 140a55 12 0 1 0 110 0"/></svg>`,
+            width: 130,
+            fillColor: 'red',
+            margin: [0, 10, 0, 0],
+          },
+          {
+            stack: [
+              {
+                text: 'DECORACIÓN:',
+                fontSize: 11,
+                bold: true,
+                margin: [0, 0, 0, 60],
+              },
+              {
+                text: 'Esto es una prueba de texto para la sección de decoración. Aquí se pueden agregar detalles específicos sobre la decoración del pastel, como colores, temas o elementos decorativos adicionales.',
+                margin: [0, 0, 0, 0],
+              },
+            ],
+            width: '*',
+          },
+        ],
+        margin: [0, 10, 0, 0],
       },
     ],
   };
