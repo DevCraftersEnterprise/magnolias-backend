@@ -20,6 +20,7 @@ import { PrinterModule } from './printer/printer.module';
 import { ProductsModule } from './products/products.module';
 import { StylesModule } from './styles/styles.module';
 import { UsersModule } from './users/users.module';
+import { FormatsModule } from './formats/formats.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UsersModule } from './users/users.module';
     BakersModule,
     CategoriesModule,
     PrinterModule,
+    FormatsModule,
   ],
   controllers: [],
   providers: [],
