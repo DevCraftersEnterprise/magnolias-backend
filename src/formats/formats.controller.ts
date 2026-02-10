@@ -30,4 +30,15 @@ export class FormatsController {
     stream.pipe(response);
     stream.end();
   }
+
+  @Get('personalizado')
+  async getPersonalizadoFormat(@Res() response: Response) {
+    const pdfDoc = this.formatsService.personalizado();
+
+    response.setHeader('Content-Type', 'application/pdf');
+
+    const stream = await pdfDoc.getStream();
+    stream.pipe(response);
+    stream.end();
+  }
 }

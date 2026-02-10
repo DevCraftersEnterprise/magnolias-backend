@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { TCreatedPdf } from 'pdfmake';
+import { OrdersService } from '../orders/orders.service';
 import { PrinterService } from '../printer/printer.service';
 import { getDomicilioReport } from './reports/domicilio.report';
-import { OrdersService } from '../orders/orders.service';
-import { TCreatedPdf } from 'pdfmake';
 import { getEventoReport } from './reports/evento.report';
+import { getPersonalizadoReport } from './reports/personalizado.report';
 
 @Injectable()
 export class FormatsService {
@@ -30,7 +31,13 @@ export class FormatsService {
     return doc;
   }
 
-  personalizado() {}
+  personalizado(): TCreatedPdf {
+    const docDefinition = getPersonalizadoReport();
+
+    const doc = this.printerService.createPdf(docDefinition, {});
+
+    return doc;
+  }
 
   vitrina() {}
 }
