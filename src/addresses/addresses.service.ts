@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { CreateCommonAddressDto } from './dto/create-common-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -40,8 +40,25 @@ export class AddressesService {
     return this.commonAddressRepository.save(address);
   }
 
-  findAll() {
-    return `This action returns all addresses`;
+  findAll(search?: string): Promise<CommonAddress[]> {
+    const whereConditions: FindOptionsWhere<CommonAddress> = {};
+
+    if (search) {
+      return this.commonAddressRepository.find({
+        where: [
+          { ...whereConditions, name: ILike(`%${search}%`) },
+          { ...whereConditions, street: ILike(`%${search}%`) },
+          { ...whereConditions, neighborhood: ILike(`%${search}%`) },
+        ],
+        order: { usageCount: 'DESC', name: 'ASC' },
+        take: 20,
+      });
+    }
+
+    return this.commonAddressRepository.find({
+      where: whereConditions,
+      order: { usageCount: 'DESC', name: 'ASC' },
+    });
   }
 
   findOne(id: number) {

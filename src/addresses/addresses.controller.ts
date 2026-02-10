@@ -21,6 +21,7 @@ import { CreateCommonAddressDto } from './dto/create-common-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { CommonAddress } from './entities/common-address.entity';
 
 @ApiTags('Common Addresses')
 @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -41,12 +42,17 @@ export class AddressesController {
   create(
     @Body() createAddressDto: CreateCommonAddressDto,
     @CurrentUser() user: User,
-  ) {
+  ): Promise<CommonAddress> {
     return this.addressesService.create(createAddressDto, user);
   }
 
   @Get()
-  findAll() {
+  @ApiOperation({ summary: 'Get all common addresses' })
+  @ApiOkResponse({
+    description: 'List of common addresses retrieved successfully.',
+    type: [CommonAddress],
+  })
+  findAll(): Promise<CommonAddress[]> {
     return this.addressesService.findAll();
   }
 
