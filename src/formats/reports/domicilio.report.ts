@@ -32,7 +32,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
       },
       {
         table: {
-          widths: ['25%', '25%', '25%', '25%'],
+          widths: ['20%', '30%', '20%', '30%'],
           body: [
             [
               {
@@ -124,12 +124,14 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 bold: true,
                 fillColor: '#CFCFCF',
                 rowSpan: 2,
+                border: [true, false, true, false],
               },
               {
                 text: '',
                 fontSize: 10,
                 bold: false,
                 rowSpan: 2,
+                border: [true, false, true, false],
               },
             ],
             [
@@ -138,16 +140,91 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 fontSize: 12,
                 bold: true,
                 fillColor: '#CFCFCF',
-                border: [true, false, true, true],
+                border: [true, false, true, false],
               },
               {
                 text: '#______  SI  |  NO',
                 fontSize: 10,
                 bold: true,
-                border: [true, false, true, true],
+                border: [true, false, true, false],
               },
               {},
               {},
+            ],
+          ],
+        },
+      },
+      // Título dirección
+      {
+        table: {
+          widths: '*',
+          body: [
+            [
+              {
+                text: 'DIRECCIÓN',
+                fontSize: 9,
+                bold: true,
+                fillColor: '#A1A1A1',
+                alignment: 'center',
+                border: [true, true, true, false],
+              },
+            ],
+          ],
+        },
+        margin: [0, 0, 0, 0],
+      },
+      // Tabla de dirección
+      {
+        table: {
+          widths: ['20%', '30%', '20%', '30%'],
+          body: [
+            [
+              {
+                text: 'CALLE',
+                fontSize: 10,
+                bold: true,
+                fillColor: '#CFCFCF',
+              },
+              { text: '', fontSize: 10, bold: false },
+              {
+                text: 'NÚMERO',
+                fontSize: 10,
+                bold: true,
+                fillColor: '#CFCFCF',
+              },
+              { text: '', fontSize: 10, bold: false },
+            ],
+            [
+              {
+                text: 'COLONIA',
+                fontSize: 10,
+                bold: true,
+                fillColor: '#CFCFCF',
+              },
+              { text: '', fontSize: 10, bold: false },
+              {
+                text: 'CLAVE INTERPHONE',
+                fontSize: 10,
+                bold: true,
+                fillColor: '#CFCFCF',
+              },
+              { text: '', fontSize: 10, bold: false },
+            ],
+            [
+              {
+                text: 'ENTRE',
+                fontSize: 10,
+                bold: true,
+                fillColor: '#CFCFCF',
+              },
+              { text: '', fontSize: 10, bold: false },
+              {
+                text: 'REFERENCIA',
+                fontSize: 10,
+                bold: true,
+                fillColor: '#CFCFCF',
+              },
+              { text: '', fontSize: 10, bold: false },
             ],
           ],
         },
