@@ -1,15 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { UserRoles } from '../users/enums/user-role';
 import { AddressesService } from './addresses.service';
-import { CreateAddressDto } from './dto/create-address.dto';
+import { CreateCommonAddressDto } from './dto/create-common-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { User } from '../users/entities/user.entity';
 
+@ApiTags('Common Addresses')
+@Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+@ApiBearerAuth('access-token')
 @Controller('addresses')
 export class AddressesController {
   constructor(private readonly addressesService: AddressesService) {}
 
   @Post()
-  create(@Body() createAddressDto: CreateAddressDto) {
-    return this.addressesService.create(createAddressDto);
+  @ApiOperation({ summary: 'Create a new common address' })
+  @ApiOkResponse({
+    description: 'The common address has been successfully created.',
+  })
+  @ApiConflictResponse({
+    description:
+      'An address with the same street, number, and neighborhood already exists.',
+  })
+  create(
+    @Body() createAddressDto: CreateCommonAddressDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.addressesService.create(createAddressDto, user);
   }
 
   @Get()
