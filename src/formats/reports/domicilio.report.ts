@@ -445,6 +445,35 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
           ],
         },
       },
+      // Condiciones de servicio
+      {
+        table: {
+          widths: '*',
+          body: [
+            [
+              {
+                text: [
+                  {
+                    text: 'CONDICIONES DE SERVICIO: ',
+                    fontSize: 11,
+                    bold: true,
+                    color: 'red',
+                  },
+                  {
+                    text: 'Los tonos, técnicas, tipos de flores, dulces, chocolates, frutas y diseños de dibujos son aproximados y pueden variar respecto a la imagen de referencia. Al aceptor estos términos, se deberá firmar la casilla correspondiente como consentimiento para proceder con el servicio.',
+                    fontSize: 10,
+                    bold: false,
+                    color: 'black',
+                  },
+                ],
+                fillColor: '#CFCFCF',
+                border: [true, true, true, false],
+              },
+            ],
+          ],
+        },
+        margin: [0, 0, 0, 0],
+      },
     ],
   };
 
