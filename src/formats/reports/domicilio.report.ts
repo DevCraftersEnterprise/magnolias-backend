@@ -1,6 +1,7 @@
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { Order } from '../../orders/entities/order.entity';
 
-export const getDomicilioReport = (): TDocumentDefinitions => {
+export const getDomicilioReport = (order: Order): TDocumentDefinitions => {
   const docDefintion: TDocumentDefinitions = {
     pageSize: 'LETTER',
     pageMargins: [20, 20, 20, 20],
@@ -20,7 +21,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
               {},
               {},
               {
-                text: 'SUCURSAL NAVARRETE',
+                text: `SUCURSAL ${order.branch.name}`,
                 fontSize: 12,
                 border: [false, true, true, false],
               },
@@ -46,7 +47,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
               },
               {},
               {
-                text: '',
+                text: `${order.deliveryDate.toString()}`,
                 fontSize: 16,
                 bold: false,
                 colSpan: 2,
@@ -68,14 +69,18 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 bold: true,
                 fillColor: '#CFCFCF',
               },
-              { text: '', fontSize: 9, bold: false },
+              {
+                text: `${order.createdAt.toString()}`,
+                fontSize: 9,
+                bold: false,
+              },
               {
                 text: 'HORA DE ENTREGA',
                 fontSize: 9,
                 bold: true,
                 fillColor: '#CFCFCF',
               },
-              { text: '', fontSize: 9, bold: false },
+              { text: `${order.deliveryTime}`, fontSize: 9, bold: false },
             ],
             [
               {
@@ -84,7 +89,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 bold: true,
                 fillColor: '#CFCFCF',
               },
-              { text: '', fontSize: 9, bold: false },
+              { text: `${order.customer.fullName}`, fontSize: 9, bold: false },
               {
                 text: 'LISTO A LA HORA',
                 fontSize: 9,
@@ -100,14 +105,14 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 bold: true,
                 fillColor: '#CFCFCF',
               },
-              { text: '', fontSize: 9, bold: false },
+              { text: `${order.pickupPersonName}`, fontSize: 9, bold: false },
               {
                 text: 'TELÉFONO',
                 fontSize: 9,
                 bold: true,
                 fillColor: '#CFCFCF',
               },
-              { text: '', fontSize: 9, bold: false },
+              { text: `${order.customer.phone}`, fontSize: 9, bold: false },
             ],
             [
               {
@@ -129,7 +134,11 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 bold: true,
                 fillColor: '#CFCFCF',
               },
-              {},
+              {
+                text: `${order.customer.alternativePhone ?? order.pickupPersonPhone}`,
+                fontSize: 9,
+                bold: false,
+              },
             ],
             [
               {
@@ -154,7 +163,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 border: [true, false, true, false],
               },
               {
-                text: '',
+                text: `${order.createdBy.name} ${order.createdBy.lastname}`,
                 fontSize: 9,
                 bold: false,
                 rowSpan: 2,

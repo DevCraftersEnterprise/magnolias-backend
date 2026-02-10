@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { FormatsService } from './formats.service';
 
@@ -6,9 +6,12 @@ import { FormatsService } from './formats.service';
 export class FormatsController {
   constructor(private readonly formatsService: FormatsService) {}
 
-  @Get('domicilio')
-  async getDomicilioFormat(@Res() response: Response) {
-    const pdfDoc = this.formatsService.domicilio();
+  @Get('domicilio/:orderId')
+  async getDomicilioFormat(
+    @Res() response: Response,
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+  ) {
+    const pdfDoc = await this.formatsService.domicilio(orderId);
 
     response.setHeader('Content-Type', 'application/pdf');
 
