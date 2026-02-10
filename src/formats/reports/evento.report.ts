@@ -1,6 +1,7 @@
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { Order } from '../../orders/entities/order.entity';
 
-export const getEventoReport = (): TDocumentDefinitions => {
+export const getEventoReport = (order: Order): TDocumentDefinitions => {
   const docDefinition: TDocumentDefinitions = {
     pageSize: 'LETTER',
     pageMargins: [20, 20, 20, 20],

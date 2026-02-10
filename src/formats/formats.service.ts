@@ -5,6 +5,7 @@ import { PrinterService } from '../printer/printer.service';
 import { getDomicilioReport } from './reports/domicilio.report';
 import { getEventoReport } from './reports/evento.report';
 import { getPersonalizadoReport } from './reports/personalizado.report';
+import { getVitrinaReport } from './reports/vitrina.report';
 
 @Injectable()
 export class FormatsService {
@@ -23,21 +24,33 @@ export class FormatsService {
     return doc;
   }
 
-  evento(): TCreatedPdf {
-    const docDefinition = getEventoReport();
+  async evento(orderId: string): Promise<TCreatedPdf> {
+    const order = await this.ordersService.getOrderByTerm(orderId);
+
+    const docDefinition = getEventoReport(order);
 
     const doc = this.printerService.createPdf(docDefinition, {});
 
     return doc;
   }
 
-  personalizado(): TCreatedPdf {
-    const docDefinition = getPersonalizadoReport();
+  async personalizado(orderId: string): Promise<TCreatedPdf> {
+    const order = await this.ordersService.getOrderByTerm(orderId);
+
+    const docDefinition = getPersonalizadoReport(order);
 
     const doc = this.printerService.createPdf(docDefinition, {});
 
     return doc;
   }
 
-  vitrina() {}
+  async vitrina(orderId: string): Promise<TCreatedPdf> {
+    const order = await this.ordersService.getOrderByTerm(orderId);
+
+    const docDefinition = getVitrinaReport(order);
+
+    const doc = this.printerService.createPdf(docDefinition, {});
+
+    return doc;
+  }
 }

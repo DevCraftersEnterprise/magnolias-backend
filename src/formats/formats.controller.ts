@@ -20,9 +20,12 @@ export class FormatsController {
     stream.end();
   }
 
-  @Get('evento')
-  async getEventoFormat(@Res() response: Response) {
-    const pdfDoc = this.formatsService.evento();
+  @Get('evento/:orderId')
+  async getEventoFormat(
+    @Res() response: Response,
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+  ) {
+    const pdfDoc = await this.formatsService.evento(orderId);
 
     response.setHeader('Content-Type', 'application/pdf');
 
@@ -31,9 +34,26 @@ export class FormatsController {
     stream.end();
   }
 
-  @Get('personalizado')
-  async getPersonalizadoFormat(@Res() response: Response) {
-    const pdfDoc = this.formatsService.personalizado();
+  @Get('personalizado/:orderId')
+  async getPersonalizadoFormat(
+    @Res() response: Response,
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+  ) {
+    const pdfDoc = await this.formatsService.personalizado(orderId);
+
+    response.setHeader('Content-Type', 'application/pdf');
+
+    const stream = await pdfDoc.getStream();
+    stream.pipe(response);
+    stream.end();
+  }
+
+  @Get('vitrina/:orderId')
+  async getVitrinaFormat(
+    @Res() response: Response,
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+  ) {
+    const pdfDoc = await this.formatsService.vitrina(orderId);
 
     response.setHeader('Content-Type', 'application/pdf');
 

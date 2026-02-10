@@ -132,7 +132,7 @@ export class OrdersService {
 
     for (let i = 0; i < dto.details.length; i++) {
       const detailDto = dto.details[i];
-      const product = products.find((prd) => prd!.id === detailDto.productId);
+      const product = products.find((prd) => prd.id === detailDto.productId);
       if (!product) continue;
 
       let referenceImageUrl: string | undefined;
