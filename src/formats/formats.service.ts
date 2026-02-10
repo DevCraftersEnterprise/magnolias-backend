@@ -3,6 +3,7 @@ import { PrinterService } from '../printer/printer.service';
 import { getDomicilioReport } from './reports/domicilio.report';
 import { OrdersService } from '../orders/orders.service';
 import { TCreatedPdf } from 'pdfmake';
+import { getEventoReport } from './reports/evento.report';
 
 @Injectable()
 export class FormatsService {
@@ -21,7 +22,13 @@ export class FormatsService {
     return doc;
   }
 
-  evento() {}
+  evento(): TCreatedPdf {
+    const docDefinition = getEventoReport();
+
+    const doc = this.printerService.createPdf(docDefinition, {});
+
+    return doc;
+  }
 
   personalizado() {}
 

@@ -19,4 +19,15 @@ export class FormatsController {
     stream.pipe(response);
     stream.end();
   }
+
+  @Get('evento')
+  async getEventoFormat(@Res() response: Response) {
+    const pdfDoc = this.formatsService.evento();
+
+    response.setHeader('Content-Type', 'application/pdf');
+
+    const stream = await pdfDoc.getStream();
+    stream.pipe(response);
+    stream.end();
+  }
 }
