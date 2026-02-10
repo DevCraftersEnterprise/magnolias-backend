@@ -7,28 +7,55 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
     content: [
       // Encabezado
       {
-        columns: [
-          {
-            stack: [
-              { text: 'SERVICIO A DOMICILIO', fontSize: 14 },
-              { text: 'PATELERIA MAGNOLIAS', fontSize: 14 },
+        table: {
+          widths: ['15%', '15%', '45%', '25%'],
+          body: [
+            [
+              {
+                text: 'SERVICIO A DOMICILIO',
+                fontSize: 10,
+                colSpan: 3,
+                border: [true, true, false, false],
+              },
+              {},
+              {},
+              {
+                text: 'SUCURSAL NAVARRETE',
+                fontSize: 10,
+                border: [false, true, true, false],
+              },
             ],
-            width: 'auto',
-          },
-          { text: '', width: '*' },
-          {
-            text: 'SUCURSAL NAVARRETE',
-            fontSize: 14,
-            alignment: 'right',
-          },
-        ],
-      },
-      // Fecha de entrega
-      {
-        text: 'FECHA DE ENTREGA:',
-        fontSize: 22,
-        bold: true,
-        margin: [0, 10, 0, 10],
+            [
+              {
+                text: 'PASTELERÍA MAGNOLIAS',
+                fontSize: 10,
+                colSpan: 4,
+                border: [true, false, true, false],
+              },
+              {},
+              {},
+              {},
+            ],
+            [
+              {
+                text: 'FECHA DE ENTREGA:',
+                fontSize: 16,
+                bold: true,
+                colSpan: 2,
+                border: [true, false, false, false],
+              },
+              {},
+              {
+                text: '',
+                fontSize: 16,
+                bold: false,
+                colSpan: 2,
+                border: [false, false, true, false],
+              },
+              {},
+            ],
+          ],
+        },
       },
       {
         table: {
@@ -370,6 +397,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
       {
         table: {
           widths: ['25%', '20%', '30%', '25%'],
+          heights: [50, 50],
           body: [
             [
               {
@@ -389,7 +417,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 border: [true, true, false, true],
               },
               {
-                text: 'Veniam sit in ullamco enim deserunt anim dolore aute id id. Culpa deserunt velit ea enim occaecat eu pariatur esse irure. Fugiat eiusmod in dolor dolor exercitation commodo quis ea. In excepteur tempor ullamco in cupidatat laboris ut occaecat nulla qui dolor id laboris dolore. Occaecat et magna esse est in ad reprehenderit dolor in.',
+                text: '',
                 fontSize: 10,
                 bold: false,
                 colSpan: 2,
@@ -406,7 +434,7 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                 border: [true, true, false, true],
               },
               {
-                text: 'Ut tempor proident aliqua officia excepteur consequat commodo proident qui adipisicing nostrud eiusmod tempor. Laboris non dolore ullamco mollit veniam cillum. Ex ex ut voluptate reprehenderit.',
+                text: '',
                 fontSize: 10,
                 bold: false,
                 colSpan: 2,
