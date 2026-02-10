@@ -467,12 +467,44 @@ export const getDomicilioReport = (): TDocumentDefinitions => {
                   },
                 ],
                 fillColor: '#CFCFCF',
-                border: [true, true, true, false],
+                border: [true, false, true, false],
               },
             ],
           ],
         },
         margin: [0, 0, 0, 0],
+      },
+      // Firma de confirmación del cliente y de recibido
+      {
+        table: {
+          widths: ['20%', '30%', '20%', '30%'],
+          body: [
+            [
+              {
+                text: 'FIRMA Y CONFIRMACIÓN DEL CLIENTE',
+                colSpan: 3,
+                fillColor: '#CFCFCF',
+                bold: true,
+                border: [true, true, true, false],
+              },
+              {},
+              {},
+              { text: '', border: [true, true, true, false] },
+            ],
+            [
+              {
+                text: 'FIRMA DE RECIBIDO',
+                colSpan: 3,
+                fillColor: '#CFCFCF',
+                bold: true,
+                border: [true, true, true, false],
+              },
+              {},
+              {},
+              { text: '', border: [true, true, true, false] },
+            ],
+          ],
+        },
       },
     ],
   };
