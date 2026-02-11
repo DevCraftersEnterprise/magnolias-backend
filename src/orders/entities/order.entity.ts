@@ -217,7 +217,7 @@ export class Order {
   })
   @Column({
     type: 'varchar',
-    length: 100,
+    length: 255,
     nullable: true,
     transformer: EncryptedTransformer,
   })
