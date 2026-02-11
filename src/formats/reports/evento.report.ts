@@ -4,7 +4,7 @@ import { OrderDetail } from '../../orders/entities/order-detail.entity';
 import {
   getEventoHeader,
   getEventoCustomerSection,
-  getEventOrderInfoSection,
+  getEventoDescriptionSection,
   getDetailTable,
   getDecorationSection,
   getConditionsSection,
@@ -22,12 +22,12 @@ const generatePageContent = (
   return [
     getEventoHeader(order, pageNumber, totalPages),
     getEventoCustomerSection(order),
-    getEventOrderInfoSection(order),
+    ...getEventoDescriptionSection(order),
     getDetailTable(detail),
-    getDecorationSection(detail, order, { showNotes: true }),
-    getConditionsSection(),
+    getDecorationSection(detail ?? ({} as OrderDetail)),
+    getConditionsSection('EVENTO'),
     getSignatureSection(),
-    getEventoTotalsSection(order),
+    ...getEventoTotalsSection(order),
   ];
 };
 
@@ -43,7 +43,9 @@ export const getEventoReport = (order: Order): TDocumentDefinitions => {
       if (index > 0) {
         allContent.push(pageBreak());
       }
-      allContent.push(...generatePageContent(order, detail, index + 1, totalPages));
+      allContent.push(
+        ...generatePageContent(order, detail, index + 1, totalPages),
+      );
     });
   }
 

@@ -2,17 +2,30 @@
  * Helpers para construir secciones de reportes PDF
  * Soporta múltiples páginas con un detalle por página
  */
-import { Content, ContentTable, TableCell } from 'pdfmake/interfaces';
+import {
+  Content,
+  ContentTable,
+  ContentText,
+  TableCell,
+} from 'pdfmake/interfaces';
 import { Order } from '../../../orders/entities/order.entity';
 import { OrderDetail } from '../../../orders/entities/order-detail.entity';
 import { DateFormatter } from '../../utils/date-formatter';
 import { CAKE_SINGLE_TIER_SVG, CAKE_THREE_TIER_SVG } from './svg-assets';
-import { OrderType } from '../../../orders/enums/order-type.enum';
-import { EventServiceType } from '../../../orders/enums/event-service-type.enum';
+import { OrderType } from '../../../common/enums/order-type.enum';
+import { EventServiceType } from '../../../common/enums/event-service-type.enum';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TIPOS Y CONSTANTES
 // ═══════════════════════════════════════════════════════════════════════════
+
+/** Tipo para celdas de tabla con propiedades de texto */
+type TextTableCell = ContentText & {
+  fillColor?: string;
+  border?: [boolean, boolean, boolean, boolean];
+  colSpan?: number;
+  rowSpan?: number;
+};
 
 export type ReportType = 'DOMICILIO' | 'EVENTO' | 'PERSONALIZADO' | 'VITRINA';
 
@@ -38,38 +51,38 @@ const FONT_SIZE = {
 /** Celda de etiqueta con fondo gris */
 export const labelCell = (
   text: string,
-  options: Partial<TableCell> = {},
-): TableCell => ({
-  text,
-  fontSize: FONT_SIZE.BODY,
-  bold: true,
-  fillColor: COLORS.CELL_GRAY,
+  options: Partial<TextTableCell> = {},
+): TextTableCell => ({
   ...options,
+  text,
+  fontSize: options.fontSize ?? FONT_SIZE.BODY,
+  bold: options.bold ?? true,
+  fillColor: options.fillColor ?? COLORS.CELL_GRAY,
 });
 
 /** Celda de valor sin fondo */
 export const valueCell = (
   text: string | number | undefined | null,
-  options: Partial<TableCell> = {},
-): TableCell => ({
-  text: text?.toString() ?? '',
-  fontSize: FONT_SIZE.BODY,
-  bold: false,
+  options: Partial<TextTableCell> = {},
+): TextTableCell => ({
   ...options,
+  text: text?.toString() ?? '',
+  fontSize: options.fontSize ?? FONT_SIZE.BODY,
+  bold: options.bold ?? false,
 });
 
 /** Celda de título de sección */
 export const sectionTitleCell = (
   text: string,
-  options: Partial<TableCell> = {},
-): TableCell => ({
-  text,
-  fontSize: FONT_SIZE.HEADER,
-  bold: true,
-  fillColor: COLORS.HEADER_LIGHT,
-  alignment: 'center',
-  border: [true, true, true, false],
+  options: Partial<TextTableCell> = {},
+): TextTableCell => ({
   ...options,
+  text,
+  fontSize: options.fontSize ?? FONT_SIZE.HEADER,
+  bold: options.bold ?? true,
+  fillColor: options.fillColor ?? COLORS.HEADER_LIGHT,
+  alignment: options.alignment ?? 'center',
+  border: options.border ?? [true, true, true, false],
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -683,9 +696,9 @@ export const getDecorationSection = (
 
 /** Sección de flores del pedido */
 export const getFlowersSection = (order: Order): Content | null => {
-  if (!order.flowers || order.flowers.length === 0) return null;
+  if (!order.orderFlowers || order.orderFlowers.length === 0) return null;
 
-  const flowersText = order.flowers
+  const flowersText = order.orderFlowers
     .map(
       (f) =>
         `${f.flower?.name ?? 'Flor'} (${f.quantity}) ${f.color ? `- ${f.color.name}` : ''} ${f.notes ? `- ${f.notes}` : ''}`,

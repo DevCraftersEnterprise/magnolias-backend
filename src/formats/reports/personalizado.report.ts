@@ -8,7 +8,7 @@ import {
   getDecorationSection,
   getConditionsSection,
   getSignatureSection,
-  getSimpleTotalsSection,
+  getPersonalizadoTotalsSection,
   pageBreak,
 } from './helpers';
 
@@ -22,10 +22,10 @@ const generatePageContent = (
     getPersonalizadoHeader(order, pageNumber, totalPages),
     getSimpleCustomerSection(order),
     getDetailTable(detail),
-    getDecorationSection(detail, order, { showNotes: true }),
-    getConditionsSection(),
+    getDecorationSection(detail ?? ({} as OrderDetail)),
+    getConditionsSection('PERSONALIZADO'),
     getSignatureSection(),
-    getSimpleTotalsSection(order),
+    getPersonalizadoTotalsSection(order),
   ];
 };
 
@@ -41,7 +41,9 @@ export const getPersonalizadoReport = (order: Order): TDocumentDefinitions => {
       if (index > 0) {
         allContent.push(pageBreak());
       }
-      allContent.push(...generatePageContent(order, detail, index + 1, totalPages));
+      allContent.push(
+        ...generatePageContent(order, detail, index + 1, totalPages),
+      );
     });
   }
 

@@ -8,7 +8,7 @@ import {
   getDecorationSection,
   getConditionsSection,
   getSignatureSection,
-  getSimpleTotalsSection,
+  getVitrinaTotalsSection,
   pageBreak,
 } from './helpers';
 
@@ -22,10 +22,10 @@ const generatePageContent = (
     getVitrinaHeader(order, pageNumber, totalPages),
     getSimpleCustomerSection(order),
     getDetailTable(detail),
-    getDecorationSection(detail, order, { showNotes: true }),
-    getConditionsSection(),
+    getDecorationSection(detail ?? ({} as OrderDetail)),
+    getConditionsSection('VITRINA'),
     getSignatureSection(),
-    getSimpleTotalsSection(order),
+    getVitrinaTotalsSection(order),
   ];
 };
 
@@ -41,7 +41,9 @@ export const getVitrinaReport = (order: Order): TDocumentDefinitions => {
       if (index > 0) {
         allContent.push(pageBreak());
       }
-      allContent.push(...generatePageContent(order, detail, index + 1, totalPages));
+      allContent.push(
+        ...generatePageContent(order, detail, index + 1, totalPages),
+      );
     });
   }
 

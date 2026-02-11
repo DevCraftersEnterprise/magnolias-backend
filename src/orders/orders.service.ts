@@ -93,8 +93,6 @@ export class OrdersService {
       orderType: dto.orderType,
       orderCode,
       deliveryRound: dto.deliveryRound,
-      productSize: dto.productSize,
-      customSize: dto.customSize,
       deliveryDate: dto.deliveryDate,
       deliveryTime: dto.deliveryTime,
       advancePayment: dto.advancePayment || 0,
