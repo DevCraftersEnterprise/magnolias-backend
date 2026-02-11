@@ -88,7 +88,10 @@ export class AddressesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.addressesService.remove(+id);
+  @ApiOperation({ summary: 'Deactivate a common address' })
+  @ApiOkResponse({ description: 'Address deactivated' })
+  @ApiNotFoundResponse({ description: 'Address not found' })
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
+    return this.addressesService.remove(id, user);
   }
 }

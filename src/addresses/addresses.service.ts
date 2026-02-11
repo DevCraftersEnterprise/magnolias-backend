@@ -7,9 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { CreateCommonAddressDto } from './dto/create-common-address.dto';
-import { UpdateAddressDto } from './dto/update-address.dto';
-import { CommonAddress } from './entities/common-address.entity';
 import { UpdateCommonAddressDto } from './dto/update-common-address.dto';
+import { CommonAddress } from './entities/common-address.entity';
 
 @Injectable()
 export class AddressesService {
@@ -88,7 +87,10 @@ export class AddressesService {
     return this.commonAddressRepository.save(address);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} address`;
+  async remove(id: string, user: User): Promise<void> {
+    const address = await this.findOne(id);
+    address.isActive = false;
+    address.updatedBy = user;
+    await this.commonAddressRepository.save(address);
   }
 }
