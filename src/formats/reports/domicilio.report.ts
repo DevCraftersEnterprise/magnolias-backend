@@ -105,7 +105,11 @@ export const getDomicilioReport = (order: Order): TDocumentDefinitions => {
                 bold: true,
                 fillColor: '#CFCFCF',
               },
-              { text: `${order.pickupPersonName}`, fontSize: 9, bold: false },
+              {
+                text: `${order.deliveryAddress?.receiverName ?? ''}`,
+                fontSize: 9,
+                bold: false,
+              },
               {
                 text: 'TELÉFONO',
                 fontSize: 9,
@@ -135,7 +139,7 @@ export const getDomicilioReport = (order: Order): TDocumentDefinitions => {
                 fillColor: '#CFCFCF',
               },
               {
-                text: `${order.customer.alternativePhone ?? order.pickupPersonPhone}`,
+                text: `${order.customer.alternativePhone ?? order.deliveryAddress?.receiverPhone ?? ''}`,
                 fontSize: 9,
                 bold: false,
               },

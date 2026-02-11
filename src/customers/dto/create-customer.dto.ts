@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -6,7 +7,9 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { CreateCustomerAddressDto } from './create-customer-address.dto';
 
 export class CreateCustomerDto {
   @ApiProperty({
@@ -60,22 +63,14 @@ export class CreateCustomerDto {
   email?: string;
 
   @ApiProperty({
-    description: 'Primary delivery address',
-    example: 'Av. Principal 123, Col. Centro, CP 12345',
+    description: 'Customer address details (optional)',
+    type: CreateCustomerAddressDto,
     required: false,
   })
   @IsOptional()
-  @IsString({ message: 'Address must be a string' })
-  address?: string;
-
-  @ApiProperty({
-    description: 'Additional delivery address (optional)',
-    example: 'Calle Secundaria 456, Col. Norte, CP 54321',
-    required: false,
-  })
-  @IsOptional()
-  @IsString({ message: 'Alternative address must be a string' })
-  alternativeAddress?: string;
+  @ValidateNested()
+  @Type(() => CreateCustomerAddressDto)
+  address?: CreateCustomerAddressDto;
 
   @ApiProperty({
     description: 'Additional notes about the customer',

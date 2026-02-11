@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,6 +12,7 @@ import { User } from '../../users/entities/user.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
+import { CustomerAddress } from './customer-address.entity';
 
 @Entity({ name: 'customers' })
 export class Customer {
@@ -63,22 +65,6 @@ export class Customer {
   email?: string;
 
   @ApiProperty({
-    description: 'Address of the customer',
-    example: '123 Main St, Springfield, IL 62704',
-    required: false,
-  })
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  address?: string;
-
-  @ApiProperty({
-    description: 'Alternative address of the customer',
-    example: '456 Elm St, Springfield, IL 62705',
-    required: false,
-  })
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  alternativeAddress?: string;
-
-  @ApiProperty({
     description: 'Additional notes about the customer',
     example: 'Prefers evening calls',
     required: false,
@@ -93,6 +79,13 @@ export class Customer {
   })
   @Column({ default: true, type: 'boolean' })
   isActive: boolean;
+
+  @ApiHideProperty()
+  @OneToOne(() => CustomerAddress, (address) => address.customer, {
+    cascade: true,
+    eager: true,
+  })
+  address: CustomerAddress;
 
   @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
