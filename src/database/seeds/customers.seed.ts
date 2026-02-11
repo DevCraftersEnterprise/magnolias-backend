@@ -206,6 +206,8 @@ export async function seedCustomers(dataSource: DataSource): Promise<void> {
         const customerAddress = customerAddressRepository.create({
           ...customerData.address,
           customer: savedCustomer,
+          createdBy: adminUser,
+          updatedBy: adminUser,
         });
         await customerAddressRepository.save(customerAddress);
       }
