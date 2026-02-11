@@ -3,7 +3,7 @@
  */
 export enum WritingLocation {
   TOP = 'TOP',
-  center = 'CENTER',
+  CENTER = 'CENTER',
   BOTTOM = 'BOTTOM',
   SIDE = 'SIDE',
   PLAQUE = 'PLAQUE',

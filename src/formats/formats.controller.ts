@@ -1,5 +1,6 @@
 import { Controller, Get, Param, ParseUUIDPipe, Res } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -8,9 +9,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { UserRoles } from '../users/enums/user-role';
 import { FormatsService } from './formats.service';
 
 @ApiTags('Formats')
+@Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+@ApiBearerAuth('access-token')
 @Controller('formats')
 export class FormatsController {
   constructor(private readonly formatsService: FormatsService) {}

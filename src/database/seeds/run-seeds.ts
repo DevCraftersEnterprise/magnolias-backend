@@ -14,6 +14,7 @@ import { seedFlavors } from './flavors.seed';
 import { seedFlowers } from './flowers.seed';
 import { seedFrostings } from './frostings.seed';
 import { seedInitialUsers } from './initial-users.seed';
+import { seedOrders } from './orders.seed';
 import { seedProducts } from './products.seed';
 import { seedStyles } from './styles.seed';
 
@@ -67,6 +68,9 @@ async function runSeeds() {
 
     // 10. Productos (necesita categorías y usuarios)
     await seedProducts(AppDataSource);
+
+    // 11. Pedidos (necesita clientes, sucursales, productos y usuarios)
+    await seedOrders(AppDataSource);
 
     console.log('════════════════════════════════════════════════════');
     console.log('    🎉 TODOS LOS SEEDS SE EJECUTARON CORRECTAMENTE');

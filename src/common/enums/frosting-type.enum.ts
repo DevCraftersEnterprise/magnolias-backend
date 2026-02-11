@@ -1,0 +1,7 @@
+export enum FrostingType {
+  BUTTERCREAM = 'BUTTERCREAM',
+  FONDANT = 'FONDANT',
+  WHIPPED_CREAM = 'WHIPPED_CREAM',
+  GANACHE = 'GANACHE',
+  NAKED = 'NAKED',
+}

@@ -16,7 +16,6 @@ import {
 } from 'class-validator';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { OrderType } from '../../common/enums/order-type.enum';
-import { ProductSize } from '../../common/enums/product-size.enum';
 import { AddFlowerToOrderDto } from '../../flowers/dto/add-flower-to-order.dto';
 import { CreateOrderDetailDto } from './create-order-detail.dto';
 
@@ -51,28 +50,6 @@ export class CreateOrderDto {
   @IsEnum(DeliveryRound, { message: 'Invalid delivery round' })
   @IsOptional()
   deliveryRound?: DeliveryRound;
-
-  @ApiProperty({
-    description: 'Product size',
-    example: ProductSize.TWENTY_P,
-    enum: ProductSize,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(ProductSize, { message: 'Invalid product size' })
-  productSize?: ProductSize;
-
-  @ApiProperty({
-    description: 'Custom size (required if productSize is CUSTOM)',
-    example: '35 personas',
-    required: false,
-  })
-  @ValidateIf((o) => o.productSize === ProductSize.CUSTOM)
-  @IsNotEmpty({ message: 'Custom size is required when size is CUSTOM' })
-  @IsString({ message: 'Custom size must be a string' })
-  @MaxLength(100)
-  @IsOptional()
-  customSize?: string;
 
   @ApiProperty({
     description: 'Delivery date for the order',
