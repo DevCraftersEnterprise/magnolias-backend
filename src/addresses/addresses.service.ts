@@ -1,10 +1,15 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { CreateCommonAddressDto } from './dto/create-common-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { CommonAddress } from './entities/common-address.entity';
+import { UpdateCommonAddressDto } from './dto/update-common-address.dto';
 
 @Injectable()
 export class AddressesService {
@@ -40,7 +45,7 @@ export class AddressesService {
     return this.commonAddressRepository.save(address);
   }
 
-  findAll(search?: string): Promise<CommonAddress[]> {
+  async findAll(search?: string): Promise<CommonAddress[]> {
     const whereConditions: FindOptionsWhere<CommonAddress> = {};
 
     if (search) {
@@ -61,12 +66,26 @@ export class AddressesService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} address`;
+  async findOne(id: string): Promise<CommonAddress> {
+    const address = await this.commonAddressRepository.findOne({
+      where: { id, isActive: true },
+    });
+
+    if (!address) throw new NotFoundException('Address not found');
+
+    return address;
   }
 
-  update(id: number, updateAddressDto: UpdateAddressDto) {
-    return `This action updates a #${id} address`;
+  async update(
+    id: string,
+    updateAddressDto: UpdateCommonAddressDto,
+    user: User,
+  ): Promise<CommonAddress> {
+    const address = await this.findOne(id);
+
+    Object.assign(address, updateAddressDto, { updatedBy: user });
+
+    return this.commonAddressRepository.save(address);
   }
 
   remove(id: number) {
