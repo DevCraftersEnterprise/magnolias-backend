@@ -33,7 +33,7 @@ const COLORS = {
 };
 
 const FONT_SIZE = {
-  TITLE: 16,
+  TITLE: 14,
   SUBTITLE: 12,
   HEADER: 10,
   BODY: 9,
@@ -90,7 +90,7 @@ export const toUpperSafe = (value: string | undefined | null): string =>
 
 /** Formatear precio */
 export const formatCurrency = (value: number | undefined | null): string =>
-  value != null ? `$${value.toLocaleString('es-MX')}` : '';
+  value != null ? `${value.toLocaleString('es-MX')}` : '';
 
 /** Formatear booleano a SI/NO */
 export const formatYesNo = (value: boolean | undefined | null): string =>
@@ -608,7 +608,11 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         labelCell('RELLENO'),
         valueCell(toUpperSafe(detail?.filling?.name)),
         labelCell('"ESCRITO"'),
-        valueCell(detail?.hasWriting ? detail.writingText : 'SIN ESCRITO'),
+        valueCell(
+          detail?.hasWriting
+            ? detail.writingText?.toUpperCase()
+            : 'SIN ESCRITO',
+        ),
       ],
       [
         labelCell('ESTILO Y COLOR DEL ESCRITO'),
@@ -616,7 +620,9 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         labelCell('UBICACIÓN DEL ESCRITO'),
         valueCell(
           detail?.writingLocation
-            ? EnumTransformer.translateWritingLocation(detail.writingLocation)
+            ? EnumTransformer.translateWritingLocation(
+                detail.writingLocation,
+              ).toUpperCase()
             : '',
         ),
       ],
@@ -630,7 +636,9 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
         valueCell(
           detail?.pipingLocation
-            ? EnumTransformer.translatePipingLocation(detail.pipingLocation)
+            ? EnumTransformer.translatePipingLocation(
+                detail.pipingLocation,
+              ).toUpperCase()
             : '',
           {
             border: [true, true, true, false],
@@ -669,7 +677,7 @@ export const getDecorationSection = (
           border: [true, true, false, true],
         },
         {
-          text: detail.decorationNotes ?? '', // Espacio para escribir decoración
+          text: detail.decorationNotes?.toUpperCase() ?? '',
           fontSize: FONT_SIZE.HEADER,
           colSpan: 2,
           border: [false, true, true, true],
@@ -685,7 +693,7 @@ export const getDecorationSection = (
           border: [true, true, false, true],
         },
         {
-          text: detail.notes ?? '',
+          text: detail.notes?.toUpperCase() ?? '',
           fontSize: FONT_SIZE.HEADER,
           colSpan: 2,
           border: [false, true, true, true],
@@ -716,8 +724,8 @@ export const getFlowersSection = (order: Order): Content | null => {
       widths: ['20%', '80%'],
       body: [
         [
-          labelCell('FLORES', { border: [true, true, true, false] }),
-          valueCell(flowersText, { border: [true, true, true, false] }),
+          labelCell('FLORES', { border: [true, false, true, true] }),
+          valueCell(flowersText, { border: [true, false, true, true] }),
         ],
       ],
     },
@@ -843,7 +851,13 @@ export const getDomicilioTotalsSection = (order: Order): Content => ({
         labelCell('ANTICIPO'),
         valueCell(formatCurrency(order.advancePayment)),
         labelCell('PAGARÁ CON'),
-        valueCell(order.paymentMethod),
+        valueCell(
+          order.paymentMethod
+            ? EnumTransformer.translatePaymentMethod(
+                order.paymentMethod,
+              ).toUpperCase()
+            : '',
+        ),
       ],
       [
         labelCell('# TICKET'),
@@ -855,7 +869,7 @@ export const getDomicilioTotalsSection = (order: Order): Content => ({
         labelCell('TRANSFERENCIA CUENTA'),
         valueCell(order.transferAccount),
         labelCell('FACTURA'),
-        valueCell(formatYesNo(order.requiresInvoice), { alignment: 'center' }),
+        valueCell(formatYesNo(order.requiresInvoice)),
       ],
     ],
   },
