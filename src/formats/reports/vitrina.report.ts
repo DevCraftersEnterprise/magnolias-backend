@@ -22,7 +22,7 @@ const generatePageContent = (
     getVitrinaHeader(order, pageNumber, totalPages),
     getSimpleCustomerSection(order),
     getDetailTable(detail),
-    getDecorationSection(detail ?? ({} as OrderDetail)),
+    getDecorationSection(detail ?? ({} as OrderDetail), true),
     getConditionsSection('VITRINA'),
     getSignatureSection(),
     getVitrinaTotalsSection(order),

@@ -33,8 +33,8 @@ const COLORS = {
 };
 
 const FONT_SIZE = {
-  TITLE: 14,
-  SUBTITLE: 12,
+  TITLE: 12,
+  SUBTITLE: 11,
   HEADER: 10,
   BODY: 9,
 };
@@ -471,7 +471,7 @@ export const getSimpleCustomerSection = (
       ],
       [
         labelCell('', { border: [true, false, true, false] }),
-        valueCell(order.hasPhotoReference ? `#______ SI` : 'NO', {
+        valueCell(order.hasPhotoReference ? `SI` : 'NO', {
           bold: true,
           border: [true, false, true, false],
         }),
@@ -862,7 +862,7 @@ export const getDomicilioTotalsSection = (order: Order): Content => ({
       [
         labelCell('# TICKET'),
         valueCell(order.ticketNumber),
-        labelCell('# TICKET DE LIQUIDACIÓN'),
+        labelCell('# TICKET LIQUIDACIÓN'),
         valueCell(order.settlementTicketNumber),
       ],
       [
@@ -896,7 +896,7 @@ export const getVitrinaTotalsSection = (order: Order): Content => ({
         labelCell('# TICKET | TRANSFERENCIA'),
         valueCell(order.ticketNumber ?? order.transferAccount),
         labelCell('# TICKET | TRANSFERENCIA'),
-        valueCell(formatYesNo(order.requiresInvoice), { alignment: 'center' }),
+        valueCell(formatYesNo(order.requiresInvoice)),
       ],
     ],
   },
@@ -933,7 +933,6 @@ export const getEventoTotalsSection = (order: Order): Content[] => [
         [
           labelCell('FACTURA', { border: [true, true, true, false] }),
           valueCell(formatYesNo(order.requiresInvoice), {
-            alignment: 'center',
             border: [true, true, true, false],
           }),
           labelCell('DEBE', { border: [true, true, true, false] }),
@@ -1031,7 +1030,7 @@ export const getPersonalizadoTotalsSection = (order: Order): Content => ({
         labelCell('TRANSFERENCIA CUENTA'),
         valueCell(order.transferAccount),
         labelCell('FACTURA'),
-        valueCell(formatYesNo(order.requiresInvoice), { alignment: 'center' }),
+        valueCell(formatYesNo(order.requiresInvoice)),
       ],
     ],
   },
@@ -1173,7 +1172,7 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
       body: [
         [
           labelCell('FOTO'),
-          valueCell('#______  SI  |  NO', { bold: true }),
+          valueCell(detail.referenceImageUrl ? 'SI' : 'NO', { bold: true }),
           labelCell('"ESCRITO"'),
           valueCell(detail.hasWriting ? detail.writingText : 'SIN ESCRITO'),
         ],
