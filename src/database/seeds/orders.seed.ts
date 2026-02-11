@@ -179,7 +179,7 @@ export async function seedOrders(dataSource: DataSource): Promise<void> {
       frosting: frostings[0],
       style: styles[0],
       color: colors[0],
-      breadType: breadTypes[0], // Incluye tipo de pan
+      breadType: breadTypes[0], // Vainilla
       order: savedDomicilioCompleto,
       createdBy: adminUser,
       updatedBy: adminUser,
@@ -454,7 +454,7 @@ export async function seedOrders(dataSource: DataSource): Promise<void> {
         hasWriting: false,
         notes: 'Variedad de pan dulce tradicional',
         product: products[3] || products[0],
-        breadType: breadTypes[1] || breadTypes[0], // Integral
+        breadType: breadTypes[1] || breadTypes[0], // Chocolate
         // Sin otros catálogos de pastel
       },
     ];
@@ -733,6 +733,7 @@ export async function seedOrders(dataSource: DataSource): Promise<void> {
     const eventoSimpleAddress = orderDeliveryAddressRepository.create({
       street: 'Blvd. Puerta de Hierro',
       number: '5000',
+      neighborhood: 'Puerta de Hierro',
       city: 'Zapopan',
       reference: 'Club deportivo, área de eventos',
       receiverName: 'Organizador',
@@ -898,7 +899,7 @@ export async function seedOrders(dataSource: DataSource): Promise<void> {
       frosting: frostings[2] || frostings[0], // Buttercream Americano
       style: styles[6] || styles[0], // Drip Cake
       color: colors[2] || colors[0], // Lavanda
-      breadType: breadTypes[4] || breadTypes[0], // Brioche
+      breadType: breadTypes[4] || breadTypes[0], // Red Velvet
       order: savedPersonalizadoSinFlores,
       createdBy: adminUser,
       updatedBy: adminUser,
