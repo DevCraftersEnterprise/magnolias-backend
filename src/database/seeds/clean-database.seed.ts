@@ -17,11 +17,26 @@ export async function cleanDatabase(dataSource: DataSource): Promise<void> {
 
   try {
     // Usar TRUNCATE con CASCADE para evitar problemas de foreign keys
+    // El orden importa: primero las tablas dependientes, luego las principales
     const tables = [
+      // Pedidos y relacionados (primero por dependencias)
+      'orders_cancellations',
+      'order_assignments',
+      'order_flowers',
+      'order_details',
+      'order_delivery_addresses',
+      'orders',
+      // Direcciones
+      'customer_addresses',
+      'common_addresses',
+      // Productos
       'product_pictures',
       'products',
+      // Clientes
       'customers',
+      // Pasteleros
       'bakers',
+      // Catálogos
       'bread_types',
       'styles',
       'flowers',
@@ -30,6 +45,7 @@ export async function cleanDatabase(dataSource: DataSource): Promise<void> {
       'flavors',
       'categories',
       'colors',
+      // Sucursales y usuarios
       'branches',
       'phones',
       'users',
@@ -48,7 +64,7 @@ export async function cleanDatabase(dataSource: DataSource): Promise<void> {
         } else {
           console.log(`   ⏭️  ${table}: Sin registros que eliminar`);
         }
-      } catch (error) {
+      } catch {
         console.log(`   ⚠️  ${table}: Error al limpiar (puede no existir)`);
       }
     }

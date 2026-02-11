@@ -9,7 +9,7 @@ interface SeedBreadType {
 }
 
 export async function seedBreadTypes(dataSource: DataSource): Promise<void> {
-  console.log('🍞 Iniciando seed de tipos de pan...');
+  console.log('� Iniciando seed de tipos de pan para pastel...');
 
   const breadTypeRepository = dataSource.getRepository(BreadType);
   const userRepository = dataSource.getRepository(User);
@@ -20,22 +20,22 @@ export async function seedBreadTypes(dataSource: DataSource): Promise<void> {
 
   if (!adminUser) {
     console.log(
-      '   ⚠️  No se encontró usuario administrador, omitiendo seed de tipos de pan',
+      '   ⚠️  No se encontró usuario administrador, omitiendo seed de tipos de pan para pastel',
     );
     return;
   }
 
   const breadTypes: SeedBreadType[] = [
-    { name: 'Blanco', description: 'Pan blanco tradicional' },
-    { name: 'Integral', description: 'Pan de trigo integral' },
-    { name: 'Centeno', description: 'Pan de centeno oscuro' },
-    { name: 'Multigrano', description: 'Pan con mezcla de cereales' },
-    { name: 'Brioche', description: 'Pan francés enriquecido' },
-    { name: 'De Caja Blanco', description: 'Pan de caja tradicional blanco' },
-    { name: 'De Caja Integral', description: 'Pan de caja integral' },
-    { name: 'Sin Gluten', description: 'Pan libre de gluten' },
-    { name: 'De Ajo', description: 'Pan con ajo y mantequilla' },
-    { name: 'De Nuez', description: 'Pan con nueces' },
+    { name: 'Vainilla', description: 'Pan de vainilla clásico, suave y esponjoso' },
+    { name: 'Chocolate', description: 'Pan de chocolate intenso' },
+    { name: 'Fresa', description: 'Pan con sabor a fresa natural' },
+    { name: 'Marmoleado', description: 'Combinación de vainilla y chocolate' },
+    { name: 'Red Velvet', description: 'Pan red velvet con toque de cacao' },
+    { name: 'Zanahoria', description: 'Pan de zanahoria con especias' },
+    { name: 'Limón', description: 'Pan con ralladura de limón fresco' },
+    { name: 'Naranja', description: 'Pan con sabor a naranja natural' },
+    { name: 'Nuez', description: 'Pan de vainilla con nueces' },
+    { name: 'Almendra', description: 'Pan con esencia y hojuelas de almendra' },
   ];
 
   let createdCount = 0;

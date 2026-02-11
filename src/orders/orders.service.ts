@@ -7,7 +7,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { BranchesService } from '../branches/branches.service';
-import { ColorsService } from '../colors/colors.service';
 import { OrderType } from '../common/enums/order-type.enum';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
@@ -22,6 +21,7 @@ import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderCancellation } from './entities/order-cancellation.entity';
+import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
@@ -37,11 +37,12 @@ export class OrdersService {
     private readonly cancellationRepository: Repository<OrderCancellation>,
     @InjectRepository(OrderFlower)
     private readonly orderFlowerRepository: Repository<OrderFlower>,
+    @InjectRepository(OrderDeliveryAddress)
+    private readonly orderDeliveryAddressRepository: Repository<OrderDeliveryAddress>,
     private readonly customerService: CustomersService,
     private readonly branchesService: BranchesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
-    private readonly colorsService: ColorsService,
   ) {}
 
   private async generateOrderCode(orderType: OrderType): Promise<string> {
@@ -86,25 +87,12 @@ export class OrdersService {
 
     const orderCode = await this.generateOrderCode(dto.orderType);
 
-    let deliveryAddress = dto.deliveryAddress;
-
-    if (
-      !deliveryAddress &&
-      [OrderType.DOMICILIO, OrderType.FLOR].includes(dto.orderType)
-    ) {
-      deliveryAddress = customer.address;
-    }
-
     const order = this.orderRepository.create({
       orderType: dto.orderType,
       orderCode,
       deliveryRound: dto.deliveryRound,
-      productSize: dto.productSize,
-      customSize: dto.customSize,
       deliveryDate: dto.deliveryDate,
       deliveryTime: dto.deliveryTime,
-      deliveryAddress,
-      deliveryNotes: dto.deliveryNotes,
       advancePayment: dto.advancePayment || 0,
       customer,
       branch,
@@ -114,6 +102,40 @@ export class OrdersService {
     });
 
     const savedOrder = await this.orderRepository.save(order);
+
+    // Handle delivery address for DOM and FLOR orders
+    if ([OrderType.DOMICILIO, OrderType.FLOR].includes(dto.orderType)) {
+      let deliveryAddressData: Partial<OrderDeliveryAddress> = {};
+
+      if (dto.deliveryAddress) {
+        // Use address from DTO
+        deliveryAddressData = {
+          street: dto.deliveryAddress,
+          deliveryNotes: dto.deliveryNotes,
+        };
+      } else if (customer.address) {
+        // Copy from customer address
+        deliveryAddressData = {
+          street: customer.address.street,
+          number: customer.address.number,
+          neighborhood: customer.address.neighborhood,
+          city: customer.address.city,
+          postalCode: customer.address.postalCode,
+          interphoneCode: customer.address.interphoneCode,
+          betweenStreets: customer.address.beetweenStreets,
+          reference: customer.address.reference,
+          deliveryNotes: dto.deliveryNotes,
+        };
+      }
+
+      if (Object.keys(deliveryAddressData).length > 0) {
+        const deliveryAddress = this.orderDeliveryAddressRepository.create({
+          ...deliveryAddressData,
+          order: savedOrder,
+        });
+        await this.orderDeliveryAddressRepository.save(deliveryAddress);
+      }
+    }
 
     let totalAmount = 0;
 
@@ -204,11 +226,25 @@ export class OrdersService {
   ): Promise<Order> {
     const order = await this.getOrderByTerm(orderId);
 
-    order.pickupPersonName = setPickupPersonDto.pickupPersonName;
-    order.pickupPersonPhone = setPickupPersonDto.pickupPersonPhone;
-    order.updatedBy = user;
+    // Update or create delivery address with receiver info
+    if (order.deliveryAddress) {
+      order.deliveryAddress.receiverName = setPickupPersonDto.pickupPersonName;
+      order.deliveryAddress.receiverPhone =
+        setPickupPersonDto.pickupPersonPhone;
+      await this.orderDeliveryAddressRepository.save(order.deliveryAddress);
+    } else {
+      const deliveryAddress = this.orderDeliveryAddressRepository.create({
+        receiverName: setPickupPersonDto.pickupPersonName,
+        receiverPhone: setPickupPersonDto.pickupPersonPhone,
+        order,
+      });
+      await this.orderDeliveryAddressRepository.save(deliveryAddress);
+    }
 
-    return await this.orderRepository.save(order);
+    order.updatedBy = user;
+    await this.orderRepository.save(order);
+
+    return this.getOrderByTerm(orderId);
   }
 
   async getOrders(
@@ -238,6 +274,7 @@ export class OrdersService {
       where: whereConditions,
       relations: {
         customer: true,
+        deliveryAddress: true,
         createdBy: true,
         updatedBy: true,
       },
@@ -245,16 +282,22 @@ export class OrdersService {
         id: true,
         orderCode: true,
         deliveryDate: true,
-        deliveryAddress: true,
-        deliveryNotes: true,
-        pickupPersonName: true,
-        pickupPersonPhone: true,
         status: true,
         totalAmount: true,
         advancePayment: true,
         remainingBalance: true,
         createdAt: true,
         updatedAt: true,
+        deliveryAddress: {
+          id: true,
+          street: true,
+          number: true,
+          neighborhood: true,
+          city: true,
+          receiverName: true,
+          receiverPhone: true,
+          deliveryNotes: true,
+        },
         customer: {
           id: true,
           fullName: true,
@@ -292,10 +335,17 @@ export class OrdersService {
     const order = await this.orderRepository.findOne({
       where: { id: term },
       relations: {
-        customer: true,
+        customer: { address: true },
         branch: true,
+        deliveryAddress: true,
         details: {
           product: true,
+          frosting: true,
+          breadType: true,
+          style: true,
+          filling: true,
+          color: true,
+          flavor: true,
         },
         orderFlowers: {
           flower: true,
@@ -314,7 +364,7 @@ export class OrdersService {
     const { id, deliveryDate, deliveryTime, deliveryAddress, deliveryNotes } =
       dto;
 
-    const order = await this.orderRepository.preload({ id });
+    const order = await this.getOrderByTerm(id);
 
     if (!order) throw new NotFoundException('Order not found');
 
@@ -326,8 +376,24 @@ export class OrdersService {
 
     if (deliveryDate) order.deliveryDate = deliveryDate;
     if (deliveryTime !== undefined) order.deliveryTime = deliveryTime;
-    if (deliveryAddress !== undefined) order.deliveryAddress = deliveryAddress;
-    if (deliveryNotes !== undefined) order.deliveryNotes = deliveryNotes;
+
+    // Handle delivery address updates
+    if (deliveryAddress !== undefined || deliveryNotes !== undefined) {
+      if (order.deliveryAddress) {
+        if (deliveryAddress !== undefined)
+          order.deliveryAddress.street = deliveryAddress;
+        if (deliveryNotes !== undefined)
+          order.deliveryAddress.deliveryNotes = deliveryNotes;
+        await this.orderDeliveryAddressRepository.save(order.deliveryAddress);
+      } else {
+        const newDeliveryAddress = this.orderDeliveryAddressRepository.create({
+          street: deliveryAddress,
+          deliveryNotes,
+          order,
+        });
+        await this.orderDeliveryAddressRepository.save(newDeliveryAddress);
+      }
+    }
 
     order.updatedBy = user;
 
