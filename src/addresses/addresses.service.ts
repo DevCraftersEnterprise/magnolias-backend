@@ -93,4 +93,8 @@ export class AddressesService {
     address.updatedBy = user;
     await this.commonAddressRepository.save(address);
   }
+
+  async incrementUsageCount(id: string): Promise<void> {
+    await this.commonAddressRepository.increment({ id }, 'usageCount', 1);
+  }
 }
