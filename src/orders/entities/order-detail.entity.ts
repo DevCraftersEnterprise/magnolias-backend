@@ -11,6 +11,7 @@ import {
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { Color } from '../../colors/entities/color.entity';
 import { PipingLocation } from '../../common/enums/piping-location.enum';
+import { ProductSize } from '../../common/enums/product-size.enum';
 import { WritingLocation } from '../../common/enums/writing-location.enum';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Flavor } from '../../flavors/entities/flavor.entity';
@@ -42,6 +43,22 @@ export class OrderDetail {
   })
   @Column({ type: 'int', default: 1 })
   quantity: number;
+
+  @ApiProperty({
+    description: 'Product size for this detail',
+    example: ProductSize.TWENTY_P,
+    required: false,
+  })
+  @Column({ type: 'enum', enum: ProductSize, nullable: true })
+  productSize?: ProductSize;
+
+  @ApiProperty({
+    description: 'Custom size (if product size is CUSTOM)',
+    example: '80 personas',
+    required: false,
+  })
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  customSize?: string;
 
   @ApiProperty({
     description: 'Indicates if the item has writing',

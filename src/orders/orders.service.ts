@@ -344,6 +344,8 @@ export class OrdersService {
         deliveryAddress: true,
         details: {
           product: true,
+          frosting: true,
+          breadType: true,
         },
         orderFlowers: {
           flower: true,

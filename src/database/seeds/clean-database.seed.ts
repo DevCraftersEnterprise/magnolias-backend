@@ -20,7 +20,8 @@ export async function cleanDatabase(dataSource: DataSource): Promise<void> {
     // El orden importa: primero las tablas dependientes, luego las principales
     const tables = [
       // Pedidos y relacionados (primero por dependencias)
-      'order_cancellations',
+      'orders_cancellations',
+      'order_assignments',
       'order_flowers',
       'order_details',
       'order_delivery_addresses',
@@ -63,7 +64,7 @@ export async function cleanDatabase(dataSource: DataSource): Promise<void> {
         } else {
           console.log(`   ⏭️  ${table}: Sin registros que eliminar`);
         }
-      } catch (error) {
+      } catch {
         console.log(`   ⚠️  ${table}: Error al limpiar (puede no existir)`);
       }
     }

@@ -13,6 +13,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { PipingLocation } from '../../common/enums/piping-location.enum';
+import { ProductSize } from '../../common/enums/product-size.enum';
 import { WritingLocation } from '../../common/enums/writing-location.enum';
 
 export class CreateOrderDetailDto {
@@ -41,6 +42,28 @@ export class CreateOrderDetailDto {
   @IsInt({ message: 'Quantity must be an integer' })
   @Min(1, { message: 'Quantity must be at least 1' })
   quantity: number;
+
+  @ApiProperty({
+    description: 'Product size',
+    example: ProductSize.TWENTY_P,
+    enum: ProductSize,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(ProductSize, { message: 'Invalid product size' })
+  productSize?: ProductSize;
+
+  @ApiProperty({
+    description: 'Custom size (required if productSize is CUSTOM)',
+    example: '35 personas',
+    required: false,
+  })
+  @ValidateIf((o) => o.productSize === ProductSize.CUSTOM)
+  @IsNotEmpty({ message: 'Custom size is required when size is CUSTOM' })
+  @IsString({ message: 'Custom size must be a string' })
+  @MaxLength(100)
+  @IsOptional()
+  customSize?: string;
 
   @ApiProperty({
     description: 'ID of the color',

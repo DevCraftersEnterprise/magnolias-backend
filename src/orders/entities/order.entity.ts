@@ -13,7 +13,6 @@ import {
 import { Branch } from '../../branches/entities/branch.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { OrderType } from '../../common/enums/order-type.enum';
-import { ProductSize } from '../../common/enums/product-size.enum';
 import { Customer } from '../../customers/entities/customer.entity';
 import { OrderFlower } from '../../flowers/entities/order-flower.entity';
 import { User } from '../../users/entities/user.entity';
@@ -53,22 +52,6 @@ export class Order {
   })
   @Column({ type: 'enum', enum: DeliveryRound, nullable: true })
   deliveryRound?: DeliveryRound;
-
-  @ApiProperty({
-    description: 'Product size for the order',
-    example: ProductSize.TWENTY_P,
-    required: false,
-  })
-  @Column({ type: 'enum', enum: ProductSize, nullable: true })
-  productSize?: ProductSize;
-
-  @ApiProperty({
-    description: 'Custom size for the order (if product size is CUSTOM)',
-    example: '80 personas',
-    required: false,
-  })
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  customSize?: string;
 
   @ApiProperty({
     description: 'Date when the order is to be delivered',
