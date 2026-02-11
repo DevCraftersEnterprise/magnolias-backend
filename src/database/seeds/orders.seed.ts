@@ -677,9 +677,10 @@ export async function seedOrders(dataSource: DataSource): Promise<void> {
     const domicilioBasicoAddress = orderDeliveryAddressRepository.create({
       street: 'Calle 16 de Septiembre',
       number: '100',
+      neighborhood: 'Centro',
       city: 'Guadalajara',
       receiverName: 'Juan Pérez',
-      // SIN: neighborhood, postalCode, interphoneCode, betweenStreets, reference, deliveryNotes, receiverPhone
+      // SIN: postalCode, interphoneCode, betweenStreets, reference, deliveryNotes, receiverPhone
       order: savedDomicilioBasico,
     });
     await orderDeliveryAddressRepository.save(domicilioBasicoAddress);

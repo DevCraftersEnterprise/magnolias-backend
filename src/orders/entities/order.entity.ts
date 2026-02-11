@@ -21,6 +21,7 @@ import { OrderDetail } from './order-detail.entity';
 import { EventServiceType } from '../../common/enums/event-service-type.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { OrderDeliveryAddress } from './order-delivery-address.entity';
+import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -209,13 +210,17 @@ export class Order {
   @Column({ type: 'enum', enum: PaymentMethod, nullable: true })
   paymentMethod?: PaymentMethod;
 
-  // TODO: Encriptar este campo como lo hacemos con los teléfonos de los clientes
   @ApiProperty({
     description: 'Bank account for transfer payments',
     example: 'BBVA 1234567890',
     required: false,
   })
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    transformer: EncryptedTransformer,
+  })
   transferAccount?: string;
 
   @ApiProperty({
