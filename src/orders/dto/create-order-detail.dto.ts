@@ -157,6 +157,15 @@ export class CreateOrderDetailDto {
   pipingLocation?: PipingLocation;
 
   @ApiProperty({
+    description: 'Decoration notes',
+    example: 'Use fresh flowers as decoration.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: 'Decoration notes must be a string' })
+  decorationNotes?: string;
+
+  @ApiProperty({
     description: 'Additional notes',
     example: 'Sin azúcar, para diabético',
     required: false,

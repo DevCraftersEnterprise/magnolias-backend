@@ -2,18 +2,13 @@
  * Helpers para construir secciones de reportes PDF
  * Soporta múltiples páginas con un detalle por página
  */
-import {
-  Content,
-  ContentTable,
-  ContentText,
-  TableCell,
-} from 'pdfmake/interfaces';
+import { Content, ContentText, TableCell } from 'pdfmake/interfaces';
 import { Order } from '../../../orders/entities/order.entity';
 import { OrderDetail } from '../../../orders/entities/order-detail.entity';
 import { DateFormatter } from '../../utils/date-formatter';
 import { CAKE_SINGLE_TIER_SVG, CAKE_THREE_TIER_SVG } from './svg-assets';
-import { OrderType } from '../../../common/enums/order-type.enum';
 import { EventServiceType } from '../../../common/enums/event-service-type.enum';
+import { EnumTransformer } from '../../utils/enum-transformer';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TIPOS Y CONSTANTES
@@ -619,17 +614,28 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         labelCell('ESTILO Y COLOR DEL ESCRITO'),
         valueCell(toUpperSafe(detail?.color?.name)),
         labelCell('UBICACIÓN DEL ESCRITO'),
-        valueCell(detail?.writingLocation ?? ''),
+        valueCell(
+          detail?.writingLocation
+            ? EnumTransformer.translateWritingLocation(detail.writingLocation)
+            : '',
+        ),
       ],
       [
         labelCell('ESTILO Y COLOR DE POMPEADO', {
           border: [true, true, true, false],
         }),
-        valueCell('', { border: [true, true, true, false] }),
-        labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
-        valueCell(detail?.pipingLocation ?? '', {
+        valueCell(toUpperSafe(detail?.color?.name), {
           border: [true, true, true, false],
         }),
+        labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
+        valueCell(
+          detail?.pipingLocation
+            ? EnumTransformer.translatePipingLocation(detail.pipingLocation)
+            : '',
+          {
+            border: [true, true, true, false],
+          },
+        ),
       ],
     ],
   },
@@ -663,7 +669,7 @@ export const getDecorationSection = (
           border: [true, true, false, true],
         },
         {
-          text: '', // Espacio para escribir decoración
+          text: detail.decorationNotes ?? '', // Espacio para escribir decoración
           fontSize: FONT_SIZE.HEADER,
           colSpan: 2,
           border: [false, true, true, true],

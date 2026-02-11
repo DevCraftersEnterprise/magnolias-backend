@@ -95,6 +95,14 @@ export class OrderDetail {
   pipingLocation?: PipingLocation;
 
   @ApiProperty({
+    description: 'Decoration notes for the order detail',
+    example: 'Use fresh flowers as decoration.',
+    required: false,
+  })
+  @Column({ type: 'text', nullable: true })
+  decorationNotes?: string;
+
+  @ApiProperty({
     description: 'Additional notes for the order detail',
     example: 'Please gift wrap this item.',
     required: false,

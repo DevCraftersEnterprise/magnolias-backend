@@ -7,7 +7,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { BranchesService } from '../branches/branches.service';
-import { ColorsService } from '../colors/colors.service';
 import { OrderType } from '../common/enums/order-type.enum';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
@@ -44,7 +43,6 @@ export class OrdersService {
     private readonly branchesService: BranchesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
-    private readonly colorsService: ColorsService,
   ) {}
 
   private async generateOrderCode(orderType: OrderType): Promise<string> {
@@ -344,6 +342,10 @@ export class OrdersService {
           product: true,
           frosting: true,
           breadType: true,
+          style: true,
+          filling: true,
+          color: true,
+          flavor: true,
         },
         orderFlowers: {
           flower: true,
