@@ -59,8 +59,8 @@ export class CustomersService {
 
   async findAll(
     filterDto: CustomersFilterDto,
-  ): Promise<PaginationResponse<Customer>> {
-    const { name, phone, isActive, limit = 10, offset = 0 } = filterDto;
+  ): Promise<PaginationResponse<Customer> | Customer[]> {
+    const { name, phone, isActive, limit, offset } = filterDto;
 
     const whereConditions: FindOptionsWhere<Customer> = {};
 
@@ -97,16 +97,20 @@ export class CustomersService {
       order: { fullName: 'DESC' },
     });
 
-    return {
-      items: customers,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+    if (limit && offset) {
+      return {
+        items: customers,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
+
+    return customers;
   }
 
   async findOne(term: string): Promise<Customer> {

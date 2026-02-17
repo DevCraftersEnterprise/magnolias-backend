@@ -49,8 +49,8 @@ export class ProductsService {
 
   async findProducts(
     filters: ProductsFilterDto,
-  ): Promise<PaginationResponse<Product>> {
-    const { name, description = '', limit = 10, offset = 0 } = filters;
+  ): Promise<PaginationResponse<Product> | Product[]> {
+    const { name, description = '', limit, offset } = filters;
 
     const whereConditions: FindOptionsWhere<Product> = {};
 
@@ -87,36 +87,18 @@ export class ProductsService {
       take: limit,
     });
 
-    return {
-      items: products,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
-  }
-
-  async findAllProducts(): Promise<Product[]> {
-    const products = await this.productRepository.find({
-      where: { isActive: true, pictures: { isActive: true } },
-      relations: { pictures: true },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        isFavorite: true,
-        createdAt: true,
-        updatedAt: true,
-        pictures: {
-          imageUrl: true,
+    if (limit && offset) {
+      return {
+        items: products,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
         },
-      },
-      order: { name: 'ASC' },
-    });
+      };
+    }
 
     return products;
   }

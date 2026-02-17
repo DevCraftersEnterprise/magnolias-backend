@@ -129,6 +129,10 @@ export class OrdersController {
   })
   @ApiOkResponse({
     description: 'List of orders retrieved successfully.',
+    type: [Order],
+  })
+  @ApiOkResponse({
+    description: 'List of orders retrieved successfully.',
     schema: {
       type: 'object',
       properties: {
@@ -154,7 +158,7 @@ export class OrdersController {
   getOrders(
     @Param('branchId', ParseUUIDPipe) branchId: string,
     @Query() filterDto: OrdersFilterDto,
-  ): Promise<PaginationResponse<Order>> {
+  ): Promise<PaginationResponse<Order> | Order[]> {
     return this.ordersService.getOrders(filterDto, branchId);
   }
 
@@ -241,6 +245,26 @@ export class OrdersController {
     @CurrentUser() user: User,
   ): Promise<Order> {
     return this.ordersService.markOrderAsDone(updateOrderDto, user);
+  }
+
+  @Patch('delivered')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Mark order as delivered',
+    description: 'Updates the order status to DELIVERED.',
+  })
+  @ApiOkResponse({
+    description: 'Order status successfully updated to DELIVERED.',
+    type: Order,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiNotFoundResponse({ description: 'Order not found.' })
+  markOrderAsDelivered(
+    @Body() updateOrderDto: UpdateOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<Order> {
+    return this.ordersService.markOrderAsDelivered(updateOrderDto, user);
   }
 
   @Patch(':id/pickup-person')

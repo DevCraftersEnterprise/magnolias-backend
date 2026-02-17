@@ -41,7 +41,7 @@ export class Order {
 
   @ApiProperty({
     description: 'Order code generated based on type and sequence',
-    example: 'DOM-2026-0001',
+    example: 'DOM-NAVARRETE-2026-0001',
   })
   @Column({ type: 'varchar', length: 50, nullable: false, unique: true })
   orderCode: string;

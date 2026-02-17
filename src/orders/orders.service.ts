@@ -26,6 +26,7 @@ import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
 import { AddressesService } from '../addresses/addresses.service';
+import { Branch } from '../branches/entities/branch.entity';
 
 @Injectable()
 export class OrdersService {
@@ -47,7 +48,10 @@ export class OrdersService {
     private readonly addressesService: AddressesService,
   ) {}
 
-  private async generateOrderCode(orderType: OrderType): Promise<string> {
+  private async generateOrderCode(
+    orderType: OrderType,
+    branch: Branch,
+  ): Promise<string> {
     const year = new Date().getFullYear();
     const prefix = orderType;
 
@@ -55,7 +59,11 @@ export class OrdersService {
     const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
 
     const lastOrder = await this.orderRepository.findOne({
-      where: { orderType, createdAt: Between(startOfYear, endOfYear) },
+      where: {
+        orderType,
+        branch: { id: branch.id },
+        createdAt: Between(startOfYear, endOfYear),
+      },
       order: { createdAt: 'DESC' },
       select: {
         orderCode: true,
@@ -73,7 +81,7 @@ export class OrdersService {
       }
     }
 
-    return `${prefix}-${year}-${sequence.toString().padStart(4, '0')}`;
+    return `${prefix}-${branch.name.toUpperCase()}-${year}-${sequence.toString().padStart(4, '0')}`;
   }
 
   async createOrder(
@@ -87,7 +95,7 @@ export class OrdersService {
 
     if (!branch) throw new NotFoundException('Branch not found');
 
-    const orderCode = await this.generateOrderCode(dto.orderType);
+    const orderCode = await this.generateOrderCode(dto.orderType, branch);
 
     const order = this.orderRepository.create({
       orderType: dto.orderType,
@@ -277,15 +285,8 @@ export class OrdersService {
   async getOrders(
     filter: OrdersFilterDto,
     branchId: string,
-  ): Promise<PaginationResponse<Order>> {
-    const {
-      name,
-      orderStatus,
-      clientPhone,
-      orderDate,
-      limit = 10,
-      offset = 0,
-    } = filter;
+  ): Promise<PaginationResponse<Order> | Order[]> {
+    const { name, orderStatus, clientPhone, orderDate, limit, offset } = filter;
 
     const whereConditions: FindOptionsWhere<Order> = {
       branch: { id: branchId },
@@ -344,16 +345,20 @@ export class OrdersService {
       order: { deliveryDate: 'DESC' },
     });
 
-    return {
-      items: orders,
-      total,
-      pagination: {
-        limit,
-        offset,
-        currentPage: Math.floor(offset / limit) + 1,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    if (limit && offset) {
+      return {
+        items: orders,
+        total,
+        pagination: {
+          limit,
+          offset,
+          currentPage: Math.floor(offset / limit) + 1,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    }
+
+    return orders;
   }
 
   async getOrderByTerm(term: string): Promise<Order> {
@@ -444,6 +449,21 @@ export class OrdersService {
     if (!order) throw new NotFoundException('Order not found');
 
     order.status = OrderStatus.DONE;
+    order.updatedBy = user;
+
+    await this.orderRepository.update(id, order);
+
+    return this.getOrderByTerm(id);
+  }
+
+  async markOrderAsDelivered(dto: UpdateOrderDto, user: User): Promise<Order> {
+    const { id } = dto;
+
+    const order = await this.orderRepository.preload({ id });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    order.status = OrderStatus.DELIVERED;
     order.updatedBy = user;
 
     await this.orderRepository.update(id, order);

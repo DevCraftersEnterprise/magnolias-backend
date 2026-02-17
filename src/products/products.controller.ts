@@ -94,6 +94,10 @@ export class ProductsController {
     description: 'Filter products by description',
   })
   @ApiOkResponse({
+    description: 'List of all active products retrieved successfully.',
+    type: [Product],
+  })
+  @ApiOkResponse({
     description: 'List of products retrieved successfully.',
     schema: {
       type: 'object',
@@ -117,21 +121,8 @@ export class ProductsController {
   })
   findProducts(
     @Query() filterDto: ProductsFilterDto,
-  ): Promise<PaginationResponse<Product>> {
+  ): Promise<PaginationResponse<Product> | Product[]> {
     return this.productsService.findProducts(filterDto);
-  }
-
-  @Get('all')
-  @ApiOperation({
-    summary: 'Get all products',
-    description: 'Retrieves a list of all active products without pagination.',
-  })
-  @ApiOkResponse({
-    description: 'List of all active products retrieved successfully.',
-    type: [Product],
-  })
-  findAllProducts(): Promise<Product[]> {
-    return this.productsService.findAllProducts();
   }
 
   @Get('favorite')

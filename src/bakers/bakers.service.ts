@@ -33,10 +33,10 @@ export class BakersService {
     return await this.bakerRepository.save(baker);
   }
 
-  async paginated(
+  async findAll(
     filters: BakersFilterDto,
-  ): Promise<PaginationResponse<Baker>> {
-    const { name, area, isActive, limit = 10, offset = 0 } = filters;
+  ): Promise<PaginationResponse<Baker> | Baker[]> {
+    const { name, area, isActive, limit, offset } = filters;
 
     const whereConditions: FindOptionsWhere<Baker> = {
       fullName: name ? ILike(`%${name}%`) : undefined,
@@ -51,23 +51,20 @@ export class BakersService {
       order: { fullName: 'ASC' },
     });
 
-    return {
-      items: bakers,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
-  }
+    if (limit && offset) {
+      return {
+        items: bakers,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
 
-  async findAll(): Promise<Baker[]> {
-    return await this.bakerRepository.find({
-      where: { isActive: true },
-      order: { fullName: 'ASC' },
-    });
+    return bakers;
   }
 
   async findOne(term: string): Promise<Baker> {
