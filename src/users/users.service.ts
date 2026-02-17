@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { isUUID } from 'class-validator';
@@ -253,7 +259,10 @@ export class UsersService {
     }
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto, executor: User) {
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+    executor: User,
+  ): Promise<string> {
     const { username, newPassword } = resetPasswordDto;
 
     const targetUser = await this.userRepository.findOneBy({ username });
@@ -261,17 +270,21 @@ export class UsersService {
 
     if (executor.role === 'admin') {
       if (targetUser.role === 'admin' || targetUser.role === 'super-user') {
-        throw new ForbiddenException('Admin users cannot modify other admin or super-user accounts');
+        throw new ForbiddenException(
+          'Admin users cannot modify other admin or super-user accounts',
+        );
       }
     }
 
     if (executor.role !== 'super-user' && targetUser.role === 'admin') {
-      throw new ForbiddenException('Permission denied: Only super-users can modify admin accounts');
+      throw new ForbiddenException(
+        'Permission denied: Only super-users can modify admin accounts',
+      );
     }
 
     targetUser.userkey = await argon2.hash(newPassword);
     await this.userRepository.save(targetUser);
 
-    return { message: 'Password updated successfully' };
+    return 'Password updated successfully';
   }
 }
