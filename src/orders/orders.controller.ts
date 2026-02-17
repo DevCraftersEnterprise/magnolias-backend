@@ -129,6 +129,10 @@ export class OrdersController {
   })
   @ApiOkResponse({
     description: 'List of orders retrieved successfully.',
+    type: [Order],
+  })
+  @ApiOkResponse({
+    description: 'List of orders retrieved successfully.',
     schema: {
       type: 'object',
       properties: {
@@ -154,7 +158,7 @@ export class OrdersController {
   getOrders(
     @Param('branchId', ParseUUIDPipe) branchId: string,
     @Query() filterDto: OrdersFilterDto,
-  ): Promise<PaginationResponse<Order>> {
+  ): Promise<PaginationResponse<Order> | Order[]> {
     return this.ordersService.getOrders(filterDto, branchId);
   }
 

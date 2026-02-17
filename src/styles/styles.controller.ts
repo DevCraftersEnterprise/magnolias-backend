@@ -24,7 +24,6 @@ import {
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
@@ -32,6 +31,7 @@ import { CreateStyleDto } from './dto/create-style.dto';
 import { UpdateStyleDto } from './dto/update-style.dto';
 import { Style } from './entities/style.entity';
 import { StylesService } from './styles.service';
+import { StylesFilterDto } from './dto/styles-filter.dto';
 
 @ApiTags('Styles')
 @Controller('styles')
@@ -55,19 +55,6 @@ export class StylesController {
     return this.stylesService.create(createStyleDto, user);
   }
 
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get all styles',
-    description: 'Retrieves all active styles.',
-  })
-  @ApiOkResponse({ description: 'Styles list.', type: [Style] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll(): Promise<Style[]> {
-    return this.stylesService.findAll();
-  }
-
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -89,8 +76,19 @@ export class StylesController {
     description: 'Number of items to skip',
     example: 0,
   })
+  @ApiQuery({
+    name: 'isActive',
+    required: false,
+    type: Boolean,
+    description: 'Value to recover thee item if they are active or not',
+    example: true,
+  })
   @ApiOkResponse({
     description: 'List of Styles retrieved successfully.',
+    type: [Style],
+  })
+  @ApiOkResponse({
+    description: 'List of Styles paginated retrieved successfully.',
     schema: {
       type: 'object',
       properties: {
@@ -111,10 +109,10 @@ export class StylesController {
       },
     },
   })
-  paginated(
-    @Query() filterDto: PaginationDto,
-  ): Promise<PaginationResponse<Style>> {
-    return this.stylesService.paginated(filterDto);
+  findAll(
+    @Query() filterDto: StylesFilterDto,
+  ): Promise<PaginationResponse<Style> | Style[]> {
+    return this.stylesService.findAll(filterDto);
   }
 
   @Get(':term')

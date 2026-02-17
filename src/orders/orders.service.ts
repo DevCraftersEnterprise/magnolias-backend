@@ -48,6 +48,8 @@ export class OrdersService {
   ) {}
 
   private async generateOrderCode(orderType: OrderType): Promise<string> {
+    // TODO: Folio por sucursal
+
     const year = new Date().getFullYear();
     const prefix = orderType;
 
@@ -277,15 +279,8 @@ export class OrdersService {
   async getOrders(
     filter: OrdersFilterDto,
     branchId: string,
-  ): Promise<PaginationResponse<Order>> {
-    const {
-      name,
-      orderStatus,
-      clientPhone,
-      orderDate,
-      limit = 10,
-      offset = 0,
-    } = filter;
+  ): Promise<PaginationResponse<Order> | Order[]> {
+    const { name, orderStatus, clientPhone, orderDate, limit, offset } = filter;
 
     const whereConditions: FindOptionsWhere<Order> = {
       branch: { id: branchId },
@@ -344,16 +339,20 @@ export class OrdersService {
       order: { deliveryDate: 'DESC' },
     });
 
-    return {
-      items: orders,
-      total,
-      pagination: {
-        limit,
-        offset,
-        currentPage: Math.floor(offset / limit) + 1,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    if (limit && offset) {
+      return {
+        items: orders,
+        total,
+        pagination: {
+          limit,
+          offset,
+          currentPage: Math.floor(offset / limit) + 1,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    }
+
+    return orders;
   }
 
   async getOrderByTerm(term: string): Promise<Order> {

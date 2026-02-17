@@ -55,19 +55,6 @@ export class FillingsController {
     return this.fillingsService.create(createFillingDto, user);
   }
 
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get all fillings',
-    description: 'Retrieves all active fillings.',
-  })
-  @ApiOkResponse({ description: 'Fillings list.', type: [Filling] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll(): Promise<Filling[]> {
-    return this.fillingsService.findAll();
-  }
-
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -89,6 +76,7 @@ export class FillingsController {
     description: 'Number of items to skip',
     example: 0,
   })
+  @ApiOkResponse({ description: 'Fillings list.', type: [Filling] })
   @ApiOkResponse({
     description: 'List of fillings retrieved successfully.',
     schema: {
@@ -111,10 +99,10 @@ export class FillingsController {
       },
     },
   })
-  paginated(
+  findAll(
     @Query() filterDto: PaginationDto,
-  ): Promise<PaginationResponse<Filling>> {
-    return this.fillingsService.paginated(filterDto);
+  ): Promise<PaginationResponse<Filling> | Filling[]> {
+    return this.fillingsService.findAll(filterDto);
   }
 
   @Get(':term')
