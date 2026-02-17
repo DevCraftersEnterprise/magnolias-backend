@@ -88,7 +88,7 @@ export class CustomersService {
           neighborhood: true,
           city: true,
           postalCode: true,
-          beetweenStreets: true,
+          betweenStreets: true,
           reference: true,
         },
       },
@@ -135,7 +135,7 @@ export class CustomersService {
           neighborhood: true,
           city: true,
           postalCode: true,
-          beetweenStreets: true,
+          betweenStreets: true,
           reference: true,
         },
         orders: {
