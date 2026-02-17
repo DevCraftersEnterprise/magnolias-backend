@@ -190,8 +190,8 @@ export class UsersService {
 
     if (!user) throw new BadRequestException('User does not exist');
 
-    const currentUserLevel = this.getRoleLevel(currentUser.role as UserRoles);
-    const targetUserLevel = this.getRoleLevel(user.role as UserRoles);
+    const currentUserLevel = this.getRoleLevel(currentUser.role);
+    const targetUserLevel = this.getRoleLevel(user.role);
 
     if (currentUserLevel <= targetUserLevel) {
       throw new BadRequestException(
@@ -230,8 +230,8 @@ export class UsersService {
       );
     }
 
-    const currentUserLevel = this.getRoleLevel(currentUser.role as UserRoles);
-    const targetUserLevel = this.getRoleLevel(isUserActive.role as UserRoles);
+    const currentUserLevel = this.getRoleLevel(currentUser.role);
+    const targetUserLevel = this.getRoleLevel(isUserActive.role);
 
     if (currentUserLevel <= targetUserLevel) {
       throw new BadRequestException(

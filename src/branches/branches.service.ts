@@ -23,7 +23,7 @@ export class BranchesService {
     private readonly phoneRepository: Repository<Phone>,
   ) {}
 
-  async registerBranch(dto: CreateBranchDto, user: User) {
+  async create(dto: CreateBranchDto, user: User) {
     const { name, address } = dto;
 
     const branchData: Partial<Branch> = {
@@ -38,10 +38,10 @@ export class BranchesService {
     return branch;
   }
 
-  async findBranches(
+  async findAll(
     filters: BranchesFilterDto,
-  ): Promise<PaginationResponse<Branch>> {
-    const { name, address, limit = 10, offset = 0 } = filters;
+  ): Promise<PaginationResponse<Branch> | Branch[]> {
+    const { name, address, limit, offset } = filters;
 
     const whereConditions: FindOptionsWhere<Branch> = {};
 
@@ -71,37 +71,20 @@ export class BranchesService {
       take: limit,
     });
 
-    return {
-      items: branches,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
-  }
-
-  async findAllBranches(): Promise<Branch[]> {
-    return this.branchRepository.find({
-      where: { isActive: true },
-      relations: { phones: true },
-      select: {
-        id: true,
-        name: true,
-        address: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        phones: {
-          phone1: true,
-          phone2: true,
-          whatsapp: true,
+    if (limit && offset) {
+      return {
+        items: branches,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
         },
-      },
-      order: { createdAt: 'DESC' },
-    });
+      };
+    }
+
+    return branches;
   }
 
   async findBranchByTerm(term: string): Promise<Branch | null> {

@@ -44,17 +44,10 @@ export class CategoriesService {
     return await this.categoryRepository.save(category);
   }
 
-  async findAll(): Promise<Category[]> {
-    return await this.categoryRepository.find({
-      where: { isActive: true },
-      order: { name: 'ASC' },
-    });
-  }
-
-  async paginated(
+  async findAll(
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<Category>> {
-    const { limit = 10, offset = 0 } = paginationDto;
+  ): Promise<PaginationResponse<Category> | Category[]> {
+    const { limit, offset } = paginationDto;
 
     const [categories, total] = await this.categoryRepository.findAndCount({
       select: {
@@ -68,16 +61,20 @@ export class CategoriesService {
       order: { name: 'ASC' },
     });
 
-    return {
-      items: categories,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+    if (limit && offset) {
+      return {
+        items: categories,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
+
+    return categories;
   }
 
   async findOne(term: string): Promise<Category> {

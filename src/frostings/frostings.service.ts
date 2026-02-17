@@ -5,13 +5,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CreateFrostingDto } from './dto/create-frosting.dto';
 import { UpdateFrostingDto } from './dto/update-frosting.dto';
 import { Frosting } from './entities/frosting.entity';
 import { isUUID } from 'class-validator';
+import { FrostingsFilterDto } from './dto/frostings-filter.dto';
 
 @Injectable()
 export class FrostingsService {
@@ -43,19 +43,17 @@ export class FrostingsService {
     return await this.frostingRepository.save(frosting);
   }
 
-  async findAll(): Promise<Frosting[]> {
-    return await this.frostingRepository.find({
-      where: { isActive: true },
-      order: { name: 'ASC' },
-    });
-  }
+  async findAll(
+    frostingsFilterDto: FrostingsFilterDto,
+  ): Promise<PaginationResponse<Frosting> | Frosting[]> {
+    const { limit, offset, isActive } = frostingsFilterDto;
 
-  async paginated(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<Frosting>> {
-    const { limit = 10, offset = 0 } = paginationDto;
+    const whereOptions: FindOptionsWhere<Frosting> = {};
+
+    if (isActive) whereOptions.isActive = isActive;
 
     const [frostings, total] = await this.frostingRepository.findAndCount({
+      where: whereOptions,
       select: {
         id: true,
         name: true,
@@ -67,16 +65,20 @@ export class FrostingsService {
       order: { name: 'ASC' },
     });
 
-    return {
-      items: frostings,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+    if (limit && offset) {
+      return {
+        items: frostings,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
+
+    return frostings;
   }
 
   async findOne(term: string): Promise<Frosting> {

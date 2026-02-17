@@ -18,6 +18,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -26,8 +27,8 @@ import { UserRoles } from '../users/enums/user-role';
 import { Flower } from './entities/flower.entity';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
 import { User } from '../users/entities/user.entity';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
+import { FlowersFilterDto } from './dto/flowers-filter.dto';
 
 @ApiTags('Flowers')
 @Controller('flowers')
@@ -51,22 +52,68 @@ export class FlowersController {
     return this.flowersService.create(createFlowerDto, user);
   }
 
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @Get()
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
   @ApiOperation({
-    summary: 'Get all flowers',
-    description: 'Retrieves all active flower types.',
+    summary: 'Get Flowers with optional filters',
+    description: 'Retrieves a list of Frostings based on provided filters.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items to return',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Number of items to skip',
+    example: 0,
+  })
+  @ApiQuery({
+    name: 'isActive',
+    required: false,
+    type: Boolean,
+    description: 'Value to recover thee item if they are active or not',
+    example: true,
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Name of the item or items to find',
+    example: 'Rosa',
   })
   @ApiOkResponse({ description: 'Flowers list.', type: [Flower] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll(): Promise<Flower[]> {
-    return this.flowersService.findAll();
-  }
-
-  @Get()
-  paginated(paginationDto: PaginationDto): Promise<PaginationResponse<Flower>> {
-    return this.flowersService.paginated(paginationDto);
+  @ApiOkResponse({
+    description: 'List of Flowers retrieved successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/Flower' },
+        },
+        total: { type: 'number', example: 100 },
+        pagination: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number', example: 10 },
+            offset: { type: 'number', example: 0 },
+            totalPages: { type: 'number', example: 10 },
+            currentPage: { type: 'number', example: 1 },
+          },
+        },
+      },
+    },
+  })
+  findAll(
+    filterDto: FlowersFilterDto,
+  ): Promise<PaginationResponse<Flower> | Flower[]> {
+    return this.flowersService.findAll(filterDto);
   }
 
   @Get(':term')

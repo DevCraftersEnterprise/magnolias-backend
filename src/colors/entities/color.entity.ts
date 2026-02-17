@@ -23,4 +23,12 @@ export class Color {
   })
   @Column({ type: 'varchar' })
   name: string;
+
+  @ApiProperty({
+    description: 'Indicates whether the color is active',
+    example: true,
+    default: true,
+  })
+  @Column({ default: true, type: 'boolean' })
+  isActive: boolean;
 }

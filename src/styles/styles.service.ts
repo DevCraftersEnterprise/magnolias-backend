@@ -6,12 +6,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CreateStyleDto } from './dto/create-style.dto';
 import { UpdateStyleDto } from './dto/update-style.dto';
 import { Style } from './entities/style.entity';
+import { StylesFilterDto } from './dto/styles-filter.dto';
 
 @Injectable()
 export class StylesService {
@@ -41,19 +41,17 @@ export class StylesService {
     return await this.styleRepository.save(style);
   }
 
-  async findAll(): Promise<Style[]> {
-    return await this.styleRepository.find({
-      where: { isActive: true },
-      order: { name: 'ASC' },
-    });
-  }
+  async findAll(
+    stylesFilterDto: StylesFilterDto,
+  ): Promise<PaginationResponse<Style> | Style[]> {
+    const { limit, offset, isActive } = stylesFilterDto;
 
-  async paginated(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<Style>> {
-    const { limit = 10, offset = 0 } = paginationDto;
+    const whereOptions: FindOptionsWhere<Style> = {};
+
+    if (isActive) whereOptions.isActive = isActive;
 
     const [styles, total] = await this.styleRepository.findAndCount({
+      where: whereOptions,
       select: {
         id: true,
         name: true,
@@ -65,16 +63,20 @@ export class StylesService {
       order: { name: 'ASC' },
     });
 
-    return {
-      items: styles,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+    if (limit && offset) {
+      return {
+        items: styles,
+        total,
+        pagination: {
+          limit: limit,
+          offset: offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
+
+    return styles;
   }
 
   async findOne(term: string): Promise<Style> {

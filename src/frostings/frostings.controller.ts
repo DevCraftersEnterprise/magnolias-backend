@@ -24,7 +24,6 @@ import {
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
@@ -32,6 +31,7 @@ import { CreateFrostingDto } from './dto/create-frosting.dto';
 import { UpdateFrostingDto } from './dto/update-frosting.dto';
 import { Frosting } from './entities/frosting.entity';
 import { FrostingsService } from './frostings.service';
+import { FrostingsFilterDto } from './dto/frostings-filter.dto';
 
 @ApiTags('Frostings')
 @Controller('frostings')
@@ -55,19 +55,6 @@ export class FrostingsController {
     return this.frostingsService.create(createFrostingDto, user);
   }
 
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get all frostings',
-    description: 'Retrieves all active frostings.',
-  })
-  @ApiOkResponse({ description: 'Frostings list.', type: [Frosting] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll(): Promise<Frosting[]> {
-    return this.frostingsService.findAll();
-  }
-
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -89,6 +76,14 @@ export class FrostingsController {
     description: 'Number of items to skip',
     example: 0,
   })
+  @ApiQuery({
+    name: 'isActive',
+    required: false,
+    type: Boolean,
+    description: 'Value to recover thee item if they are active or not',
+    example: true,
+  })
+  @ApiOkResponse({ description: 'Frostings list.', type: [Frosting] })
   @ApiOkResponse({
     description: 'List of Frostings retrieved successfully.',
     schema: {
@@ -111,10 +106,10 @@ export class FrostingsController {
       },
     },
   })
-  paginated(
-    @Query() filterDto: PaginationDto,
-  ): Promise<PaginationResponse<Frosting>> {
-    return this.frostingsService.paginated(filterDto);
+  findAll(
+    @Query() filterDto: FrostingsFilterDto,
+  ): Promise<PaginationResponse<Frosting> | Frosting[]> {
+    return this.frostingsService.findAll(filterDto);
   }
 
   @Get(':term')

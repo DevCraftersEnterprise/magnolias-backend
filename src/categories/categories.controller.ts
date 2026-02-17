@@ -55,19 +55,6 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto, user);
   }
 
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get all categories',
-    description: 'Retrieves all active categories.',
-  })
-  @ApiOkResponse({ description: 'Category list.', type: [Category] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll(): Promise<Category[]> {
-    return this.categoriesService.findAll();
-  }
-
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -89,6 +76,7 @@ export class CategoriesController {
     description: 'Number of items to skip',
     example: 0,
   })
+  @ApiOkResponse({ description: 'Category list.', type: [Category] })
   @ApiOkResponse({
     description: 'List of categories retrieved successfully.',
     schema: {
@@ -111,10 +99,10 @@ export class CategoriesController {
       },
     },
   })
-  paginated(
+  findAll(
     @Query() filterDto: PaginationDto,
-  ): Promise<PaginationResponse<Category>> {
-    return this.categoriesService.paginated(filterDto);
+  ): Promise<PaginationResponse<Category> | Category[]> {
+    return this.categoriesService.findAll(filterDto);
   }
 
   @Get(':term')
