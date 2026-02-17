@@ -79,7 +79,7 @@ export class CommonAddress {
     required: false,
   })
   @Column({ type: 'varchar', length: 255, nullable: true })
-  beetweenStreets?: string;
+  betweenStreets?: string;
 
   @ApiProperty({
     description: 'Reference or additional information for the common address',

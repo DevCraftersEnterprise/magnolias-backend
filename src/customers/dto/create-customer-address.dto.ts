@@ -29,6 +29,7 @@ export class CreateCustomerAddressDto {
   @ApiProperty({
     description: 'City of the address.',
     example: 'Springfield',
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -38,6 +39,7 @@ export class CreateCustomerAddressDto {
   @ApiProperty({
     description: 'Postal code of the address.',
     example: '12345',
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -47,6 +49,7 @@ export class CreateCustomerAddressDto {
   @ApiProperty({
     description: 'Interphone code for the address, if applicable.',
     example: '1234#',
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -56,15 +59,17 @@ export class CreateCustomerAddressDto {
   @ApiProperty({
     description: 'Between streets or cross streets, if applicable.',
     example: 'Between 1st Ave and 2nd Ave',
+    required: false,
   })
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  beetweenStreets?: string;
+  betweenStreets?: string;
 
   @ApiProperty({
     description: 'Reference point for the address, if applicable.',
     example: 'Near the big park',
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -73,6 +78,7 @@ export class CreateCustomerAddressDto {
   @ApiProperty({
     description: 'Additional notes for the address, if applicable.',
     example: 'Leave package at the front door.',
+    required: false,
   })
   @IsOptional()
   @IsString()

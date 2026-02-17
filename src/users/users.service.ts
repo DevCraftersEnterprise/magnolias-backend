@@ -268,15 +268,21 @@ export class UsersService {
     const targetUser = await this.userRepository.findOneBy({ username });
     if (!targetUser) throw new NotFoundException('Usuario not found');
 
-    if (executor.role === 'admin') {
-      if (targetUser.role === 'admin' || targetUser.role === 'super-user') {
+    if (executor.role === UserRoles.ADMIN) {
+      if (
+        targetUser.role === UserRoles.ADMIN ||
+        targetUser.role === UserRoles.SUPER
+      ) {
         throw new ForbiddenException(
           'Admin users cannot modify other admin or super-user accounts',
         );
       }
     }
 
-    if (executor.role !== 'super-user' && targetUser.role === 'admin') {
+    if (
+      executor.role !== UserRoles.SUPER &&
+      targetUser.role === UserRoles.ADMIN
+    ) {
       throw new ForbiddenException(
         'Permission denied: Only super-users can modify admin accounts',
       );

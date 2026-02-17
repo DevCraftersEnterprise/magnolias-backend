@@ -25,6 +25,7 @@ import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
+import { AddressesService } from '../addresses/addresses.service';
 
 @Injectable()
 export class OrdersService {
@@ -43,6 +44,7 @@ export class OrdersService {
     private readonly branchesService: BranchesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
+    private readonly addressesService: AddressesService,
   ) {}
 
   private async generateOrderCode(orderType: OrderType): Promise<string> {
@@ -108,24 +110,49 @@ export class OrdersService {
       let deliveryAddressData: Partial<OrderDeliveryAddress> = {};
 
       if (dto.deliveryAddress) {
-        // Use address from DTO
-        deliveryAddressData = {
-          street: dto.deliveryAddress,
-          deliveryNotes: dto.deliveryNotes,
-        };
-      } else if (customer.address) {
-        // Copy from customer address
-        deliveryAddressData = {
-          street: customer.address.street,
-          number: customer.address.number,
-          neighborhood: customer.address.neighborhood,
-          city: customer.address.city,
-          postalCode: customer.address.postalCode,
-          interphoneCode: customer.address.interphoneCode,
-          betweenStreets: customer.address.beetweenStreets,
-          reference: customer.address.reference,
-          deliveryNotes: dto.deliveryNotes,
-        };
+        if (dto.deliveryAddress.useCustomerAddress) {
+          deliveryAddressData = {
+            street: customer.address.street,
+            betweenStreets: customer.address.betweenStreets,
+            city: customer.address.city,
+            interphoneCode: customer.address.interphoneCode,
+            neighborhood: customer.address.neighborhood,
+            number: customer.address.number,
+            postalCode: customer.address.postalCode,
+          };
+        } else if (dto.deliveryAddress.useCommonAddress) {
+          const common = await this.addressesService.findOne(
+            dto.deliveryAddress.commonAddressId!,
+          );
+
+          deliveryAddressData = {
+            street: common.street,
+            betweenStreets: common.betweenStreets,
+            city: common.city,
+            interphoneCode: common.interphoneCode,
+            neighborhood: common.neighborhood,
+            number: common.number,
+            postalCode: common.postalCode,
+            commonAddress: common,
+          };
+
+          await this.addressesService.incrementUsageCount(common.id);
+        } else {
+          deliveryAddressData = {
+            street: dto.deliveryAddress.newAddress!.street,
+            betweenStreets: dto.deliveryAddress.newAddress!.betweenStreets,
+            city: dto.deliveryAddress.newAddress!.city,
+            interphoneCode: dto.deliveryAddress.newAddress!.interphoneCode,
+            neighborhood: dto.deliveryAddress.newAddress!.neighborhood,
+            number: dto.deliveryAddress.newAddress!.number,
+            postalCode: dto.deliveryAddress.newAddress!.postalCode,
+          };
+        }
+
+        deliveryAddressData.deliveryNotes = dto.deliveryAddress.deliveryNotes;
+        deliveryAddressData.reference = dto.deliveryAddress.reference;
+        deliveryAddressData.receiverName = dto.deliveryAddress.receiverName;
+        deliveryAddressData.receiverPhone = dto.deliveryAddress.receiverPhone;
       }
 
       if (Object.keys(deliveryAddressData).length > 0) {
@@ -361,8 +388,7 @@ export class OrdersService {
   }
 
   async updateOrder(dto: UpdateOrderDto, user: User): Promise<Order> {
-    const { id, deliveryDate, deliveryTime, deliveryAddress, deliveryNotes } =
-      dto;
+    const { id, deliveryDate, deliveryTime, deliveryAddress } = dto;
 
     const order = await this.getOrderByTerm(id);
 
@@ -375,24 +401,17 @@ export class OrdersService {
     }
 
     if (deliveryDate) order.deliveryDate = deliveryDate;
-    if (deliveryTime !== undefined) order.deliveryTime = deliveryTime;
+    if (deliveryTime) order.deliveryTime = deliveryTime;
 
-    // Handle delivery address updates
-    if (deliveryAddress !== undefined || deliveryNotes !== undefined) {
-      if (order.deliveryAddress) {
-        if (deliveryAddress !== undefined)
-          order.deliveryAddress.street = deliveryAddress;
-        if (deliveryNotes !== undefined)
-          order.deliveryAddress.deliveryNotes = deliveryNotes;
-        await this.orderDeliveryAddressRepository.save(order.deliveryAddress);
-      } else {
-        const newDeliveryAddress = this.orderDeliveryAddressRepository.create({
-          street: deliveryAddress,
-          deliveryNotes,
-          order,
-        });
-        await this.orderDeliveryAddressRepository.save(newDeliveryAddress);
+    if (deliveryAddress && order.deliveryAddress) {
+      if (deliveryAddress.deliveryNotes) {
+        order.deliveryAddress.deliveryNotes = deliveryAddress.deliveryNotes;
       }
+
+      // TODO: Cambiar datos de entrega
+      // ? Si se cambio de direccion comun a la del cliente
+      // ? Si se cambio de la direccion del cliente a una comun
+      // ? Si se cambio de direccion comun a otra
     }
 
     order.updatedBy = user;
