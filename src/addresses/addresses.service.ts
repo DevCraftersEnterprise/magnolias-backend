@@ -97,4 +97,8 @@ export class AddressesService {
   async incrementUsageCount(id: string): Promise<void> {
     await this.commonAddressRepository.increment({ id }, 'usageCount', 1);
   }
+
+  async decrementUsageCount(id: string): Promise<void> {
+    await this.commonAddressRepository.decrement({ id }, 'usageCount', 1);
+  }
 }

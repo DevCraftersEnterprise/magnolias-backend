@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { isUUID } from 'class-validator';
@@ -11,6 +17,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersFilterDto } from './dto/users-filter.dto';
 import { User } from './entities/user.entity';
 import { UserRoles } from './enums/user-role';
+import { ResetPasswordDto } from 'src/auth/dto/reset-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -250,5 +257,40 @@ export class UsersService {
       default:
         return 0;
     }
+  }
+
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+    executor: User,
+  ): Promise<string> {
+    const { username, newPassword } = resetPasswordDto;
+
+    const targetUser = await this.userRepository.findOneBy({ username });
+    if (!targetUser) throw new NotFoundException('Usuario not found');
+
+    if (executor.role === UserRoles.ADMIN) {
+      if (
+        targetUser.role === UserRoles.ADMIN ||
+        targetUser.role === UserRoles.SUPER
+      ) {
+        throw new ForbiddenException(
+          'Admin users cannot modify other admin or super-user accounts',
+        );
+      }
+    }
+
+    if (
+      executor.role !== UserRoles.SUPER &&
+      targetUser.role === UserRoles.ADMIN
+    ) {
+      throw new ForbiddenException(
+        'Permission denied: Only super-users can modify admin accounts',
+      );
+    }
+
+    targetUser.userkey = await argon2.hash(newPassword);
+    await this.userRepository.save(targetUser);
+
+    return 'Password updated successfully';
   }
 }

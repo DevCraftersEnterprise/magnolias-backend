@@ -62,7 +62,7 @@ export class User {
     enum: UserRoles,
     array: false,
   })
-  role: string;
+  role: UserRoles;
 
   @ApiProperty({
     description: 'Active status of the user',
