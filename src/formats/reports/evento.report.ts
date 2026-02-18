@@ -1,13 +1,14 @@
 import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
-import { Order } from '../../orders/entities/order.entity';
 import { OrderDetail } from '../../orders/entities/order-detail.entity';
+import { Order } from '../../orders/entities/order.entity';
 import {
   getEventoHeader,
   getEventoCustomerSection,
+  getAddressSection,
+  getEventoServicesSection,
   getEventoDescriptionSection,
-  getDetailTable,
-  getDecorationSection,
-  getConditionsSection,
+  getEventoDataSection,
+  getEventoCakeSection,
   getSignatureSection,
   getEventoTotalsSection,
   pageBreak,
@@ -22,12 +23,13 @@ const generatePageContent = (
   return [
     getEventoHeader(order, pageNumber, totalPages),
     getEventoCustomerSection(order),
-    ...getEventoDescriptionSection(order),
-    getDetailTable(detail),
-    getDecorationSection(detail ?? ({} as OrderDetail)),
-    getConditionsSection('EVENTO'),
-    getSignatureSection(),
-    ...getEventoTotalsSection(order),
+    getAddressSection(order),
+    getEventoServicesSection(order),
+    getEventoDataSection(order),
+    getEventoDescriptionSection(order),
+    detail ? getEventoCakeSection(detail) : [],
+    getSignatureSection(false),
+    getEventoTotalsSection(order),
   ];
 };
 

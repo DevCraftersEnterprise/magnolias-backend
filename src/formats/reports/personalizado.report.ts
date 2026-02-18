@@ -4,6 +4,7 @@ import { OrderDetail } from '../../orders/entities/order-detail.entity';
 import {
   getPersonalizadoHeader,
   getSimpleCustomerSection,
+  getDetailSectionTitle,
   getDetailTable,
   getDecorationSection,
   getConditionsSection,
@@ -20,11 +21,12 @@ const generatePageContent = (
 ): Content[] => {
   return [
     getPersonalizadoHeader(order, pageNumber, totalPages),
-    getSimpleCustomerSection(order),
+    getSimpleCustomerSection(order, true),
+    getDetailSectionTitle(),
     getDetailTable(detail),
-    getDecorationSection(detail ?? ({} as OrderDetail)),
+    detail ? getDecorationSection(detail) : [],
     getConditionsSection('PERSONALIZADO'),
-    getSignatureSection(),
+    getSignatureSection(false),
     getPersonalizadoTotalsSection(order),
   ];
 };
