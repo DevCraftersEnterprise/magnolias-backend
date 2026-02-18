@@ -4,6 +4,7 @@ import { OrderDetail } from '../../orders/entities/order-detail.entity';
 import {
   getVitrinaHeader,
   getSimpleCustomerSection,
+  getDetailSectionTitle,
   getDetailTable,
   getDecorationSection,
   getConditionsSection,
@@ -21,10 +22,11 @@ const generatePageContent = (
   return [
     getVitrinaHeader(order, pageNumber, totalPages),
     getSimpleCustomerSection(order),
+    getDetailSectionTitle(),
     getDetailTable(detail),
-    getDecorationSection(detail ?? ({} as OrderDetail), true),
+    detail ? getDecorationSection(detail, true) : [],
     getConditionsSection('VITRINA'),
-    getSignatureSection(),
+    getSignatureSection(false),
     getVitrinaTotalsSection(order),
   ];
 };
