@@ -370,31 +370,52 @@ export const getHeader = (
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Datos del cliente para DOMICILIO */
-export const getDomicilioCustomerSection = (order: Order): Content => ({
+export const getDomicilioCustomerSection = (
+  order: Order,
+  detail: OrderDetail,
+): Content => ({
   table: {
-    widths: ['20%', '30%', '20%', '30%'],
+    widths: ['20%', '15%', '15%', '20%', '30%'],
     body: [
       [
         labelCell('FECHA DE SOLICITUD'),
-        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt))),
+        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt)), {
+          colSpan: 2,
+        }),
+        {},
         labelCell('HORA DE ENTREGA'),
         valueCell(order.deliveryTime),
       ],
       [
         labelCell('CLIENTE'),
-        valueCell(toUpperSafe(order.customer?.fullName)),
+        valueCell(toUpperSafe(order.customer?.fullName), {
+          colSpan: 2,
+        }),
+        {},
         labelCell('LISTO A LA HORA'),
         valueCell(order.readyTime),
       ],
       [
         labelCell('RECIBE'),
-        valueCell(toUpperSafe(order.deliveryAddress?.receiverName)),
+        valueCell(toUpperSafe(order.deliveryAddress?.receiverName), {
+          colSpan: 2,
+        }),
+        {},
         labelCell('TELÉFONO'),
         valueCell(order.customer?.phone),
       ],
       [
         labelCell('', { border: [true, true, true, false] }),
-        valueCell('', { border: [true, true, true, false] }),
+        valueCell('', { border: [true, true, false, false] }),
+        detail.referenceImageUrl
+          ? {
+              qr: detail.referenceImageUrl,
+              rowSpan: 3,
+              fit: 55,
+              alignment: 'center',
+              border: [false, false, false, false],
+            }
+          : { text: '', rowSpan: 3 },
         labelCell('TELÉFONO', { border: [true, true, true, false] }),
         valueCell(
           order.customer?.alternativePhone ??
@@ -404,7 +425,11 @@ export const getDomicilioCustomerSection = (order: Order): Content => ({
       ],
       [
         labelCell('FOTO', { border: [true, false, true, false] }),
-        valueCell('', { border: [true, false, true, false] }),
+        valueCell('', { border: [true, false, false, false] }),
+        {
+          text: '',
+          border: [false, false, false, false],
+        },
         labelCell('ATENDIÓ', {
           rowSpan: 2,
           border: [true, false, true, false],
@@ -418,8 +443,9 @@ export const getDomicilioCustomerSection = (order: Order): Content => ({
         labelCell('', { border: [true, false, true, false] }),
         valueCell(formatYesNo(order.hasPhotoReference), {
           bold: true,
-          border: [true, false, true, false],
+          border: [true, false, false, false],
         }),
+        { text: '', border: [false, false, false, false] },
         {},
         {},
       ],

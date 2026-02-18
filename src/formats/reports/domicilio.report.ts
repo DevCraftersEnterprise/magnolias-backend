@@ -31,7 +31,7 @@ const generatePageContent = (
   content.push(getDomicilioHeader(order, pageNumber, totalPages));
 
   // Datos del cliente
-  content.push(getDomicilioCustomerSection(order));
+  content.push(getDomicilioCustomerSection(order, detail));
 
   // Dirección de entrega
   content.push(...getAddressSection(order));
