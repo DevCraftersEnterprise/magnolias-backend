@@ -411,17 +411,19 @@ export const getDomicilioCustomerSection = (
           ? {
               qr: detail.referenceImageUrl,
               rowSpan: 2,
-              fit: 57,
+              fit: 60,
               alignment: 'center',
               border: [false, false, false, false],
             }
           : { text: '', rowSpan: 2 },
         labelCell('', { border: [true, true, true, false] }),
-        valueCell('',{ border: [true, true, true, false] },),
+        valueCell('', { border: [true, true, true, false] }),
       ],
       [
         labelCell('FOTO', { border: [true, false, true, false] }),
-        valueCell(formatYesNo(order.hasPhotoReference), { border: [true, false, false, false] }),
+        valueCell(formatYesNo(order.hasPhotoReference), {
+          border: [true, false, false, false],
+        }),
         {
           text: '',
           border: [false, false, false, false],
@@ -435,7 +437,6 @@ export const getDomicilioCustomerSection = (
           { rowSpan: 1, border: [true, false, true, false] },
         ),
       ],
-      
     ],
   },
 });
@@ -1196,14 +1197,14 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
         [
           labelCell('', { border: [true, true, true, false] }),
           detail.referenceImageUrl
-          ? {
-              qr: detail.referenceImageUrl,
-              rowSpan: 2,
-              fit: 60,
-              alignment: 'right',
-              border: [false, false, false, false],
-            }
-          : { text: '', border: [false, false, false, false], rowSpan: 2 },
+            ? {
+                qr: detail.referenceImageUrl,
+                rowSpan: 2,
+                fit: 60,
+                alignment: 'right',
+                border: [false, false, false, false],
+              }
+            : { text: '', border: [false, false, false, false], rowSpan: 2 },
           labelCell('', { border: [true, true, true, false] }),
           valueCell('', { border: [true, true, true, false] }),
         ],
@@ -1211,11 +1212,15 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
           labelCell('FOTO', { border: [true, false, true, false] }),
           valueCell('', { bold: true, border: [true, false, true, false] }),
           labelCell('"ESCRITO"', { border: [true, false, true, false] }),
-          valueCell(detail.hasWriting ? detail.writingText : 'SIN ESCRITO', { border: [true, false, true, false] }),
+          valueCell(detail.hasWriting ? detail.writingText : 'SIN ESCRITO', {
+            border: [true, false, true, false],
+          }),
         ],
         [
           labelCell('', { border: [true, false, true, false] }),
-          valueCell(detail.referenceImageUrl ? 'SI' : 'NO', { border: [true, false, true, false] }),
+          valueCell(detail.referenceImageUrl ? 'SI' : 'NO', {
+            border: [true, false, true, false],
+          }),
           labelCell('', { border: [true, false, true, false] }),
           valueCell('', { border: [true, false, true, false] }),
         ],
