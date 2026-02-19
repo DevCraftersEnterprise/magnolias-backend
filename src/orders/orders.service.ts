@@ -409,15 +409,75 @@ export class OrdersService {
     if (deliveryTime) order.deliveryTime = deliveryTime;
 
     if (deliveryAddress && order.deliveryAddress) {
+      const oldCommonId = order.deliveryAddress.commonAddress?.id;
+      let newCommonId: string | undefined;
+
+      if (deliveryAddress.useCustomerAddress) {
+        const customer = await this.customerService.findOne(order.customer.id);
+        order.deliveryAddress.street = customer.address.street;
+        order.deliveryAddress.betweenStreets = customer.address.betweenStreets;
+        order.deliveryAddress.city = customer.address.city;
+        order.deliveryAddress.interphoneCode = customer.address.interphoneCode;
+        order.deliveryAddress.neighborhood = customer.address.neighborhood;
+        order.deliveryAddress.number = customer.address.number;
+        order.deliveryAddress.postalCode = customer.address.postalCode;
+        order.deliveryAddress.commonAddress = undefined;
+        newCommonId = undefined;
+      } else if (
+        deliveryAddress.useCommonAddress &&
+        deliveryAddress.commonAddressId
+      ) {
+        const common = await this.addressesService.findOne(
+          deliveryAddress.commonAddressId,
+        );
+        order.deliveryAddress.street = common.street;
+        order.deliveryAddress.betweenStreets = common.betweenStreets;
+        order.deliveryAddress.city = common.city;
+        order.deliveryAddress.interphoneCode = common.interphoneCode;
+        order.deliveryAddress.neighborhood = common.neighborhood;
+        order.deliveryAddress.number = common.number;
+        order.deliveryAddress.postalCode = common.postalCode;
+        order.deliveryAddress.commonAddress = common;
+        newCommonId = common.id;
+      } else if (deliveryAddress.newAddress) {
+        order.deliveryAddress.street = deliveryAddress.newAddress.street;
+        order.deliveryAddress.betweenStreets =
+          deliveryAddress.newAddress.betweenStreets;
+        order.deliveryAddress.city = deliveryAddress.newAddress.city;
+        order.deliveryAddress.interphoneCode =
+          deliveryAddress.newAddress.interphoneCode;
+        order.deliveryAddress.neighborhood =
+          deliveryAddress.newAddress.neighborhood;
+        order.deliveryAddress.number = deliveryAddress.newAddress.number;
+        order.deliveryAddress.postalCode =
+          deliveryAddress.newAddress.postalCode;
+        order.deliveryAddress.commonAddress = undefined;
+        newCommonId = undefined;
+      }
+
       if (deliveryAddress.deliveryNotes) {
         order.deliveryAddress.deliveryNotes = deliveryAddress.deliveryNotes;
       }
+      if (deliveryAddress.reference) {
+        order.deliveryAddress.reference = deliveryAddress.reference;
+      }
+      if (deliveryAddress.receiverName) {
+        order.deliveryAddress.receiverName = deliveryAddress.receiverName;
+      }
+      if (deliveryAddress.receiverPhone) {
+        order.deliveryAddress.receiverPhone = deliveryAddress.receiverPhone;
+      }
 
-      // TODO: Cambiar datos de entrega
-      // ? Si se cambio de direccion comun a la del cliente
-      // ? Si se cambio de la direccion del cliente a una comun
-      // ? Si se cambio de direccion comun a otra
+      if (oldCommonId && oldCommonId !== newCommonId) {
+        await this.addressesService.decrementUsageCount(oldCommonId);
+      }
+      if (newCommonId && oldCommonId !== newCommonId) {
+        await this.addressesService.incrementUsageCount(newCommonId);
+      }
+
+      await this.orderDeliveryAddressRepository.save(order.deliveryAddress);
     }
+    // ...existing code...
 
     order.updatedBy = user;
 
