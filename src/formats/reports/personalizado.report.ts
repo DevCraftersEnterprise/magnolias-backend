@@ -21,7 +21,7 @@ const generatePageContent = (
 ): Content[] => {
   return [
     getPersonalizadoHeader(order, pageNumber, totalPages),
-    getSimpleCustomerSection(order, true),
+    getSimpleCustomerSection(order, detail!, true),
     getDetailSectionTitle(),
     getDetailTable(detail),
     detail ? getDecorationSection(detail) : [],
