@@ -21,7 +21,7 @@ const generatePageContent = (
 ): Content[] => {
   return [
     getVitrinaHeader(order, pageNumber, totalPages),
-    getSimpleCustomerSection(order),
+    getSimpleCustomerSection(order, detail!),
     getDetailSectionTitle(),
     getDetailTable(detail),
     detail ? getDecorationSection(detail, true) : [],
