@@ -370,58 +370,72 @@ export const getHeader = (
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Datos del cliente para DOMICILIO */
-export const getDomicilioCustomerSection = (order: Order): Content => ({
+export const getDomicilioCustomerSection = (
+  order: Order,
+  detail: OrderDetail,
+): Content => ({
   table: {
-    widths: ['20%', '30%', '20%', '30%'],
+    widths: ['20%', '15%', '15%', '20%', '30%'],
     body: [
       [
         labelCell('FECHA DE SOLICITUD'),
-        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt))),
+        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt)), {
+          colSpan: 2,
+        }),
+        {},
         labelCell('HORA DE ENTREGA'),
         valueCell(order.deliveryTime),
       ],
       [
         labelCell('CLIENTE'),
-        valueCell(toUpperSafe(order.customer?.fullName)),
+        valueCell(toUpperSafe(order.customer?.fullName), {
+          colSpan: 2,
+        }),
+        {},
         labelCell('LISTO A LA HORA'),
         valueCell(order.readyTime),
       ],
       [
         labelCell('RECIBE'),
-        valueCell(toUpperSafe(order.deliveryAddress?.receiverName)),
+        valueCell(toUpperSafe(order.deliveryAddress?.receiverName), {
+          colSpan: 2,
+        }),
+        {},
         labelCell('TELÉFONO'),
         valueCell(order.customer?.phone),
       ],
       [
         labelCell('', { border: [true, true, true, false] }),
+        valueCell('', { border: [true, true, false, false] }),
+        detail.referenceImageUrl
+          ? {
+              qr: detail.referenceImageUrl,
+              rowSpan: 2,
+              fit: 60,
+              alignment: 'center',
+              border: [false, false, false, false],
+            }
+          : { text: '', rowSpan: 2 },
+        labelCell('', { border: [true, true, true, false] }),
         valueCell('', { border: [true, true, true, false] }),
-        labelCell('TELÉFONO', { border: [true, true, true, false] }),
-        valueCell(
-          order.customer?.alternativePhone ??
-            order.deliveryAddress?.receiverPhone,
-          { border: [true, true, true, false] },
-        ),
       ],
       [
         labelCell('FOTO', { border: [true, false, true, false] }),
-        valueCell('', { border: [true, false, true, false] }),
+        valueCell(formatYesNo(order.hasPhotoReference), {
+          border: [true, false, false, false],
+        }),
+        {
+          text: '',
+          border: [false, false, false, false],
+        },
         labelCell('ATENDIÓ', {
-          rowSpan: 2,
+          rowSpan: 1,
           border: [true, false, true, false],
         }),
         valueCell(
           `${toUpperSafe(order.createdBy?.name)} ${toUpperSafe(order.createdBy?.lastname)}`,
-          { rowSpan: 2, border: [true, false, true, false] },
+          { rowSpan: 1, border: [true, false, true, false] },
         ),
-      ],
-      [
-        labelCell('', { border: [true, false, true, false] }),
-        valueCell(formatYesNo(order.hasPhotoReference), {
-          bold: true,
-          border: [true, false, true, false],
-        }),
-        {},
-        {},
       ],
     ],
   },
@@ -430,6 +444,7 @@ export const getDomicilioCustomerSection = (order: Order): Content => ({
 /** Datos del cliente para VITRINA y PERSONALIZADO (sin dirección) */
 export const getSimpleCustomerSection = (
   order: Order,
+  detail: OrderDetail,
   showReadyTime: boolean = false,
 ): Content => ({
   table: {
@@ -449,7 +464,15 @@ export const getSimpleCustomerSection = (
       ],
       [
         labelCell('', { border: [true, true, true, false] }),
-        valueCell('', { border: [true, true, true, false] }),
+        detail.referenceImageUrl
+          ? {
+              qr: detail.referenceImageUrl,
+              rowSpan: 2,
+              fit: 60,
+              alignment: 'right',
+              border: [false, false, false, false],
+            }
+          : { text: '', border: [false, false, false, false], rowSpan: 2 },
         labelCell(showReadyTime ? 'TELÉFONO' : '', {
           border: [true, true, true, false],
         }),
@@ -473,6 +496,7 @@ export const getSimpleCustomerSection = (
         labelCell('', { border: [true, false, true, false] }),
         valueCell(order.hasPhotoReference ? `SI` : 'NO', {
           bold: true,
+          alignment: 'left',
           border: [true, false, true, false],
         }),
         {},
@@ -666,7 +690,7 @@ export const getDecorationSection = (
       [
         {
           svg: useSingleTierCake ? CAKE_SINGLE_TIER_SVG : CAKE_THREE_TIER_SVG,
-          width: 150,
+          width: 140,
           alignment: 'center',
           rowSpan: 2,
         },
@@ -1171,10 +1195,34 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
       widths: ['20%', '30%', '20%', '30%'],
       body: [
         [
-          labelCell('FOTO'),
-          valueCell(detail.referenceImageUrl ? 'SI' : 'NO', { bold: true }),
-          labelCell('"ESCRITO"'),
-          valueCell(detail.hasWriting ? detail.writingText : 'SIN ESCRITO'),
+          labelCell('', { border: [true, true, true, false] }),
+          detail.referenceImageUrl
+            ? {
+                qr: detail.referenceImageUrl,
+                rowSpan: 2,
+                fit: 60,
+                alignment: 'right',
+                border: [false, false, false, false],
+              }
+            : { text: '', border: [false, false, false, false], rowSpan: 2 },
+          labelCell('', { border: [true, true, true, false] }),
+          valueCell('', { border: [true, true, true, false] }),
+        ],
+        [
+          labelCell('FOTO', { border: [true, false, true, false] }),
+          valueCell('', { bold: true, border: [true, false, true, false] }),
+          labelCell('"ESCRITO"', { border: [true, false, true, false] }),
+          valueCell(detail.hasWriting ? detail.writingText : 'SIN ESCRITO', {
+            border: [true, false, true, false],
+          }),
+        ],
+        [
+          labelCell('', { border: [true, false, true, false] }),
+          valueCell(detail.referenceImageUrl ? 'SI' : 'NO', {
+            border: [true, false, true, false],
+          }),
+          labelCell('', { border: [true, false, true, false] }),
+          valueCell('', { border: [true, false, true, false] }),
         ],
         [
           labelCell('TAMAÑO'),
