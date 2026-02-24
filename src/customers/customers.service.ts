@@ -21,7 +21,7 @@ export class CustomersService {
     private readonly customerRepository: Repository<Customer>,
     @InjectRepository(CustomerAddress)
     private readonly customerAddressRepository: Repository<CustomerAddress>,
-  ) {}
+  ) { }
 
   async createCustomer(dto: CreateCustomerDto, user: User): Promise<Customer> {
     const existingCustomer = await this.customerRepository.findOne({
@@ -97,7 +97,7 @@ export class CustomersService {
       order: { fullName: 'DESC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: customers,
         total,

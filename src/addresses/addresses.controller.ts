@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,7 +30,7 @@ import { UpdateCommonAddressDto } from './dto/update-common-address.dto';
 @ApiBearerAuth('access-token')
 @Controller('addresses')
 export class AddressesController {
-  constructor(private readonly addressesService: AddressesService) {}
+  constructor(private readonly addressesService: AddressesService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -55,8 +56,8 @@ export class AddressesController {
     description: 'List of common addresses retrieved successfully.',
     type: [CommonAddress],
   })
-  findAll(): Promise<CommonAddress[]> {
-    return this.addressesService.findAll();
+  findAll(@Query('search') search?: string): Promise<CommonAddress[]> {
+    return this.addressesService.findAll(search);
   }
 
   @Get(':id')

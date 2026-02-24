@@ -12,17 +12,6 @@ interface SeedUser {
 }
 
 export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
-  const environment = process.env.NODE_ENV;
-
-  // Validar que solo se ejecute en desarrollo o staging
-  if (environment !== 'development' && environment !== 'staging') {
-    console.warn(
-      '⚠️  Seed de usuarios solo puede ejecutarse en desarrollo o staging',
-    );
-    console.warn(`   Entorno actual: ${environment || 'production'}`);
-    return;
-  }
-
   console.log('🌱 Iniciando seed de usuarios iniciales...');
 
   const userRepository = dataSource.getRepository(User);
@@ -34,14 +23,14 @@ export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
       lastname: 'Corona',
       username: 'cristianc',
       userkey: '112233',
-      role: UserRoles.ADMIN,
+      role: UserRoles.SUPER,
     },
     {
       name: 'Mónica',
       lastname: 'Chaves',
       username: 'monipanecito',
       userkey: '224466',
-      role: UserRoles.EMPLOYEE,
+      role: UserRoles.SUPER,
     },
     {
       name: 'Sergio',

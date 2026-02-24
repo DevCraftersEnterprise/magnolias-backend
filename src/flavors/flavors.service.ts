@@ -18,7 +18,7 @@ export class FlavorsService {
   constructor(
     @InjectRepository(Flavor)
     private readonly flavorRepository: Repository<Flavor>,
-  ) {}
+  ) { }
 
   async create(dto: CreateFlavorDto, user: User): Promise<Flavor> {
     const { name } = dto;
@@ -58,7 +58,7 @@ export class FlavorsService {
       order: { name: 'ASC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: flavors,
         total,

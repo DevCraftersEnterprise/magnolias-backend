@@ -21,7 +21,7 @@ export class BakersService {
     @InjectRepository(OrderAssignment)
     private readonly orderAssignmentRepository: Repository<OrderAssignment>,
     private readonly orderService: OrdersService,
-  ) {}
+  ) { }
 
   async create(createBakerDto: CreateBakerDto, user: User): Promise<Baker> {
     const baker = this.bakerRepository.create({
@@ -51,7 +51,7 @@ export class BakersService {
       order: { fullName: 'ASC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: bakers,
         total,
