@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -12,6 +12,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 
 import { ProductPicture } from './product-picture.entity';
+import { Category } from '../../categories/entities/category.entity';
 
 @Entity({ name: 'products' })
 export class Product {
@@ -38,24 +39,30 @@ export class Product {
   description?: string;
 
   @ApiProperty({
+    description: 'Set product as favorite of the season',
+    example: true,
+  })
+  @Column({ type: 'boolean', default: false })
+  isFavorite: boolean;
+
+  @ApiProperty({
     description: 'Active status of the product',
     example: true,
   })
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'User who created the product',
-    type: () => User,
-  })
+  @ApiHideProperty()
+  @ManyToOne(() => Category, { nullable: false })
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
+
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who last updated the product',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;
@@ -74,10 +81,7 @@ export class Product {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: 'Product pictures',
-    type: () => [ProductPicture],
-  })
+  @ApiHideProperty()
   @OneToMany(() => ProductPicture, (picture) => picture.product)
   pictures: ProductPicture[];
 }

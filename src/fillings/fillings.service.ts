@@ -18,7 +18,7 @@ export class FillingsService {
   constructor(
     @InjectRepository(Filling)
     private readonly fillingRepository: Repository<Filling>,
-  ) {}
+  ) { }
 
   async create(dto: CreateFillingDto, user: User): Promise<Filling> {
     const { name } = dto;
@@ -41,17 +41,10 @@ export class FillingsService {
     return await this.fillingRepository.save(filling);
   }
 
-  async findAll(): Promise<Filling[]> {
-    return await this.fillingRepository.find({
-      where: { isActive: true },
-      order: { name: 'ASC' },
-    });
-  }
-
-  async paginated(
+  async findAll(
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<Filling>> {
-    const { limit = 10, offset = 0 } = paginationDto;
+  ): Promise<PaginationResponse<Filling> | Filling[]> {
+    const { limit, offset } = paginationDto;
 
     const [fillings, total] = await this.fillingRepository.findAndCount({
       select: {
@@ -65,16 +58,20 @@ export class FillingsService {
       order: { name: 'ASC' },
     });
 
-    return {
-      items: fillings,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+    if (limit !== undefined && offset !== undefined) {
+      return {
+        items: fillings,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
+
+    return fillings;
   }
 
   async findOne(term: string): Promise<Filling> {

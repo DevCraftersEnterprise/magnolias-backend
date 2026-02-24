@@ -9,9 +9,22 @@ import { AuthService } from './auth.service';
 import { LoginThrottleGuard } from './guards/login-throttle.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
+import { LoginUseCase } from '@/auth/usecases/login.usecase';
+import { RefreshTokenUseCase } from '@/auth/usecases/refresh-token.usecase';
+
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LoginThrottleGuard],
+  providers: [
+    // Services
+    AuthService,
+    // Strategies 
+    JwtStrategy,
+    // Guards
+    LoginThrottleGuard,
+    // Use Cases
+    LoginUseCase,
+    RefreshTokenUseCase,
+  ],
   imports: [
     ConfigModule,
     CustomPassportModule,
@@ -21,4 +34,4 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   ],
   exports: [JwtStrategy, CustomPassportModule],
 })
-export class AuthModule {}
+export class AuthModule { }

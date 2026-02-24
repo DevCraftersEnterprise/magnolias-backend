@@ -132,7 +132,7 @@ async function rotateOrderPhones(
   dataSource: DataSource,
 ): Promise<RotationStats> {
   const stats: RotationStats = {
-    table: 'orders',
+    table: 'orders (pickupPersonPhone)',
     total: 0,
     rotated: 0,
     skipped: 0,
@@ -158,6 +158,53 @@ async function rotateOrderPhones(
 
         await dataSource.query(
           'UPDATE orders SET "pickupPersonPhone" = $1 WHERE id = $2',
+          [newEncrypted, order.id],
+        );
+        stats.rotated++;
+        process.stdout.write('.');
+      } else {
+        stats.skipped++;
+      }
+    } catch (error) {
+      stats.errors++;
+      console.error(`\n❌ Error rotating order ${order.id}:`, error);
+    }
+  }
+
+  console.log('');
+  return stats;
+}
+
+async function rotateOrderTransferAccounts(
+  dataSource: DataSource,
+): Promise<RotationStats> {
+  const stats: RotationStats = {
+    table: 'orders (transferAccount)',
+    total: 0,
+    rotated: 0,
+    skipped: 0,
+    errors: 0,
+  };
+
+  console.log('\n🏦 Rotating order transfer accounts...');
+
+  const orders = await dataSource.query(
+    'SELECT id, "transferAccount" FROM orders WHERE "transferAccount" IS NOT NULL',
+  );
+
+  stats.total = orders.length;
+
+  for (const order of orders) {
+    try {
+      if (order.transferAccount && isEncrypted(order.transferAccount)) {
+        const newEncrypted = reEncrypt(
+          order.transferAccount,
+          OLD_KEY_ENV,
+          NEW_KEY_ENV,
+        );
+
+        await dataSource.query(
+          'UPDATE orders SET "transferAccount" = $1 WHERE id = $2',
           [newEncrypted, order.id],
         );
         stats.rotated++;
@@ -230,6 +277,7 @@ async function main(): Promise<void> {
     // Rotate all encrypted fields
     allStats.push(await rotateCustomerPhones(dataSource));
     allStats.push(await rotateOrderPhones(dataSource));
+    allStats.push(await rotateOrderTransferAccounts(dataSource));
 
     printStats(allStats);
   } catch (error) {

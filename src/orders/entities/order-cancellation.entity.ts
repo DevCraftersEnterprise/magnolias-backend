@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Order } from './order.entity';
 import { User } from '../../users/entities/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'orders_cancellations' })
 export class OrderCancellation {
@@ -19,10 +19,7 @@ export class OrderCancellation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({
-    description: 'The order that has been canceled',
-    type: () => Order,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Order, { nullable: false })
   @JoinColumn({ name: 'orderId' })
   order: Order;
@@ -34,10 +31,7 @@ export class OrderCancellation {
   @Column({ type: 'varchar' })
   description: string;
 
-  @ApiProperty({
-    description: 'User who canceled the order',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'canceledBy' })
   canceledBy: User;

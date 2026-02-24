@@ -18,7 +18,7 @@ export class BreadTypesService {
   constructor(
     @InjectRepository(BreadType)
     private readonly breadTypeRepository: Repository<BreadType>,
-  ) {}
+  ) { }
 
   async create(dto: CreateBreadTypeDto, user: User): Promise<BreadType> {
     const { name } = dto;
@@ -43,17 +43,10 @@ export class BreadTypesService {
     return await this.breadTypeRepository.save(breadType);
   }
 
-  async findAll(): Promise<BreadType[]> {
-    return await this.breadTypeRepository.find({
-      where: { isActive: true },
-      order: { name: 'ASC' },
-    });
-  }
-
-  async paginated(
+  async findAll(
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<BreadType>> {
-    const { limit = 10, offset = 0 } = paginationDto;
+  ): Promise<PaginationResponse<BreadType> | BreadType[]> {
+    const { limit, offset } = paginationDto;
 
     const [breadTypes, total] = await this.breadTypeRepository.findAndCount({
       select: {
@@ -67,16 +60,20 @@ export class BreadTypesService {
       order: { name: 'ASC' },
     });
 
-    return {
-      items: breadTypes,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+    if (limit !== undefined && offset !== undefined) {
+      return {
+        items: breadTypes,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
+
+    return breadTypes;
   }
 
   async findOne(term: string): Promise<BreadType> {

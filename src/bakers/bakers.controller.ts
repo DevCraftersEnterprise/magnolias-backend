@@ -128,6 +128,7 @@ export class BakersController {
     type: Boolean,
     description: 'Filter bakers by active status',
   })
+  @ApiOkResponse({ description: 'Bakers list.', type: [Baker] })
   @ApiOkResponse({
     description: 'List of bakers retrieved successfully.',
     schema: {
@@ -151,23 +152,10 @@ export class BakersController {
     },
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  paginated(
+  findAll(
     @Query() filters: BakersFilterDto,
-  ): Promise<PaginationResponse<Baker>> {
-    return this.bakersService.paginated(filters);
-  }
-
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get all bakers',
-    description: 'Retrieves all active bakers.',
-  })
-  @ApiOkResponse({ description: 'Bakers list.', type: [Baker] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll() {
-    return this.bakersService.findAll();
+  ): Promise<PaginationResponse<Baker> | Baker[]> {
+    return this.bakersService.findAll(filters);
   }
 
   @Get(':term')

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -21,18 +21,12 @@ export class OrderAssignment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({
-    description: 'The baker assigned to this order',
-    type: () => Baker,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Baker, (baker) => baker.assignments, { nullable: false })
   @JoinColumn({ name: 'bakerId' })
   baker: Baker;
 
-  @ApiProperty({
-    description: 'The order assigned',
-    type: () => Order,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Order, { nullable: false })
   @JoinColumn({ name: 'orderId' })
   order: Order;
@@ -52,18 +46,12 @@ export class OrderAssignment {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @ApiProperty({
-    description: 'User who created this assignment',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who last updated this assignment',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;

@@ -50,4 +50,7 @@ export class ColorsController {
   findAll(): Promise<Color[]> {
     return this.colorsService.findAll();
   }
+
+  // Activar color
+  // Desactivar color
 }

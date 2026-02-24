@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -11,6 +11,7 @@ import {
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { Color } from '../../colors/entities/color.entity';
 import { PipingLocation } from '../../common/enums/piping-location.enum';
+import { ProductSize } from '../../common/enums/product-size.enum';
 import { WritingLocation } from '../../common/enums/writing-location.enum';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Flavor } from '../../flavors/entities/flavor.entity';
@@ -42,6 +43,22 @@ export class OrderDetail {
   })
   @Column({ type: 'int', default: 1 })
   quantity: number;
+
+  @ApiProperty({
+    description: 'Product size for this detail',
+    example: ProductSize.TWENTY_P,
+    required: false,
+  })
+  @Column({ type: 'enum', enum: ProductSize, nullable: true })
+  productSize?: ProductSize;
+
+  @ApiProperty({
+    description: 'Custom size (if product size is CUSTOM)',
+    example: '80 personas',
+    required: false,
+  })
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  customSize?: string;
 
   @ApiProperty({
     description: 'Indicates if the item has writing',
@@ -78,6 +95,14 @@ export class OrderDetail {
   pipingLocation?: PipingLocation;
 
   @ApiProperty({
+    description: 'Decoration notes for the order detail',
+    example: 'Use fresh flowers as decoration.',
+    required: false,
+  })
+  @Column({ type: 'text', nullable: true })
+  decorationNotes?: string;
+
+  @ApiProperty({
     description: 'Additional notes for the order detail',
     example: 'Please gift wrap this item.',
     required: false,
@@ -100,88 +125,52 @@ export class OrderDetail {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'The product associated with this order detail',
-    type: () => Product,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Product, { nullable: false })
   @JoinColumn({ name: 'productId' })
   product: Product;
 
-  @ApiProperty({
-    description: 'The order associated with this order detail',
-    type: () => Order,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Order, { nullable: false })
   @JoinColumn({ name: 'orderId' })
   order: Order;
 
-  @ApiProperty({
-    description: 'The color associated with this order detail, if any',
-    type: () => Color,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Color, { nullable: true })
   @JoinColumn({ name: 'colorId' })
   color?: Color;
 
-  @ApiProperty({
-    description: 'Type of bread for this item',
-    type: () => BreadType,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => BreadType, { nullable: true })
   @JoinColumn({ name: 'breadTypeId' })
   breadType?: BreadType;
 
-  @ApiProperty({
-    description: 'Filling for this item',
-    type: () => Filling,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Filling, { nullable: true })
   @JoinColumn({ name: 'fillingId' })
   filling?: Filling;
 
-  @ApiProperty({
-    description: 'Flavor for this item',
-    type: () => Flavor,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Flavor, { nullable: true })
   @JoinColumn({ name: 'flavorId' })
   flavor?: Flavor;
 
-  @ApiProperty({
-    description: 'Frosting type for this item',
-    type: () => Frosting,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Frosting, { nullable: true })
   @JoinColumn({ name: 'frostingId' })
   frosting?: Frosting;
 
-  @ApiProperty({
-    description: 'Style for this item',
-    type: () => Style,
-    required: false,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Style, { nullable: true })
   @JoinColumn({ name: 'styleId' })
   style?: Style;
 
-  @ApiProperty({
-    description: 'User who created the order detail',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who updated the order detail',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;

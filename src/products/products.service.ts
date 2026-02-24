@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { CategoriesService } from '../categories/categories.service';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
 import { User } from '../users/entities/user.entity';
@@ -25,14 +26,18 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
-  ) {}
+    private readonly categoriesService: CategoriesService,
+  ) { }
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
-    const { name, description = '' } = dto;
+    const { name, description = '', categoryId } = dto;
+
+    const category = await this.categoriesService.findOne(categoryId);
 
     const productData: Partial<Product> = {
       name,
       description,
+      category,
       createdBy: user,
       updatedBy: user,
     };
@@ -44,8 +49,8 @@ export class ProductsService {
 
   async findProducts(
     filters: ProductsFilterDto,
-  ): Promise<PaginationResponse<Product>> {
-    const { name, description = '', limit = 10, offset = 0 } = filters;
+  ): Promise<PaginationResponse<Product> | Product[]> {
+    const { name, description = '', limit, offset } = filters;
 
     const whereConditions: FindOptionsWhere<Product> = {};
 
@@ -58,15 +63,21 @@ export class ProductsService {
         pictures: { isActive: true },
       },
       relations: {
+        category: true,
         pictures: true,
       },
       select: {
         id: true,
         name: true,
         description: true,
+        isFavorite: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        category: {
+          id: true,
+          name: true,
+        },
         pictures: {
           imageUrl: true,
         },
@@ -76,40 +87,23 @@ export class ProductsService {
       take: limit,
     });
 
-    return {
-      items: products,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
-  }
-
-  async findAllProducts(): Promise<Product[]> {
-    const products = await this.productRepository.find({
-      where: { isActive: true, pictures: { isActive: true } },
-      relations: { pictures: true },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        pictures: {
-          imageUrl: true,
+    if (limit !== undefined && offset !== undefined) {
+      return {
+        items: products,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
         },
-      },
-      order: { name: 'ASC' },
-    });
+      };
+    }
 
     return products;
   }
 
-  async findProductByTerm(term: string): Promise<Product | null> {
+  async findProductByTerm(term: string): Promise<Product> {
     const whereConditions: FindOptionsWhere<Product>[] = [];
 
     if (isUUID(term)) whereConditions.push({ id: term });
@@ -117,29 +111,72 @@ export class ProductsService {
 
     const product = await this.productRepository.findOne({
       where: { ...whereConditions, pictures: { isActive: true } },
-      relations: { pictures: true },
+      relations: { pictures: true, category: true },
       select: {
         id: true,
         name: true,
         description: true,
         isActive: true,
+        isFavorite: true,
         createdAt: true,
         updatedAt: true,
+        category: {
+          id: true,
+          name: true,
+        },
         pictures: {
           imageUrl: true,
         },
       },
     });
 
+    if (!product) {
+      throw new NotFoundException(
+        `Product not found with the provided term: ${term}`,
+      );
+    }
+
+    return product;
+  }
+  async findFavoriteProduct(): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { isFavorite: true, pictures: { isActive: true } },
+      relations: { pictures: true, category: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isActive: true,
+        isFavorite: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          id: true,
+          name: true,
+        },
+        pictures: {
+          imageUrl: true,
+        },
+      },
+    });
+
+    if (!product) throw new NotFoundException(`Favorite product not found`);
+
     return product;
   }
 
   async updateProduct(dto: UpdateProductDto, user: User): Promise<Product> {
-    const { id, name, description, isActive } = dto;
+    const { id, name, description, isActive, categoryId } = dto;
 
     const product = await this.productRepository.preload({ id });
 
     if (!product) throw new NotFoundException('Product does not exist');
+
+    if (categoryId) {
+      const category = await this.categoriesService.findOne(categoryId);
+
+      if (product.category.id !== category.id) product.category = category;
+    }
 
     product.name = name ?? product.name;
     product.description = description ?? product.description;
@@ -149,6 +186,34 @@ export class ProductsService {
     const updatedProduct = await this.productRepository.save(product);
 
     return updatedProduct;
+  }
+
+  async updateProductFavoriteStatus(
+    dto: UpdateProductDto,
+    user: User,
+  ): Promise<Product> {
+    const { id } = dto;
+
+    const oldFavoriteProduct = await this.productRepository.findOne({
+      where: { isFavorite: true },
+    });
+
+    if (oldFavoriteProduct && oldFavoriteProduct.id !== id) {
+      oldFavoriteProduct.isFavorite = false;
+      oldFavoriteProduct.updatedBy = user;
+      await this.productRepository.save(oldFavoriteProduct);
+    }
+
+    const product = await this.productRepository.preload({ id });
+
+    if (!product) throw new NotFoundException('Product does not exist');
+
+    product.isFavorite = true;
+    product.updatedBy = user;
+
+    const favorite = await this.productRepository.save(product);
+
+    return this.findProductByTerm(favorite.id);
   }
 
   async deleteProduct(dto: UpdateProductDto, user: User): Promise<void> {
@@ -204,7 +269,7 @@ export class ProductsService {
 
     await this.productPictureRepository.save(pictures);
 
-    return this.findProductByTerm(id) as Promise<Product>;
+    return this.findProductByTerm(id);
   }
 
   async hideProductPicture(id: string, user: User): Promise<void> {

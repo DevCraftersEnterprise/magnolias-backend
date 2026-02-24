@@ -30,6 +30,7 @@ import { UsersFilterDto } from './dto/users-filter.dto';
 import { User } from './entities/user.entity';
 import { UserRoles } from './enums/user-role';
 import { UsersService } from './users.service';
+import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -171,6 +172,24 @@ export class UsersController {
     @CurrentUser() user: User,
   ): Promise<Partial<User>> {
     return this.usersService.updateUser(updateUserDto, user);
+  }
+
+  @Patch('reset-password')
+  @ApiOperation({
+    summary: 'Reset user password (userkey)',
+    description:
+      'Resets the password for user following certain restriction, based on user level',
+  })
+  @ApiOkResponse({ description: 'Password successfully reset.', type: String })
+  @ApiForbiddenResponse({
+    description:
+      'The user try to reset a password for a similar or higher role',
+  })
+  resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @CurrentUser() user: User,
+  ): Promise<string> {
+    return this.usersService.resetPassword(resetPasswordDto, user);
   }
 
   @Delete()

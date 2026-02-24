@@ -12,13 +12,16 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomersFilterDto } from './dto/customers-filter.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
+import { CustomerAddress } from './entities/customer-address.entity';
 
 @Injectable()
 export class CustomersService {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-  ) {}
+    @InjectRepository(CustomerAddress)
+    private readonly customerAddressRepository: Repository<CustomerAddress>,
+  ) { }
 
   async createCustomer(dto: CreateCustomerDto, user: User): Promise<Customer> {
     const existingCustomer = await this.customerRepository.findOne({
@@ -31,19 +34,33 @@ export class CustomersService {
       );
     }
 
+    // Exclude address from customer creation
+    const { address, ...customerData } = dto;
+
     const customer = this.customerRepository.create({
-      ...dto,
+      ...customerData,
       createdBy: user,
       updatedBy: user,
     });
 
-    return await this.customerRepository.save(customer);
+    const savedCustomer = await this.customerRepository.save(customer);
+
+    // Create customer address if provided
+    if (address) {
+      const customerAddress = this.customerAddressRepository.create({
+        ...address,
+        customer: savedCustomer,
+      });
+      await this.customerAddressRepository.save(customerAddress);
+    }
+
+    return this.findOne(savedCustomer.id);
   }
 
   async findAll(
     filterDto: CustomersFilterDto,
-  ): Promise<PaginationResponse<Customer>> {
-    const { name, phone, isActive, limit = 10, offset = 0 } = filterDto;
+  ): Promise<PaginationResponse<Customer> | Customer[]> {
+    const { name, phone, isActive, limit, offset } = filterDto;
 
     const whereConditions: FindOptionsWhere<Customer> = {};
 
@@ -53,34 +70,47 @@ export class CustomersService {
 
     const [customers, total] = await this.customerRepository.findAndCount({
       where: whereConditions,
+      relations: { address: true },
       select: {
         id: true,
         fullName: true,
         phone: true,
         alternativePhone: true,
-        address: true,
-        alternativeAddress: true,
         email: true,
         notes: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        address: {
+          id: true,
+          street: true,
+          number: true,
+          neighborhood: true,
+          city: true,
+          postalCode: true,
+          betweenStreets: true,
+          reference: true,
+        },
       },
       take: limit,
       skip: offset,
       order: { fullName: 'DESC' },
     });
 
-    return {
-      items: customers,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+    if (limit !== undefined && offset !== undefined) {
+      return {
+        items: customers,
+        total,
+        pagination: {
+          limit,
+          offset,
+          totalPages: Math.ceil(total / limit),
+          currentPage: Math.floor(offset / limit) + 1,
+        },
+      };
+    }
+
+    return customers;
   }
 
   async findOne(term: string): Promise<Customer> {
@@ -91,19 +121,27 @@ export class CustomersService {
 
     const customer = await this.customerRepository.findOne({
       where: whereCondition,
-      relations: { orders: { branch: true, details: true } },
+      relations: { address: true, orders: { branch: true, details: true } },
       select: {
         id: true,
         fullName: true,
         phone: true,
         alternativePhone: true,
-        address: true,
-        alternativeAddress: true,
         email: true,
         notes: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        address: {
+          id: true,
+          street: true,
+          number: true,
+          neighborhood: true,
+          city: true,
+          postalCode: true,
+          betweenStreets: true,
+          reference: true,
+        },
         orders: {
           id: true,
           deliveryDate: true,

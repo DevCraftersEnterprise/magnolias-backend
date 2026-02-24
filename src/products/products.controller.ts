@@ -94,6 +94,10 @@ export class ProductsController {
     description: 'Filter products by description',
   })
   @ApiOkResponse({
+    description: 'List of all active products retrieved successfully.',
+    type: [Product],
+  })
+  @ApiOkResponse({
     description: 'List of products retrieved successfully.',
     schema: {
       type: 'object',
@@ -117,21 +121,21 @@ export class ProductsController {
   })
   findProducts(
     @Query() filterDto: ProductsFilterDto,
-  ): Promise<PaginationResponse<Product>> {
+  ): Promise<PaginationResponse<Product> | Product[]> {
     return this.productsService.findProducts(filterDto);
   }
 
-  @Get('all')
+  @Get('favorite')
   @ApiOperation({
-    summary: 'Get all products',
-    description: 'Retrieves a list of all active products without pagination.',
+    summary: 'Get favorite product',
+    description: 'Retrieves the favorite product.',
   })
   @ApiOkResponse({
-    description: 'List of all active products retrieved successfully.',
-    type: [Product],
+    description: 'Favorite product retrieved successfully.',
+    type: Product,
   })
-  findAllProducts(): Promise<Product[]> {
-    return this.productsService.findAllProducts();
+  findFavoriteProduct(): Promise<Product | null> {
+    return this.productsService.findFavoriteProduct();
   }
 
   @Get(':term')
@@ -151,7 +155,14 @@ export class ProductsController {
   @ApiNotFoundResponse({
     description: 'Product not found with the provided term.',
   })
-  findProductByTerm(@Param('term') term: string): Promise<Product | null> {
+  @ApiOkResponse({
+    description: 'Product retrieved successfully.',
+    type: Product,
+  })
+  @ApiNotFoundResponse({
+    description: 'Product not found with the provided term.',
+  })
+  findProductByTerm(@Param('term') term: string): Promise<Product> {
     return this.productsService.findProductByTerm(term);
   }
 
@@ -174,6 +185,30 @@ export class ProductsController {
     @CurrentUser() user: User,
   ): Promise<Product> {
     return this.productsService.updateProduct(updateProductDto, user);
+  }
+
+  @Patch('favorite')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Update product favorite status',
+    description: 'Updates the favorite status of an existing product.',
+  })
+  @ApiOkResponse({
+    description: 'Product successfully updated.',
+    type: Product,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid product data provided.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiNotFoundResponse({ description: 'Product not found.' })
+  updateProductFavoriteStatus(
+    @Body() updateProductDto: UpdateProductDto,
+    @CurrentUser() user: User,
+  ): Promise<Product> {
+    return this.productsService.updateProductFavoriteStatus(
+      updateProductDto,
+      user,
+    );
   }
 
   @Delete()

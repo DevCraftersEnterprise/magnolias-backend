@@ -1,8 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
 import { CreateBranchDto } from './create-branch.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class UpdateBranchDto extends PartialType(CreateBranchDto) {
   @ApiProperty({

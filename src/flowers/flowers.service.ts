@@ -1,20 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { CreateFlowerDto } from './dto/create-flower.dto';
 import { UpdateFlowerDto } from './dto/update-flower.dto';
 import { Flower } from './entities/flower.entity';
 import { User } from '../users/entities/user.entity';
 import { isUUID } from 'class-validator';
 import { PaginationResponse } from '../common/responses/pagination.response';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FlowersFilterDto } from './dto/flowers-filter.dto';
 
 @Injectable()
 export class FlowersService {
   constructor(
     @InjectRepository(Flower)
     private readonly flowerRepository: Repository<Flower>,
-  ) {}
+  ) { }
 
   async create(createFlowerDto: CreateFlowerDto, user: User): Promise<Flower> {
     const existingFlower = await this.flowerRepository.findOne({
@@ -37,34 +37,36 @@ export class FlowersService {
     return await this.flowerRepository.save(flower);
   }
 
-  async findAll(): Promise<Flower[]> {
-    return await this.flowerRepository.find({
-      where: { isActive: true },
-      order: { name: 'ASC' },
-    });
-  }
+  async findAll(
+    flowersFilterDto: FlowersFilterDto,
+  ): Promise<PaginationResponse<Flower> | Flower[]> {
+    const { limit, offset, isActive, name } = flowersFilterDto ?? {};
 
-  async paginated(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<Flower>> {
-    const { limit = 10, offset = 0 } = paginationDto;
+    const whereOptions: FindOptionsWhere<Flower> = {};
+
+    if (isActive !== undefined) whereOptions.isActive = isActive;
+    if (name) whereOptions.name = ILike(`%${name}%`);
 
     const [flowers, total] = await this.flowerRepository.findAndCount({
+      where: whereOptions,
       order: { createdAt: 'DESC' },
-      skip: offset,
-      take: limit,
+      skip: offset ?? undefined,
+      take: limit ?? undefined,
     });
 
-    return {
-      items: flowers,
-      total,
-      pagination: {
-        limit,
-        offset,
-        currentPage: Math.floor(offset / limit) + 1,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    if (limit !== undefined && offset !== undefined) {
+      return {
+        items: flowers,
+        total,
+        pagination: {
+          limit,
+          offset,
+          currentPage: Math.floor(offset / limit) + 1,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    }
+    return flowers;
   }
 
   async findOne(term: string): Promise<Flower> {

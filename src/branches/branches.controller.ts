@@ -56,11 +56,11 @@ export class BranchesController {
   @ApiBadRequestResponse({ description: 'Invalid branch data provided.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   @ApiForbiddenResponse({ description: 'Forbidden access.' })
-  registerBranch(
+  create(
     @Body() createBranchDto: CreateBranchDto,
     @CurrentUser() user: User,
   ): Promise<Branch> {
-    return this.branchesService.registerBranch(createBranchDto, user);
+    return this.branchesService.create(createBranchDto, user);
   }
 
   @Post('phones/:branchId')
@@ -129,6 +129,10 @@ export class BranchesController {
     description: 'Filter branches by address',
   })
   @ApiOkResponse({
+    description: 'List of all branches retrieved successfully.',
+    type: [Branch],
+  })
+  @ApiOkResponse({
     description: 'List of branches retrieved successfully.',
     schema: {
       type: 'object',
@@ -150,23 +154,10 @@ export class BranchesController {
       },
     },
   })
-  findBranches(
+  findAll(
     @Query() filterDto: BranchesFilterDto,
-  ): Promise<PaginationResponse<Branch>> {
-    return this.branchesService.findBranches(filterDto);
-  }
-
-  @Get('all')
-  @ApiOperation({
-    summary: 'Get all branches',
-    description: 'Retrieves a list of all branches without pagination.',
-  })
-  @ApiOkResponse({
-    description: 'List of all branches retrieved successfully.',
-    type: [Branch],
-  })
-  findAllBranches(): Promise<Branch[]> {
-    return this.branchesService.findAllBranches();
+  ): Promise<PaginationResponse<Branch> | Branch[]> {
+    return this.branchesService.findAll(filterDto);
   }
 
   @Get(':term')

@@ -100,6 +100,10 @@ export class CustomersController {
     description: 'Filter customers by active status',
   })
   @ApiOkResponse({
+    description: 'List of customers retrieved successfully',
+    type: [Customer],
+  })
+  @ApiOkResponse({
     description: 'List of customers retrieved successfully.',
     schema: {
       type: 'object',
