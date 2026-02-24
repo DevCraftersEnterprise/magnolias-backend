@@ -25,6 +25,8 @@ import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
+import { OrderStatsDto } from './dto/order-stats.dto';
+import { UserRoles } from 'src/users/enums/user-role';
 import { AddressesService } from '../addresses/addresses.service';
 import { Branch } from '../branches/entities/branch.entity';
 
@@ -561,4 +563,31 @@ export class OrdersService {
 
     return this.getOrderByTerm(id);
   }
+
+  async getStats(user: User, branchId?: string): Promise<OrderStatsDto> {
+    const query = this.orderRepository.createQueryBuilder('order');
+    console.log('User role:', user.role);
+    if (user.role === UserRoles.ADMIN) {
+      if (branchId) {
+        query.andWhere('order.branchId = :branchId', { branchId });
+      }
+    } else {
+      query.andWhere('order.branchId = :branchId', { branchId: user.branch?.id });
+    }
+
+    const orders = await query.getMany();
+
+    const stats: OrderStatsDto = {
+      total: orders.length,
+      statuses: {
+        created: orders.filter(o => o.status === OrderStatus.CREATED).length,
+        in_process: orders.filter(o => o.status === OrderStatus.IN_PROCESS).length,
+        done: orders.filter(o => o.status === OrderStatus.DONE).length,
+        cancelled: orders.filter(o => o.status === OrderStatus.CANCELED).length,
+      }
+    };
+
+    return stats;
+  }
+
 }
