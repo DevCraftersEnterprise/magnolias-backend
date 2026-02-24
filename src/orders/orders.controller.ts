@@ -37,6 +37,7 @@ import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
+import { OrderStatsDto } from './dto/order-stats.dto';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -73,6 +74,16 @@ export class OrdersController {
       user,
       referenceImages,
     );
+  }
+
+  @Get('stats')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  getOrderStats(
+    @CurrentUser() user: User,
+    @Query() branchId?: string
+  ) : Promise <OrderStatsDto> {
+    return this.ordersService.getStats(user, branchId);
   }
 
   @Get('branch/:branchId')
