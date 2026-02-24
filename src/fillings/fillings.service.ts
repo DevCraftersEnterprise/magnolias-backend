@@ -18,7 +18,7 @@ export class FillingsService {
   constructor(
     @InjectRepository(Filling)
     private readonly fillingRepository: Repository<Filling>,
-  ) {}
+  ) { }
 
   async create(dto: CreateFillingDto, user: User): Promise<Filling> {
     const { name } = dto;
@@ -58,7 +58,7 @@ export class FillingsService {
       order: { name: 'ASC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: fillings,
         total,

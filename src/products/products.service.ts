@@ -27,7 +27,7 @@ export class ProductsService {
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
     private readonly categoriesService: CategoriesService,
-  ) {}
+  ) { }
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
     const { name, description = '', categoryId } = dto;
@@ -87,7 +87,7 @@ export class ProductsService {
       take: limit,
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: products,
         total,

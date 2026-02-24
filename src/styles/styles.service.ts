@@ -18,7 +18,7 @@ export class StylesService {
   constructor(
     @InjectRepository(Style)
     private readonly styleRepository: Repository<Style>,
-  ) {}
+  ) { }
 
   async create(dto: CreateStyleDto, user: User): Promise<Style> {
     const { name } = dto;
@@ -63,7 +63,7 @@ export class StylesService {
       order: { name: 'ASC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: styles,
         total,
