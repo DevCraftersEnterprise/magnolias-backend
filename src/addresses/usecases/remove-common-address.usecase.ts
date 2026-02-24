@@ -26,5 +26,7 @@ export class RemoveCommonAddressUseCase {
         Object.assign(address, { isActive: false, updatedBy: user });
 
         await this.commonAddressRepository.save(address);
+
+        this.logger.log(`Address with ID ${id} removed successfully by user ${user.id}`);
     }
 }

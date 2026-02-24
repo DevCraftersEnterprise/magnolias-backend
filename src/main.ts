@@ -1,6 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from '@/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -22,7 +22,6 @@ async function bootstrap() {
     .setTitle('Magnolias API')
     .setDescription('API documentation for the Magnolias application')
     .setVersion('1.0')
-    .addTag('magnolias')
     .addBearerAuth(
       {
         type: 'http',

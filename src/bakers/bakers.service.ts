@@ -1,17 +1,26 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { PaginationResponse } from '../common/responses/pagination.response';
-import { OrdersService } from '../orders/orders.service';
-import { User } from '../users/entities/user.entity';
-import { BakersFilterDto } from './dto/bakers-filter.dto';
-import { CreateBakerDto } from './dto/create-baker.dto';
-import { UpdateBakerDto } from './dto/update-baker.dto';
-import { Baker } from './entities/baker.entity';
-import { OrderAssignment } from './entities/order-assignment.entity';
-import { isUUID } from 'class-validator';
-import { AssignOrderDto } from './dto/assign-order.dto';
-import { OrderStatus } from 'src/orders/enums/order-status.enum';
+import { Repository } from 'typeorm';
+
+import { PaginationResponse } from '@/common/responses/pagination.response';
+import { OrdersService } from '@/orders/orders.service';
+import { OrderStatus } from '@/orders/enums/order-status.enum';
+
+import { User } from '@/users/entities/user.entity';
+
+import { Baker } from '@/bakers/entities/baker.entity';
+import { OrderAssignment } from '@/bakers/entities/order-assignment.entity';
+
+import { BakersFilterDto } from '@/bakers/dto/bakers-filter.dto';
+import { CreateBakerDto } from '@/bakers/dto/create-baker.dto';
+import { UpdateBakerDto } from '@/bakers/dto/update-baker.dto';
+import { AssignOrderDto } from '@/bakers/dto/assign-order.dto';
+
+import { CreateBakerUseCase } from '@/bakers/usecases/create-baker.usecase';
+import { FindAllBakersUseCase } from '@/bakers/usecases/find-all-bakers.usecase';
+import { FindOneBakerUseCase } from '@/bakers/usecases/find-one-baker.usecase';
+import { UpdateBakerUseCase } from '@/bakers/usecases/update-baker.usecase';
+import { RemoveBakerUseCase } from '@/bakers/usecases/remove-baker.usecase';
 
 @Injectable()
 export class BakersService {
@@ -21,94 +30,32 @@ export class BakersService {
     @InjectRepository(OrderAssignment)
     private readonly orderAssignmentRepository: Repository<OrderAssignment>,
     private readonly orderService: OrdersService,
+
+    private readonly createBakerUseCase: CreateBakerUseCase,
+    private readonly findAllBakersUseCase: FindAllBakersUseCase,
+    private readonly findOneBakerUseCase: FindOneBakerUseCase,
+    private readonly updateBakerUseCase: UpdateBakerUseCase,
+    private readonly removeBakerUseCase: RemoveBakerUseCase,
   ) { }
 
   async create(createBakerDto: CreateBakerDto, user: User): Promise<Baker> {
-    const baker = this.bakerRepository.create({
-      ...createBakerDto,
-      createdBy: user,
-      updatedBy: user,
-    });
-
-    return await this.bakerRepository.save(baker);
+    return await this.createBakerUseCase.execute(createBakerDto, user);
   }
 
-  async findAll(
-    filters: BakersFilterDto,
-  ): Promise<PaginationResponse<Baker> | Baker[]> {
-    const { name, area, isActive, limit, offset } = filters;
-
-    const whereConditions: FindOptionsWhere<Baker> = {
-      fullName: name ? ILike(`%${name}%`) : undefined,
-      area: area ? area : undefined,
-      isActive: typeof isActive === 'boolean' ? isActive : undefined,
-    };
-
-    const [bakers, total] = await this.bakerRepository.findAndCount({
-      where: whereConditions,
-      skip: offset,
-      take: limit,
-      order: { fullName: 'ASC' },
-    });
-
-    if (limit !== undefined && offset !== undefined) {
-      return {
-        items: bakers,
-        total,
-        pagination: {
-          limit,
-          offset,
-          totalPages: Math.ceil(total / limit),
-          currentPage: Math.floor(offset / limit) + 1,
-        },
-      };
-    }
-
-    return bakers;
+  async findAll(filters: BakersFilterDto): Promise<PaginationResponse<Baker> | Baker[]> {
+    return await this.findAllBakersUseCase.execute(filters);
   }
 
   async findOne(term: string): Promise<Baker> {
-    const whereConditions: FindOptionsWhere<Baker> = {};
-
-    if (isUUID(term)) whereConditions.id = term;
-    else whereConditions.fullName = term.toUpperCase();
-
-    const baker = await this.bakerRepository.findOne({
-      where: whereConditions,
-      relations: {
-        assignments: {
-          order: true,
-        },
-      },
-    });
-
-    if (!baker) {
-      throw new Error(`Baker with identifier "${term}" not found`);
-    }
-
-    return baker;
+    return await this.findOneBakerUseCase.execute(term);
   }
 
-  async update(
-    id: string,
-    updateBakerDto: UpdateBakerDto,
-    user: User,
-  ): Promise<Baker> {
-    const baker = await this.findOne(id);
-
-    Object.assign(baker, updateBakerDto);
-    baker.updatedBy = user;
-
-    return await this.bakerRepository.save(baker);
+  async update(id: string, updateBakerDto: UpdateBakerDto, user: User,): Promise<Baker> {
+    return await this.updateBakerUseCase.execute(id, updateBakerDto, user);
   }
 
   async remove(id: string, user: User): Promise<void> {
-    const baker = await this.findOne(id);
-
-    baker.isActive = false;
-    baker.updatedBy = user;
-
-    await this.bakerRepository.save(baker);
+    return await this.removeBakerUseCase.execute(id, user);
   }
 
   async assignOrder(

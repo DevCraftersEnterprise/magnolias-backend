@@ -20,24 +20,28 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
-import { BakerArea } from '../common/enums/baker-area.enum';
-import { PaginationResponse } from '../common/responses/pagination.response';
-import { User } from '../users/entities/user.entity';
-import { UserRoles } from '../users/enums/user-role';
-import { BakersService } from './bakers.service';
-import { AssignOrderDto } from './dto/assign-order.dto';
-import { BakersFilterDto } from './dto/bakers-filter.dto';
-import { CreateBakerDto } from './dto/create-baker.dto';
-import { UpdateBakerDto } from './dto/update-baker.dto';
-import { Baker } from './entities/baker.entity';
-import { OrderAssignment } from './entities/order-assignment.entity';
+
+import { Auth } from '@/auth/decorators/auth.decorator';
+import { CurrentUser } from '@/auth/decorators/curret-user.decorator';
+
+import { BakerArea } from '@/common/enums/baker-area.enum';
+import { PaginationResponse } from '@/common/responses/pagination.response';
+
+import { User } from '@/users/entities/user.entity';
+import { UserRoles } from '@/users/enums/user-role';
+
+import { BakersService } from '@/bakers/bakers.service';
+import { AssignOrderDto } from '@/bakers/dto/assign-order.dto';
+import { BakersFilterDto } from '@/bakers/dto/bakers-filter.dto';
+import { CreateBakerDto } from '@/bakers/dto/create-baker.dto';
+import { UpdateBakerDto } from '@/bakers/dto/update-baker.dto';
+import { Baker } from '@/bakers/entities/baker.entity';
+import { OrderAssignment } from '@/bakers/entities/order-assignment.entity';
 
 @ApiTags('Bakers')
 @Controller('bakers')
 export class BakersController {
-  constructor(private readonly bakersService: BakersService) {}
+  constructor(private readonly bakersService: BakersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
