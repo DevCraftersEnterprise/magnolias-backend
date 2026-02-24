@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { User } from '@/users/entities/user.entity';
 
 @Entity({ name: 'common_addresses' })
 @Index(['street', 'number', 'neighborhood'], { unique: true })
