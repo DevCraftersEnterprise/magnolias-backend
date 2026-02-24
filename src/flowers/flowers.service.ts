@@ -14,7 +14,7 @@ export class FlowersService {
   constructor(
     @InjectRepository(Flower)
     private readonly flowerRepository: Repository<Flower>,
-  ) {}
+  ) { }
 
   async create(createFlowerDto: CreateFlowerDto, user: User): Promise<Flower> {
     const existingFlower = await this.flowerRepository.findOne({
@@ -40,21 +40,21 @@ export class FlowersService {
   async findAll(
     flowersFilterDto: FlowersFilterDto,
   ): Promise<PaginationResponse<Flower> | Flower[]> {
-    const { limit, offset, isActive, name } = flowersFilterDto;
+    const { limit, offset, isActive, name } = flowersFilterDto ?? {};
 
     const whereOptions: FindOptionsWhere<Flower> = {};
 
-    if (isActive) whereOptions.isActive = isActive;
+    if (isActive !== undefined) whereOptions.isActive = isActive;
     if (name) whereOptions.name = ILike(`%${name}%`);
 
     const [flowers, total] = await this.flowerRepository.findAndCount({
       where: whereOptions,
       order: { createdAt: 'DESC' },
-      skip: offset,
-      take: limit,
+      skip: offset ?? undefined,
+      take: limit ?? undefined,
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: flowers,
         total,

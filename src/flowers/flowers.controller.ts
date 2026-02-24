@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { FlowersService } from './flowers.service';
 import { CreateFlowerDto } from './dto/create-flower.dto';
@@ -33,7 +34,7 @@ import { FlowersFilterDto } from './dto/flowers-filter.dto';
 @ApiTags('Flowers')
 @Controller('flowers')
 export class FlowersController {
-  constructor(private readonly flowersService: FlowersService) {}
+  constructor(private readonly flowersService: FlowersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
@@ -57,7 +58,7 @@ export class FlowersController {
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Get Flowers with optional filters',
-    description: 'Retrieves a list of Frostings based on provided filters.',
+    description: 'Retrieves a list of flowers based on provided filters.',
   })
   @ApiQuery({
     name: 'limit',
@@ -111,7 +112,7 @@ export class FlowersController {
     },
   })
   findAll(
-    filterDto: FlowersFilterDto,
+    @Query() filterDto: FlowersFilterDto,
   ): Promise<PaginationResponse<Flower> | Flower[]> {
     return this.flowersService.findAll(filterDto);
   }

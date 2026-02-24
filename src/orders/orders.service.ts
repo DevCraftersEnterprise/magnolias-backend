@@ -46,7 +46,7 @@ export class OrdersService {
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
     private readonly addressesService: AddressesService,
-  ) {}
+  ) { }
 
   private async generateOrderCode(
     orderType: OrderType,
@@ -345,7 +345,7 @@ export class OrdersService {
       order: { deliveryDate: 'DESC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: orders,
         total,

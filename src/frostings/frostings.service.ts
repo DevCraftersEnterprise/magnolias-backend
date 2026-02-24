@@ -18,7 +18,7 @@ export class FrostingsService {
   constructor(
     @InjectRepository(Frosting)
     private readonly frostingRepository: Repository<Frosting>,
-  ) {}
+  ) { }
 
   async create(dto: CreateFrostingDto, user: User): Promise<Frosting> {
     const { name } = dto;
@@ -65,7 +65,7 @@ export class FrostingsService {
       order: { name: 'ASC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: frostings,
         total,

@@ -18,7 +18,7 @@ export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   async create(
     createCategoryDto: CreateCategoryDto,
@@ -61,7 +61,7 @@ export class CategoriesService {
       order: { name: 'ASC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: categories,
         total,

@@ -18,7 +18,7 @@ export class BreadTypesService {
   constructor(
     @InjectRepository(BreadType)
     private readonly breadTypeRepository: Repository<BreadType>,
-  ) {}
+  ) { }
 
   async create(dto: CreateBreadTypeDto, user: User): Promise<BreadType> {
     const { name } = dto;
@@ -60,7 +60,7 @@ export class BreadTypesService {
       order: { name: 'ASC' },
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: breadTypes,
         total,

@@ -21,7 +21,7 @@ export class BranchesService {
     private readonly branchRepository: Repository<Branch>,
     @InjectRepository(Phone)
     private readonly phoneRepository: Repository<Phone>,
-  ) {}
+  ) { }
 
   async create(dto: CreateBranchDto, user: User) {
     const { name, address } = dto;
@@ -41,7 +41,7 @@ export class BranchesService {
   async findAll(
     filters: BranchesFilterDto,
   ): Promise<PaginationResponse<Branch> | Branch[]> {
-    const { name, address, limit, offset } = filters;
+    const { name, address, limit, offset } = filters ?? {};
 
     const whereConditions: FindOptionsWhere<Branch> = {};
 
@@ -71,7 +71,7 @@ export class BranchesService {
       take: limit,
     });
 
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       return {
         items: branches,
         total,
