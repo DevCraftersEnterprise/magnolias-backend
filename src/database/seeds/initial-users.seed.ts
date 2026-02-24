@@ -23,14 +23,14 @@ export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
       lastname: 'Corona',
       username: 'cristianc',
       userkey: '112233',
-      role: UserRoles.SUPER,
+      role: UserRoles.ADMIN,
     },
     {
       name: 'Mónica',
       lastname: 'Chaves',
       username: 'monipanecito',
       userkey: '224466',
-      role: UserRoles.SUPER,
+      role: UserRoles.ADMIN,
     },
     {
       name: 'Sergio',
