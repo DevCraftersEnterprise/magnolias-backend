@@ -1,14 +1,35 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommonModule } from '../common/common.module';
-import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
-import { AddressesController } from './addresses.controller';
-import { AddressesService } from './addresses.service';
-import { CommonAddress } from './entities/common-address.entity';
+
+import { CommonModule } from '@/common/common.module';
+import { CustomJwtModule } from '@/custom-jwt/custom-jwt.module';
+
+import { AddressesController } from '@/addresses/addresses.controller';
+import { AddressesService } from '@/addresses/addresses.service';
+import { CommonAddress } from '@/addresses/entities/common-address.entity';
+
+import { CheckForDuplicateAddressUtil } from '@/addresses/utils/check-for-duplicate-address.util';
+
+import { CreateCommonAddressUseCase } from '@/addresses/usecases/create-common-address.usecase';
+import { FindAllCommonAddressesUseCase } from '@/addresses/usecases/find-all-common-addresses.usecase';
+import { FindOneCommonAddressUseCase } from '@/addresses/usecases/find-one-common-address.usecase';
+import { UpdateCommonAddressUseCase } from '@/addresses/usecases/update-common-address.usecase';
+import { RemoveCommonAddressUseCase } from '@/addresses/usecases/remove-common-address.usecase';
 
 @Module({
   controllers: [AddressesController],
-  providers: [AddressesService],
+  providers: [
+    // Services
+    AddressesService,
+    // Utils
+    CheckForDuplicateAddressUtil,
+    // Use Cases
+    CreateCommonAddressUseCase,
+    FindAllCommonAddressesUseCase,
+    FindOneCommonAddressUseCase,
+    UpdateCommonAddressUseCase,
+    RemoveCommonAddressUseCase
+  ],
   imports: [
     TypeOrmModule.forFeature([CommonAddress]),
     CommonModule,
@@ -16,4 +37,4 @@ import { CommonAddress } from './entities/common-address.entity';
   ],
   exports: [TypeOrmModule, AddressesService],
 })
-export class AddressesModule {}
+export class AddressesModule { }
