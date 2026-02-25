@@ -1,12 +1,10 @@
 import { ConflictException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-import { CreateCommonAddressDto } from '@/addresses/dto/create-common-address.dto';
-import { CommonAddress } from '@/addresses/entities/common-address.entity';
-import { CheckForDuplicateAddressUtil } from "@/addresses/utils/check-for-duplicate-address.util";
-
-import { User } from '@/users/entities/user.entity';
+import { CreateCommonAddressDto } from '../../addresses/dto/create-common-address.dto';
+import { CommonAddress } from '../../addresses/entities/common-address.entity';
+import { CheckForDuplicateAddressUtil } from "../../addresses/utils/check-for-duplicate-address.util";
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class CreateCommonAddressUseCase {

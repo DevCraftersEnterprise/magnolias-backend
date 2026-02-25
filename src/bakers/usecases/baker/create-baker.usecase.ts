@@ -1,10 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-import { Baker } from '@/bakers/entities/baker.entity';
-import { CreateBakerDto } from '@/bakers/dto/create-baker.dto';
-import { User } from "@/users/entities/user.entity";
+import { CreateBakerDto } from '../../../bakers/dto/create-baker.dto';
+import { Baker } from '../../../bakers/entities/baker.entity';
+import { User } from "../../../users/entities/user.entity";
 
 @Injectable()
 export class CreateBakerUseCase {

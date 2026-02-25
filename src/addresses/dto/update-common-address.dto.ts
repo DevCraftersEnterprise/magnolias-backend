@@ -1,7 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
-
-import { CreateCommonAddressDto } from '@/addresses/dto/create-common-address.dto';
+import { CreateCommonAddressDto } from '../dto/create-common-address.dto';
 
 export class UpdateCommonAddressDto extends PartialType(
   CreateCommonAddressDto,

@@ -1,24 +1,19 @@
 import { Injectable } from '@nestjs/common';
-
-import { PaginationResponse } from '@/common/responses/pagination.response';
-
-import { User } from '@/users/entities/user.entity';
-
-import { Baker } from '@/bakers/entities/baker.entity';
-import { OrderAssignment } from '@/bakers/entities/order-assignment.entity';
-
-import { BakersFilterDto } from '@/bakers/dto/bakers-filter.dto';
-import { CreateBakerDto } from '@/bakers/dto/create-baker.dto';
-import { UpdateBakerDto } from '@/bakers/dto/update-baker.dto';
-import { AssignOrderDto } from '@/bakers/dto/assign-order.dto';
-
-import { CreateBakerUseCase } from '@/bakers/usecases/baker/create-baker.usecase';
-import { FindAllBakersUseCase } from '@/bakers/usecases/baker/find-all-bakers.usecase';
-import { FindOneBakerUseCase } from '@/bakers/usecases/baker/find-one-baker.usecase';
-import { UpdateBakerUseCase } from '@/bakers/usecases/baker/update-baker.usecase';
-import { RemoveBakerUseCase } from '@/bakers/usecases/baker/remove-baker.usecase';
-import { AssignOrderUseCase } from '@/bakers/usecases/order-assignment/assign-order.usecase';
-import { GetAssignmentsUseCase } from '@/bakers/usecases/order-assignment/get-assignments.usecase';
+import { AssignOrderDto } from '../bakers/dto/assign-order.dto';
+import { BakersFilterDto } from '../bakers/dto/bakers-filter.dto';
+import { CreateBakerDto } from '../bakers/dto/create-baker.dto';
+import { UpdateBakerDto } from '../bakers/dto/update-baker.dto';
+import { Baker } from '../bakers/entities/baker.entity';
+import { OrderAssignment } from '../bakers/entities/order-assignment.entity';
+import { CreateBakerUseCase } from '../bakers/usecases/baker/create-baker.usecase';
+import { FindAllBakersUseCase } from '../bakers/usecases/baker/find-all-bakers.usecase';
+import { FindOneBakerUseCase } from '../bakers/usecases/baker/find-one-baker.usecase';
+import { RemoveBakerUseCase } from '../bakers/usecases/baker/remove-baker.usecase';
+import { UpdateBakerUseCase } from '../bakers/usecases/baker/update-baker.usecase';
+import { AssignOrderUseCase } from '../bakers/usecases/order-assignment/assign-order.usecase';
+import { GetAssignmentsUseCase } from '../bakers/usecases/order-assignment/get-assignments.usecase';
+import { PaginationResponse } from '../common/responses/pagination.response';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class BakersService {

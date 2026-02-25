@@ -1,7 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
-
-import { CreateBakerDto } from '@/bakers/dto/create-baker.dto';
+import { CreateBakerDto } from '../../bakers/dto/create-baker.dto';
 
 export class UpdateBakerDto extends PartialType(CreateBakerDto) {
   @ApiProperty({

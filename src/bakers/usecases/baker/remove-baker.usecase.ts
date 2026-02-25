@@ -1,10 +1,8 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-import { Baker } from '@/bakers/entities/baker.entity';
-
-import { User } from "@/users/entities/user.entity";
+import { Baker } from '../../../bakers/entities/baker.entity';
+import { User } from "../../../users/entities/user.entity";
 
 @Injectable()
 export class RemoveBakerUseCase {

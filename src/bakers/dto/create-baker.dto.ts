@@ -7,8 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-
-import { BakerArea } from '@/common/enums/baker-area.enum';
+import { BakerArea } from '../../common/enums/baker-area.enum';
 
 export class CreateBakerDto {
   @ApiProperty({

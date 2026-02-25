@@ -1,10 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ILike, Repository } from "typeorm";
-
-import { Baker } from '@/bakers/entities/baker.entity';
-import { BakersFilterDto } from '@/bakers/dto/bakers-filter.dto';
-import { PaginationResponse } from "@/common/responses/pagination.response";
+import { BakersFilterDto } from '../../../bakers/dto/bakers-filter.dto';
+import { Baker } from '../../../bakers/entities/baker.entity';
+import { PaginationResponse } from "../../../common/responses/pagination.response";
 
 @Injectable()
 export class FindAllBakersUseCase {

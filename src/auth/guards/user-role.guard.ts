@@ -7,10 +7,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-
-import { User } from '@/users/entities/user.entity';
-import { UserRoles } from '@/users/enums/user-role';
-import { META_ROLE } from '@/auth/decorators/role-protected.decorator';
+import { User } from '../../users/entities/user.entity';
+import { UserRoles } from '../../users/enums/user-role';
+import { META_ROLE } from '../../auth/decorators/role-protected.decorator';
 
 @Injectable()
 export class UserRoleGuard implements CanActivate {

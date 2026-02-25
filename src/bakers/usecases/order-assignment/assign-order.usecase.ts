@@ -1,12 +1,11 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-import { Baker } from "@/bakers/entities/baker.entity";
-import { OrderAssignment } from "@/bakers/entities/order-assignment.entity";
-import { AssignOrderDto } from "@/bakers/dto/assign-order.dto";
-import { User } from "@/users/entities/user.entity";
-import { OrdersService } from "@/orders/orders.service";
+import { AssignOrderDto } from "../../../bakers/dto/assign-order.dto";
+import { Baker } from "../../../bakers/entities/baker.entity";
+import { OrderAssignment } from "../../../bakers/entities/order-assignment.entity";
+import { OrdersService } from "../../../orders/orders.service";
+import { User } from "../../../users/entities/user.entity";
 
 @Injectable()
 export class AssignOrderUseCase {

@@ -1,10 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-import { CreateBranchDto } from "@/branches/dto/create-branch.dto";
-import { Branch } from "@/branches/entities/branch.entity";
-import { User } from "@/users/entities/user.entity";
+import { CreateBranchDto } from "../../../branches/dto/create-branch.dto";
+import { Branch } from "../../../branches/entities/branch.entity";
+import { User } from "../../../users/entities/user.entity";
 
 @Injectable()
 export class CreateBranchUseCase {

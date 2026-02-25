@@ -1,9 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { FindOptionsWhere, Repository } from "typeorm";
-
-import { Branch } from "@/branches/entities/branch.entity";
 import { isUUID } from "class-validator";
+import { FindOptionsWhere, Repository } from "typeorm";
+import { Branch } from "../../../branches/entities/branch.entity";
 
 @Injectable()
 export class FindOneBranchUseCase {

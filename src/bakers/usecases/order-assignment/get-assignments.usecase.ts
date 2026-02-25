@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-import { Baker } from "@/bakers/entities/baker.entity";
-import { OrderAssignment } from "@/bakers/entities/order-assignment.entity";
-import { OrderStatus } from "@/orders/enums/order-status.enum";
+import { Baker } from "../../../bakers/entities/baker.entity";
+import { OrderAssignment } from "../../../bakers/entities/order-assignment.entity";
+import { OrderStatus } from "../../../orders/enums/order-status.enum";
 
 @Injectable()
 export class GetAssignmentsUseCase {

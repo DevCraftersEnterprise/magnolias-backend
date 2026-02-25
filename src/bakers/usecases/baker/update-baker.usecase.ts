@@ -1,12 +1,9 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-
-import { Baker } from '@/bakers/entities/baker.entity';
-import { UpdateBakerDto } from '@/bakers/dto/update-baker.dto';
-
-import { User } from "@/users/entities/user.entity";
+import { UpdateBakerDto } from '../../../bakers/dto/update-baker.dto';
+import { Baker } from '../../../bakers/entities/baker.entity';
+import { User } from "../../../users/entities/user.entity";
 
 @Injectable()
 export class UpdateBakerUseCase {

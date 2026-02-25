@@ -1,11 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-
-import { User } from '@/users/entities/user.entity';
-import { RefreshTokenResponse } from '@/auth/responses/refresh-token.response';
-import { sanitizeUser } from '@/users/utils/sanitized-user.util';
-import { UsersService } from '@/users/users.service';
+import { RefreshTokenResponse } from '../../auth/responses/refresh-token.response';
+import { User } from '../../users/entities/user.entity';
+import { UsersService } from '../../users/users.service';
+import { sanitizeUser } from '../../users/utils/sanitized-user.util';
 
 @Injectable()
 export class RefreshTokenUseCase {

@@ -1,10 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ILike, Repository } from "typeorm";
-
-import { Branch } from "@/branches/entities/branch.entity";
-import { BranchesFilterDto } from "@/branches/dto/branches-filter.dto";
-import { PaginationResponse } from "@/common/responses/pagination.response";
+import { BranchesFilterDto } from "../../../branches/dto/branches-filter.dto";
+import { Branch } from "../../../branches/entities/branch.entity";
+import { PaginationResponse } from "../../../common/responses/pagination.response";
 
 @Injectable()
 export class FindAllBranchesUseCase {

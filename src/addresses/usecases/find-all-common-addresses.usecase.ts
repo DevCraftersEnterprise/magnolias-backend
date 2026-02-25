@@ -1,8 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ILike, Repository } from "typeorm";
-
-import { CommonAddress } from '@/addresses/entities/common-address.entity';
+import { CommonAddress } from '../../addresses/entities/common-address.entity';
 
 @Injectable()
 export class FindAllCommonAddressesUseCase {

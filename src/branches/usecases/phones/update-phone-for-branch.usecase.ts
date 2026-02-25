@@ -1,10 +1,9 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-
-import { UpdatePhonesDto } from "@/branches/dto/update-phones.dto";
-import { Phone } from "@/branches/entities/phone.entity";
-import { User } from "@/users/entities/user.entity";
+import { UpdatePhonesDto } from "../../../branches/dto/update-phones.dto";
+import { Phone } from "../../../branches/entities/phone.entity";
+import { User } from "../../../users/entities/user.entity";
 
 @Injectable()
 export class UpdatePhoneForBranchUseCase {

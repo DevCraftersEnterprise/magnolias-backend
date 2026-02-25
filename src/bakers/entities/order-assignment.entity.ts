@@ -8,10 +8,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { Order } from '@/orders/entities/order.entity';
-import { User } from '@/users/entities/user.entity';
-import { Baker } from '@/bakers/entities/baker.entity';
+import { Baker } from '../../bakers/entities/baker.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity({ name: 'order_assignments' })
 export class OrderAssignment {

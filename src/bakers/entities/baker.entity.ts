@@ -9,10 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { BakerArea } from '@/common/enums/baker-area.enum';
-import { User } from '@/users/entities/user.entity';
-import { OrderAssignment } from '@/bakers/entities/order-assignment.entity';
+import { OrderAssignment } from '../../bakers/entities/order-assignment.entity';
+import { BakerArea } from '../../common/enums/baker-area.enum';
+import { User } from '../../users/entities/user.entity';
 
 @Entity({ name: 'bakers' })
 export class Baker {

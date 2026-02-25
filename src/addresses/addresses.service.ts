@@ -3,19 +3,15 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
-import { CreateCommonAddressDto } from '@/addresses/dto/create-common-address.dto';
-import { UpdateCommonAddressDto } from '@/addresses/dto/update-common-address.dto';
-
-import { CommonAddress } from '@/addresses/entities/common-address.entity';
-
-import { CreateCommonAddressUseCase } from '@/addresses/usecases/create-common-address.usecase';
-import { FindAllCommonAddressesUseCase } from '@/addresses/usecases/find-all-common-addresses.usecase';
-import { FindOneCommonAddressUseCase } from '@/addresses/usecases/find-one-common-address.usecase';
-import { UpdateCommonAddressUseCase } from '@/addresses/usecases/update-common-address.usecase';
-import { RemoveCommonAddressUseCase } from '@/addresses/usecases/remove-common-address.usecase';
-
-import { User } from '@/users/entities/user.entity';
+import { CreateCommonAddressDto } from '../addresses/dto/create-common-address.dto';
+import { UpdateCommonAddressDto } from '../addresses/dto/update-common-address.dto';
+import { CommonAddress } from '../addresses/entities/common-address.entity';
+import { CreateCommonAddressUseCase } from '../addresses/usecases/create-common-address.usecase';
+import { FindAllCommonAddressesUseCase } from '../addresses/usecases/find-all-common-addresses.usecase';
+import { FindOneCommonAddressUseCase } from '../addresses/usecases/find-one-common-address.usecase';
+import { RemoveCommonAddressUseCase } from '../addresses/usecases/remove-common-address.usecase';
+import { UpdateCommonAddressUseCase } from '../addresses/usecases/update-common-address.usecase';
+import { User } from '../users/entities/user.entity';
 @Injectable()
 export class AddressesService {
   constructor(

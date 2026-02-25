@@ -1,25 +1,20 @@
 import { Injectable } from '@nestjs/common';
-
-import { PaginationResponse } from '@/common/responses/pagination.response';
-import { User } from '@/users/entities/user.entity';
-
-import { BranchesFilterDto } from '@/branches/dto/branches-filter.dto';
-import { CreateBranchDto } from '@/branches/dto/create-branch.dto';
-import { CreatePhonesDto } from '@/branches/dto/create-phones.dto';
-import { UpdateBranchDto } from '@/branches/dto/update-branch.dto';
-import { UpdatePhonesDto } from '@/branches/dto/update-phones.dto';
-import { Branch } from '@/branches/entities/branch.entity';
-import { Phone } from '@/branches/entities/phone.entity';
-
-import { CreateBranchUseCase } from '@/branches/usecases/branch/create-branch.usecase';
-import { FindAllBranchesUseCase } from '@/branches/usecases/branch/find-all-branches.usecase';
-import { FindOneBranchUseCase } from '@/branches/usecases/branch/find-one-branch.usecase';
-import { RemoveBranchUseCase } from '@/branches/usecases/branch/remove-branch.usecase';
-import { UpdateBranchUseCase } from '@/branches/usecases/branch/update-branch.usecase';
-
-import { CreatePhoneForBranchUseCase } from '@/branches/usecases/phones/create-phone-for-branch.usecase';
-import { UpdatePhoneForBranchUseCase } from '@/branches/usecases/phones/update-phone-for-branch.usecase';
-
+import { BranchesFilterDto } from '../branches/dto/branches-filter.dto';
+import { CreateBranchDto } from '../branches/dto/create-branch.dto';
+import { CreatePhonesDto } from '../branches/dto/create-phones.dto';
+import { UpdateBranchDto } from '../branches/dto/update-branch.dto';
+import { UpdatePhonesDto } from '../branches/dto/update-phones.dto';
+import { Branch } from '../branches/entities/branch.entity';
+import { Phone } from '../branches/entities/phone.entity';
+import { CreateBranchUseCase } from '../branches/usecases/branch/create-branch.usecase';
+import { FindAllBranchesUseCase } from '../branches/usecases/branch/find-all-branches.usecase';
+import { FindOneBranchUseCase } from '../branches/usecases/branch/find-one-branch.usecase';
+import { RemoveBranchUseCase } from '../branches/usecases/branch/remove-branch.usecase';
+import { UpdateBranchUseCase } from '../branches/usecases/branch/update-branch.usecase';
+import { CreatePhoneForBranchUseCase } from '../branches/usecases/phones/create-phone-for-branch.usecase';
+import { UpdatePhoneForBranchUseCase } from '../branches/usecases/phones/update-phone-for-branch.usecase';
+import { PaginationResponse } from '../common/responses/pagination.response';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class BranchesService {

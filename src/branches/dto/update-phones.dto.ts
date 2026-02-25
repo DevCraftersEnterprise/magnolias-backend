@@ -1,7 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsUUID } from 'class-validator';
-
-import { CreatePhonesDto } from '@/branches/dto/create-phones.dto';
+import { CreatePhonesDto } from '../../branches/dto/create-phones.dto';
 
 export class UpdatePhonesDto extends PartialType(CreatePhonesDto) {
   @ApiProperty({

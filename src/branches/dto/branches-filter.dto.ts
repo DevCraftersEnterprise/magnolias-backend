@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
-
-import { PaginationDto } from '@/common/dto/pagination.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export class BranchesFilterDto extends PaginationDto {
   @ApiProperty({

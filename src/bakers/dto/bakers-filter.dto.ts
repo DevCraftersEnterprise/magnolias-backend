@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
-
-import { PaginationDto } from '@/common/dto/pagination.dto';
-import { BakerArea } from '@/common/enums/baker-area.enum';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+import { BakerArea } from '../../common/enums/baker-area.enum';
 
 export class BakersFilterDto extends PaginationDto {
   @ApiProperty({

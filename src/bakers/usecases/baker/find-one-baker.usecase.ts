@@ -1,10 +1,8 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { FindOptionsWhere, Repository } from "typeorm";
 import { isUUID } from "class-validator";
-
-import { Baker } from '@/bakers/entities/baker.entity';
-
+import { FindOptionsWhere, Repository } from "typeorm";
+import { Baker } from '../../../bakers/entities/baker.entity';
 
 @Injectable()
 export class FindOneBakerUseCase {

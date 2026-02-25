@@ -1,23 +1,12 @@
-import * as argon2 from 'argon2';
-import { DataSource } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { RegisterUserDto } from '../../users/dto/register-user.dto';
 import { UserRoles } from '../../users/enums/user-role';
+import { UsersService } from '../../users/users.service';
 
-interface SeedUser {
-  name: string;
-  lastname: string;
-  username: string;
-  userkey: string;
-  role: UserRoles;
-}
-
-export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
+export async function seedInitialUsers(usersService: UsersService): Promise<void> {
   console.log('🌱 Iniciando seed de usuarios iniciales...');
 
-  const userRepository = dataSource.getRepository(User);
-
   // Definir los usuarios iniciales
-  const initialUsers: SeedUser[] = [
+  const initialUsers: RegisterUserDto[] = [
     {
       name: 'Cristian',
       lastname: 'Corona',
@@ -47,9 +36,7 @@ export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
   for (const userData of initialUsers) {
     try {
       // Verificar si el usuario ya existe
-      const existingUser = await userRepository.findOne({
-        where: { username: userData.username },
-      });
+      const existingUser = await usersService.findUserByTerm(userData.username);
 
       if (existingUser) {
         console.log(
@@ -59,20 +46,8 @@ export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      // Hashear la userkey
-      const hashedKey = await argon2.hash(userData.userkey);
+      await usersService.registerUser(userData);
 
-      // Crear el usuario
-      const user = userRepository.create({
-        name: userData.name,
-        lastname: userData.lastname,
-        username: userData.username,
-        userkey: hashedKey,
-        role: userData.role,
-        isActive: true,
-      });
-
-      await userRepository.save(user);
       console.log(
         `   ✅ Usuario creado: ${userData.name} ${userData.lastname} (${userData.username}) - Rol: ${userData.role}`,
       );
