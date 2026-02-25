@@ -10,6 +10,7 @@ import { ColorsService } from '../../colors/colors.service';
 import { FlavorsService } from '../../flavors/flavors.service';
 import { FillingsService } from '../../fillings/fillings.service';
 import { FrostingsService } from '../../frostings/frostings.service';
+import { FlowersService } from '../../flowers/flowers.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
@@ -20,6 +21,8 @@ import { Color } from '../../colors/entities/color.entity';
 import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
+import { Flower } from '../../flowers/entities/flower.entity';
+
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -63,6 +66,12 @@ import { FindAllFrostingsUseCase } from '../../frostings/usecases/find-all-frost
 import { FindOneFrostingUseCase } from '../../frostings/usecases/find-one-frosting.usecase';
 import { UpdateFrostingUseCase } from '../../frostings/usecases/update-frosting.usecase';
 import { RemoveFrostingUseCase } from '../../frostings/usecases/remove-frosting.usecase';
+
+import { CreateFlowerUseCase } from '../../flowers/usecases/create-flower.usecase';
+import { FindAllFlowersUseCase } from '../../flowers/usecases/find-all-flowers.usecase';
+import { FindOneFlowerUseCase } from '../../flowers/usecases/find-one-flower.usecase';
+import { RemoveFlowerUseCase } from '../../flowers/usecases/remove-flower.usecase';
+import { UpdateFlowerUseCase } from '../../flowers/usecases/update-flower.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -73,6 +82,7 @@ import { seedColors } from './colors.seed';
 import { seedFlavors } from './flavors.seed';
 import { seedFillings } from './fillings.seed';
 import { seedFrostings } from './frostings.seed';
+import { seedFlowers } from './flowers.seed';
 
 // Cargar variables de entorno
 config();
@@ -91,6 +101,7 @@ async function runSeeds() {
     const flavorRepository: Repository<Flavor> = AppDataSource.getRepository(Flavor);
     const fillingRepository: Repository<Filling> = AppDataSource.getRepository(Filling);
     const frostingRepository: Repository<Frosting> = AppDataSource.getRepository(Frosting);
+    const flowerRepository: Repository<Flower> = AppDataSource.getRepository(Flower);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -133,6 +144,12 @@ async function runSeeds() {
     const findOneFrostingUseCase = new FindOneFrostingUseCase(frostingRepository);
     const updateFrostingUseCase = new UpdateFrostingUseCase(frostingRepository);
     const removeFrostingUseCase = new RemoveFrostingUseCase(frostingRepository);
+
+    const createFlowerUseCase = new CreateFlowerUseCase(flowerRepository);
+    const findAllFlowersUseCase = new FindAllFlowersUseCase(flowerRepository);
+    const findOneFlowerUseCase = new FindOneFlowerUseCase(flowerRepository);
+    const updateFlowerUseCase = new UpdateFlowerUseCase(flowerRepository);
+    const removeFlowerUseCase = new RemoveFlowerUseCase(flowerRepository);
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -190,6 +207,14 @@ async function runSeeds() {
       removeFrostingUseCase,
     );
 
+    const flowersService = new FlowersService(
+      createFlowerUseCase,
+      findAllFlowersUseCase,
+      findOneFlowerUseCase,
+      updateFlowerUseCase,
+      removeFlowerUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -220,7 +245,7 @@ async function runSeeds() {
     await seedFlavors(flavorsService, userRepository, flavorRepository);
     await seedFillings(fillingsService, userRepository, fillingRepository);
     await seedFrostings(frostingsService, userRepository, frostingRepository);
-    // await seedFlowers(AppDataSource);
+    await seedFlowers(flowersService, userRepository, flowerRepository);
     // await seedStyles(AppDataSource);
     // await seedBreadTypes(AppDataSource);
 

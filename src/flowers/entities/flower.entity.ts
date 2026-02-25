@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { OrderFlower } from './order-flower.entity';
+import { OrderFlower } from '../../orders/entities/order-flower.entity';
 
 @Entity({ name: 'flowers' })
 export class Flower {

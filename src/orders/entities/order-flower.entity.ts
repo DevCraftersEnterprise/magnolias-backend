@@ -11,7 +11,7 @@ import {
 import { Color } from '../../colors/entities/color.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { User } from '../../users/entities/user.entity';
-import { Flower } from './flower.entity';
+import { Flower } from '../../flowers/entities/flower.entity';
 
 /**
  * Entidad intermedia para la relación muchos a muchos entre Order y Flower

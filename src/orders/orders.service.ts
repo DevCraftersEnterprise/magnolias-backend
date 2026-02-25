@@ -14,7 +14,7 @@ import { OrderType } from '../common/enums/order-type.enum';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
 import { CustomersService } from '../customers/customers.service';
-import { OrderFlower } from '../flowers/entities/order-flower.entity';
+import { OrderFlower } from '../orders/entities/order-flower.entity';
 import { FlowersService } from '../flowers/flowers.service';
 import { ProductsService } from '../products/products.service';
 import { User } from '../users/entities/user.entity';

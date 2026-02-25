@@ -13,6 +13,7 @@ import { OrderAssignment } from './entities/order-assignment.entity';
 import { OrderCancellation } from './entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
 import { OrderDetail } from './entities/order-detail.entity';
+import { OrderFlower } from './entities/order-flower.entity';
 import { Order } from './entities/order.entity';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
@@ -34,7 +35,8 @@ import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignmen
       OrderDetail,
       OrderCancellation,
       OrderDeliveryAddress,
-      OrderAssignment
+      OrderAssignment,
+      OrderFlower
     ]),
     CommonModule,
     CustomJwtModule,

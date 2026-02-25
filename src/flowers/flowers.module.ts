@@ -1,20 +1,33 @@
 import { Module } from '@nestjs/common';
-import { FlowersService } from './flowers.service';
-import { FlowersController } from './flowers.controller';
-import { Flower } from './entities/flower.entity';
-import { OrderFlower } from './entities/order-flower.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonModule } from '../common/common.module';
 import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
+import { Flower } from './entities/flower.entity';
+import { FlowersController } from './flowers.controller';
+import { FlowersService } from './flowers.service';
+import { CreateFlowerUseCase } from './usecases/create-flower.usecase';
+import { FindAllFlowersUseCase } from './usecases/find-all-flowers.usecase';
+import { FindOneFlowerUseCase } from './usecases/find-one-flower.usecase';
+import { RemoveFlowerUseCase } from './usecases/remove-flower.usecase';
+import { UpdateFlowerUseCase } from './usecases/update-flower.usecase';
 
 @Module({
   controllers: [FlowersController],
-  providers: [FlowersService],
+  providers: [
+    // Services
+    FlowersService,
+    // Use Cases
+    CreateFlowerUseCase,
+    FindAllFlowersUseCase,
+    FindOneFlowerUseCase,
+    RemoveFlowerUseCase,
+    UpdateFlowerUseCase,
+  ],
   imports: [
-    TypeOrmModule.forFeature([Flower, OrderFlower]),
+    TypeOrmModule.forFeature([Flower]),
     CommonModule,
     CustomJwtModule,
   ],
   exports: [TypeOrmModule, FlowersService],
 })
-export class FlowersModule {}
+export class FlowersModule { }

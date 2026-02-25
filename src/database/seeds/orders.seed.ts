@@ -14,7 +14,7 @@ import { Customer } from '../../customers/entities/customer.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
-import { OrderFlower } from '../../flowers/entities/order-flower.entity';
+import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
 import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
 import { OrderDetail } from '../../orders/entities/order-detail.entity';
