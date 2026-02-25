@@ -1,18 +1,17 @@
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CreateStyleDto } from '../../styles/dto/create-style.dto';
 import { Style } from '../../styles/entities/style.entity';
+import { StylesService } from '../../styles/styles.service';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-interface SeedStyle {
-  name: string;
-  description: string;
-}
 
-export async function seedStyles(dataSource: DataSource): Promise<void> {
+export async function seedStyles(
+  stylesService: StylesService,
+  userRepository: Repository<User>,
+  styleRepository: Repository<Style>
+): Promise<void> {
   console.log('✨ Iniciando seed de estilos...');
-
-  const styleRepository = dataSource.getRepository(Style);
-  const userRepository = dataSource.getRepository(User);
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -25,7 +24,7 @@ export async function seedStyles(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const styles: SeedStyle[] = [
+  const styles: CreateStyleDto[] = [
     { name: 'Liso', description: 'Acabado completamente liso y uniforme' },
     { name: 'Rústico', description: 'Acabado rústico con texturas naturales' },
     { name: 'Semi Naked', description: 'Cobertura ligera semi cubierta' },
@@ -55,15 +54,8 @@ export async function seedStyles(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      const style = styleRepository.create({
-        name: styleData.name,
-        description: styleData.description,
-        isActive: true,
-        createdBy: adminUser,
-        updatedBy: adminUser,
-      });
+      await stylesService.create(styleData, adminUser);
 
-      await styleRepository.save(style);
       console.log(`   ✅ Estilo creado: ${styleData.name}`);
       createdCount++;
     } catch (error) {

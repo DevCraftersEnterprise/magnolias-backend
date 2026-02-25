@@ -11,6 +11,7 @@ import { FlavorsService } from '../../flavors/flavors.service';
 import { FillingsService } from '../../fillings/fillings.service';
 import { FrostingsService } from '../../frostings/frostings.service';
 import { FlowersService } from '../../flowers/flowers.service';
+import { StylesService } from '../../styles/styles.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
@@ -22,7 +23,7 @@ import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
-
+import { Style } from '../../styles/entities/style.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -72,6 +73,12 @@ import { FindAllFlowersUseCase } from '../../flowers/usecases/find-all-flowers.u
 import { FindOneFlowerUseCase } from '../../flowers/usecases/find-one-flower.usecase';
 import { RemoveFlowerUseCase } from '../../flowers/usecases/remove-flower.usecase';
 import { UpdateFlowerUseCase } from '../../flowers/usecases/update-flower.usecase';
+
+import { CreateStyleUseCase } from '../../styles/usecases/create-style.usecase';
+import { FindAllStylesUseCase } from '../../styles/usecases/find-all-styles.usecase';
+import { FindOneStyleUseCase } from '../../styles/usecases/find-one-style.usecase';
+import { UpdateStyleUseCase } from '../../styles/usecases/update-style.usecase';
+import { RemoveStyleUseCase } from '../../styles/usecases/remove-style.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -83,6 +90,7 @@ import { seedFlavors } from './flavors.seed';
 import { seedFillings } from './fillings.seed';
 import { seedFrostings } from './frostings.seed';
 import { seedFlowers } from './flowers.seed';
+import { seedStyles } from './styles.seed';
 
 // Cargar variables de entorno
 config();
@@ -102,6 +110,7 @@ async function runSeeds() {
     const fillingRepository: Repository<Filling> = AppDataSource.getRepository(Filling);
     const frostingRepository: Repository<Frosting> = AppDataSource.getRepository(Frosting);
     const flowerRepository: Repository<Flower> = AppDataSource.getRepository(Flower);
+    const styleRepository: Repository<Style> = AppDataSource.getRepository(Style);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -150,6 +159,12 @@ async function runSeeds() {
     const findOneFlowerUseCase = new FindOneFlowerUseCase(flowerRepository);
     const updateFlowerUseCase = new UpdateFlowerUseCase(flowerRepository);
     const removeFlowerUseCase = new RemoveFlowerUseCase(flowerRepository);
+
+    const createStyleUseCase = new CreateStyleUseCase(styleRepository);
+    const findAllStylesUseCase = new FindAllStylesUseCase(styleRepository);
+    const findOneStyleUseCase = new FindOneStyleUseCase(styleRepository);
+    const updateStyleUseCase = new UpdateStyleUseCase(styleRepository);
+    const removeStyleUseCase = new RemoveStyleUseCase(styleRepository);
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -215,6 +230,14 @@ async function runSeeds() {
       removeFlowerUseCase,
     );
 
+    const stylesService = new StylesService(
+      createStyleUseCase,
+      findAllStylesUseCase,
+      findOneStyleUseCase,
+      updateStyleUseCase,
+      removeStyleUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -246,7 +269,7 @@ async function runSeeds() {
     await seedFillings(fillingsService, userRepository, fillingRepository);
     await seedFrostings(frostingsService, userRepository, frostingRepository);
     await seedFlowers(flowersService, userRepository, flowerRepository);
-    // await seedStyles(AppDataSource);
+    await seedStyles(stylesService, userRepository, styleRepository);
     // await seedBreadTypes(AppDataSource);
 
     // 8. Clientes (necesita usuarios)
