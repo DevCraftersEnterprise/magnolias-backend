@@ -1,5 +1,5 @@
-import cloudinary from '@/config/cloudinary';
 import { Readable } from 'stream';
+import cloudinary from '../../config/cloudinary';
 
 export const uploadQRToCloudinary = (
   buffer: Buffer,

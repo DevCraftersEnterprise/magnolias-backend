@@ -1,6 +1,5 @@
 import { ValueTransformer } from 'typeorm';
-
-import { decrypt, encrypt } from '@/common/utils/encryption.util';
+import { decrypt, encrypt } from '../../common/utils/encryption.util';
 
 export const EncryptedTransformer: ValueTransformer = {
   to: (value: string | null | undefined): string | null => {
