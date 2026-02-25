@@ -6,12 +6,14 @@ import { AppDataSource } from '../data-source';
 import { BranchesService } from '../../branches/branches.service';
 import { UsersService } from '../../users/users.service';
 import { CategoriesService } from '../../categories/categories.service'
+import { ColorsService } from '../../colors/colors.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
 import { User } from '../../users/entities/user.entity';
 import { Category } from '../../categories/entities/category.entity';
+import { Color } from '../../colors/entities/color.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -34,12 +36,16 @@ import { FindAllCategoriesUseCase } from '../../categories/usecases/find-all-cat
 import { FindOneCategoryUseCase } from '../../categories/usecases/find-one-category.usecase';
 import { UpdateCategoryUseCase } from '../../categories/usecases/update-category.usecase';
 import { RemoveCategoryUseCase } from '../../categories/usecases/remove-category.usecase';
+
+import { CreateColorUseCase } from '../../colors/usecases/create-color.usecase';
+import { FindAllColorsUseCase } from '../../colors/usecases/find-all-colors.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
 import { seedBranches } from './branches.seed';
 import { seedExtraUsers } from './extra-users.seed';
 import { seedCategories } from './categories.seed';
+import { seedColors } from './colors.seed';
 
 // Cargar variables de entorno
 config();
@@ -53,6 +59,7 @@ async function runSeeds() {
     const branchRepository: Repository<Branch> = AppDataSource.getRepository(Branch);
     const phoneRepository: Repository<Phone> = AppDataSource.getRepository(Phone);
     const categoryRepository: Repository<Category> = AppDataSource.getRepository(Category);
+    const colorRepository: Repository<Color> = AppDataSource.getRepository(Color);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -75,6 +82,9 @@ async function runSeeds() {
     const updateCategoryUseCase = new UpdateCategoryUseCase(categoryRepository);
     const removeCategoryUseCase = new RemoveCategoryUseCase(categoryRepository);
 
+    const createColorUseCase = new CreateColorUseCase(colorRepository);
+    const findAllColorsUseCase = new FindAllColorsUseCase(colorRepository);
+
     const branchesService = new BranchesService(
       createBranchUseCase,
       findAllBranchesUseCase,
@@ -94,12 +104,17 @@ async function runSeeds() {
       resetPasswordForUserUseCase
     );
 
-    const categoryService = new CategoriesService(
+    const categoriesService = new CategoriesService(
       createCategoryUseCase,
       findAllCategoriesUseCase,
       findOneCategoryUseCase,
       updateCategoryUseCase,
       removeCategoryUseCase
+    );
+
+    const colorsService = new ColorsService(
+      createColorUseCase,
+      findAllColorsUseCase
     );
 
     console.log('✅ Conexión establecida\n');
@@ -120,10 +135,10 @@ async function runSeeds() {
     await seedExtraUsers(usersService, userRepository, branchRepository);
 
     // 4. Categorías (necesita usuarios)
-    await seedCategories(categoryService, userRepository);
+    await seedCategories(categoriesService, userRepository);
 
     // 5. Colores (independiente)
-    // await seedColors(AppDataSource);
+    await seedColors(colorsService, colorRepository);
 
     // 6. Ingredientes y opciones (todos necesitan usuarios)
     // await seedFlavors(AppDataSource);
