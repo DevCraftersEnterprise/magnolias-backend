@@ -1,17 +1,6 @@
 import { DataSource } from 'typeorm';
 
 export async function cleanDatabase(dataSource: DataSource): Promise<void> {
-  const environment = process.env.NODE_ENV;
-
-  // Validar que solo se ejecute en desarrollo o staging
-  if (environment !== 'development' && environment !== 'staging') {
-    console.warn(
-      '⚠️  Limpieza de base de datos solo puede ejecutarse en desarrollo o staging',
-    );
-    console.warn(`   Entorno actual: ${environment || 'production'}`);
-    return;
-  }
-
   console.log('🗑️  Iniciando limpieza de base de datos...');
   console.log('   ⚠️  ADVERTENCIA: Se eliminarán TODOS los datos existentes\n');
 

@@ -10,24 +10,24 @@ export async function seedInitialUsers(usersService: UsersService, repository: R
   // Definir los usuarios iniciales
   const initialUsers: RegisterUserDto[] = [
     {
-      name: 'Cristian',
-      lastname: 'Corona',
-      username: 'cristianc',
-      userkey: '112233',
-      role: UserRoles.ADMIN,
+      name: 'Sergio',
+      lastname: 'Barreras',
+      username: 'sergiobg',
+      userkey: '200999',
+      role: UserRoles.SUPER,
     },
     {
       name: 'Mónica',
       lastname: 'Chaves',
       username: 'monipanecito',
       userkey: '224466',
-      role: UserRoles.ADMIN,
+      role: UserRoles.SUPER,
     },
     {
-      name: 'Sergio',
-      lastname: 'Barreras',
-      username: 'sergiobg',
-      userkey: '200999',
+      name: 'Cristian',
+      lastname: 'Corona',
+      username: 'cristianc',
+      userkey: '112233',
       role: UserRoles.SUPER,
     },
   ];

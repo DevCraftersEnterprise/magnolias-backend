@@ -70,6 +70,7 @@ config();
 
 async function runSeeds() {
   try {
+    const environment = process.env.NODE_ENV;
     console.log('🔧 Conectando a la base de datos...');
     await AppDataSource.initialize();
 
@@ -171,24 +172,27 @@ async function runSeeds() {
     console.log('         🌱 INICIANDO PROCESO DE SEEDS');
     console.log('════════════════════════════════════════════════════\n');
     // 0. Limpiar base de datos
-    await cleanDatabase(AppDataSource);
+    if (environment !== 'production') await cleanDatabase(AppDataSource);
 
     // 1. Usuarios iniciales (necesarios para crear otros registros)
     await seedInitialUsers(usersService, userRepository);
 
-    // 2. Sucursales (necesita usuarios)
+    // 2. Ejecutar el resto del seed solo si dev o staging
+    if (environment !== 'development' && environment !== 'staging') return;
+
+    // 3. Sucursales (necesita usuarios)
     await seedBranches(branchesService, userRepository, branchRepository);
 
-    // 3. Usuarios adicionales (necesita sucursales para empleados)
+    // 4. Usuarios adicionales (necesita sucursales para empleados)
     await seedExtraUsers(usersService, userRepository, branchRepository);
 
-    // 4. Categorías (necesita usuarios)
+    // 5. Categorías (necesita usuarios)
     await seedCategories(categoriesService, userRepository);
 
-    // 5. Colores (independiente)
+    // 6. Colores (independiente)
     await seedColors(colorsService, colorRepository);
 
-    // 6. Ingredientes y opciones (todos necesitan usuarios)
+    // 7. Ingredientes y opciones (todos necesitan usuarios)
     await seedFlavors(flavorsService, userRepository, flavorRepository);
     await seedFillings(fillingsService, userRepository, fillingRepository);
     // await seedFrostings(AppDataSource);
@@ -196,19 +200,13 @@ async function runSeeds() {
     // await seedStyles(AppDataSource);
     // await seedBreadTypes(AppDataSource);
 
-    // 7. Pasteleros (necesita usuarios)
-    // await seedBakers(AppDataSource);
-
-    // 8. Usuarios panaderos (necesita pasteleros)
-    // await seedBakerUsers(AppDataSource);
-
-    // 9. Clientes (necesita usuarios)
+    // 8. Clientes (necesita usuarios)
     // await seedCustomers(AppDataSource);
 
-    // 10. Productos (necesita categorías y usuarios)
+    // 9. Productos (necesita categorías y usuarios)
     // await seedProducts(AppDataSource);
 
-    // 11. Pedidos (necesita clientes, sucursales, productos y usuarios)
+    // 10. Pedidos (necesita clientes, sucursales, productos y usuarios)
     // await seedOrders(AppDataSource);
 
     console.log('════════════════════════════════════════════════════');

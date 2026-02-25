@@ -15,7 +15,7 @@ export async function seedBranches(
 
   // Obtener un usuario administrador para crear las sucursales
   const adminUser = await userRepository.findOne({
-    where: { role: UserRoles.ADMIN },
+    where: { role: UserRoles.SUPER },
   });
 
   if (!adminUser) {
