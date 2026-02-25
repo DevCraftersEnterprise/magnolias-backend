@@ -9,6 +9,7 @@ import { CategoriesService } from '../../categories/categories.service'
 import { ColorsService } from '../../colors/colors.service';
 import { FlavorsService } from '../../flavors/flavors.service';
 import { FillingsService } from '../../fillings/fillings.service';
+import { FrostingsService } from '../../frostings/frostings.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
@@ -18,6 +19,7 @@ import { Category } from '../../categories/entities/category.entity';
 import { Color } from '../../colors/entities/color.entity';
 import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
+import { Frosting } from '../../frostings/entities/frosting.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -55,6 +57,12 @@ import { FindAllFillingsUseCase } from '../../fillings/usecases/find-all-filling
 import { FindOneFillingUseCase } from '../../fillings/usecases/find-one-filling.usecase';
 import { UpdateFillingUseCase } from '../../fillings/usecases/update-filling.usecase';
 import { RemoveFillingUseCase } from '../../fillings/usecases/remove-filling.usecase';
+
+import { CreateFrostingUseCase } from '../../frostings/usecases/create-frosting.usecase';
+import { FindAllFrostingsUseCase } from '../../frostings/usecases/find-all-frostings.usecase';
+import { FindOneFrostingUseCase } from '../../frostings/usecases/find-one-frosting.usecase';
+import { UpdateFrostingUseCase } from '../../frostings/usecases/update-frosting.usecase';
+import { RemoveFrostingUseCase } from '../../frostings/usecases/remove-frosting.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -64,6 +72,7 @@ import { seedCategories } from './categories.seed';
 import { seedColors } from './colors.seed';
 import { seedFlavors } from './flavors.seed';
 import { seedFillings } from './fillings.seed';
+import { seedFrostings } from './frostings.seed';
 
 // Cargar variables de entorno
 config();
@@ -81,6 +90,7 @@ async function runSeeds() {
     const colorRepository: Repository<Color> = AppDataSource.getRepository(Color);
     const flavorRepository: Repository<Flavor> = AppDataSource.getRepository(Flavor);
     const fillingRepository: Repository<Filling> = AppDataSource.getRepository(Filling);
+    const frostingRepository: Repository<Frosting> = AppDataSource.getRepository(Frosting);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -117,6 +127,12 @@ async function runSeeds() {
     const findOneFillingUseCase = new FindOneFillingUseCase(fillingRepository);
     const updateFillingUseCase = new UpdateFillingUseCase(fillingRepository);
     const removeFillingUseCase = new RemoveFillingUseCase(fillingRepository);
+
+    const createFrostingUseCase = new CreateFrostingUseCase(frostingRepository);
+    const findAllFrostingsUseCase = new FindAllFrostingsUseCase(frostingRepository);
+    const findOneFrostingUseCase = new FindOneFrostingUseCase(frostingRepository);
+    const updateFrostingUseCase = new UpdateFrostingUseCase(frostingRepository);
+    const removeFrostingUseCase = new RemoveFrostingUseCase(frostingRepository);
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -166,6 +182,14 @@ async function runSeeds() {
       removeFillingUseCase,
     );
 
+    const frostingsService = new FrostingsService(
+      createFrostingUseCase,
+      findAllFrostingsUseCase,
+      findOneFrostingUseCase,
+      updateFrostingUseCase,
+      removeFrostingUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -195,7 +219,7 @@ async function runSeeds() {
     // 7. Ingredientes y opciones (todos necesitan usuarios)
     await seedFlavors(flavorsService, userRepository, flavorRepository);
     await seedFillings(fillingsService, userRepository, fillingRepository);
-    // await seedFrostings(AppDataSource);
+    await seedFrostings(frostingsService, userRepository, frostingRepository);
     // await seedFlowers(AppDataSource);
     // await seedStyles(AppDataSource);
     // await seedBreadTypes(AppDataSource);
