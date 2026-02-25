@@ -5,11 +5,13 @@ import { AppDataSource } from '../data-source';
 // Services
 import { BranchesService } from '../../branches/branches.service';
 import { UsersService } from '../../users/users.service';
+import { CategoriesService } from '../../categories/categories.service'
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
 import { User } from '../../users/entities/user.entity';
+import { Category } from '../../categories/entities/category.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -27,11 +29,17 @@ import { CreatePhoneForBranchUseCase } from '../../branches/usecases/phones/crea
 import { UpdatePhoneForBranchUseCase } from '../../branches/usecases/phones/update-phone-for-branch.usecase';
 import { RegisterUserUseCase } from '../../users/usecases/register-user.usecase';
 
+import { CreateCategoryUseCase } from '../../categories/usecases/create-category.usecase';
+import { FindAllCategoriesUseCase } from '../../categories/usecases/find-all-categories.usecase';
+import { FindOneCategoryUseCase } from '../../categories/usecases/find-one-category.usecase';
+import { UpdateCategoryUseCase } from '../../categories/usecases/update-category.usecase';
+import { RemoveCategoryUseCase } from '../../categories/usecases/remove-category.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
 import { seedBranches } from './branches.seed';
 import { seedExtraUsers } from './extra-users.seed';
+import { seedCategories } from './categories.seed';
 
 // Cargar variables de entorno
 config();
@@ -44,6 +52,7 @@ async function runSeeds() {
     const userRepository: Repository<User> = AppDataSource.getRepository(User);
     const branchRepository: Repository<Branch> = AppDataSource.getRepository(Branch);
     const phoneRepository: Repository<Phone> = AppDataSource.getRepository(Phone);
+    const categoryRepository: Repository<Category> = AppDataSource.getRepository(Category);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -59,6 +68,12 @@ async function runSeeds() {
     const removeBranchUseCase = new RemoveBranchUseCase(branchRepository);
     const createPhoneForBranchUseCase = new CreatePhoneForBranchUseCase(branchRepository, phoneRepository);
     const updatePhoneForBranchUseCase = new UpdatePhoneForBranchUseCase(phoneRepository);
+
+    const createCategoryUseCase = new CreateCategoryUseCase(categoryRepository);
+    const findAllCategoriesUseCase = new FindAllCategoriesUseCase(categoryRepository);
+    const findOneCategoryUseCase = new FindOneCategoryUseCase(categoryRepository);
+    const updateCategoryUseCase = new UpdateCategoryUseCase(categoryRepository);
+    const removeCategoryUseCase = new RemoveCategoryUseCase(categoryRepository);
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -79,6 +94,14 @@ async function runSeeds() {
       resetPasswordForUserUseCase
     );
 
+    const categoryService = new CategoriesService(
+      createCategoryUseCase,
+      findAllCategoriesUseCase,
+      findOneCategoryUseCase,
+      updateCategoryUseCase,
+      removeCategoryUseCase
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -97,7 +120,7 @@ async function runSeeds() {
     await seedExtraUsers(usersService, userRepository, branchRepository);
 
     // 4. Categorías (necesita usuarios)
-    // await seedCategories(AppDataSource);
+    await seedCategories(categoryService, userRepository);
 
     // 5. Colores (independiente)
     // await seedColors(AppDataSource);
