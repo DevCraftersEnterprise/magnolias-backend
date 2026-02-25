@@ -12,6 +12,7 @@ import { FillingsService } from '../../fillings/fillings.service';
 import { FrostingsService } from '../../frostings/frostings.service';
 import { FlowersService } from '../../flowers/flowers.service';
 import { StylesService } from '../../styles/styles.service';
+import { BreadTypesService } from '../../bread-types/bread-types.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
@@ -24,6 +25,7 @@ import { Filling } from '../../fillings/entities/filling.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
 import { Style } from '../../styles/entities/style.entity';
+import { BreadType } from '../../bread-types/entities/bread-type.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -79,6 +81,12 @@ import { FindAllStylesUseCase } from '../../styles/usecases/find-all-styles.usec
 import { FindOneStyleUseCase } from '../../styles/usecases/find-one-style.usecase';
 import { UpdateStyleUseCase } from '../../styles/usecases/update-style.usecase';
 import { RemoveStyleUseCase } from '../../styles/usecases/remove-style.usecase';
+
+import { CreateBreadTypeUseCase } from '../../bread-types/usecases/create-bread-type.usecase';
+import { FindAllBreadTypesUseCase } from '../../bread-types/usecases/find-all-bread-types.usecase';
+import { FindOneBreadTypeUseCase } from '../../bread-types/usecases/find-one-bread-type.usecase';
+import { RemoveBreadTypeUseCase } from '../../bread-types/usecases/remove-bread-type.usecase';
+import { UpdateBreadTypeUseCase } from '../../bread-types/usecases/update-bread-type.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -91,6 +99,7 @@ import { seedFillings } from './fillings.seed';
 import { seedFrostings } from './frostings.seed';
 import { seedFlowers } from './flowers.seed';
 import { seedStyles } from './styles.seed';
+import { seedBreadTypes } from './bread-types.seed';
 
 // Cargar variables de entorno
 config();
@@ -111,6 +120,7 @@ async function runSeeds() {
     const frostingRepository: Repository<Frosting> = AppDataSource.getRepository(Frosting);
     const flowerRepository: Repository<Flower> = AppDataSource.getRepository(Flower);
     const styleRepository: Repository<Style> = AppDataSource.getRepository(Style);
+    const breadTypeRepository: Repository<BreadType> = AppDataSource.getRepository(BreadType);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -165,6 +175,12 @@ async function runSeeds() {
     const findOneStyleUseCase = new FindOneStyleUseCase(styleRepository);
     const updateStyleUseCase = new UpdateStyleUseCase(styleRepository);
     const removeStyleUseCase = new RemoveStyleUseCase(styleRepository);
+
+    const createBreadTypeUseCase = new CreateBreadTypeUseCase(breadTypeRepository);
+    const findAllBreadTypesUseCase = new FindAllBreadTypesUseCase(breadTypeRepository);
+    const findOneBreadTypeUseCase = new FindOneBreadTypeUseCase(breadTypeRepository);
+    const updateBreadTypeUseCase = new UpdateBreadTypeUseCase(breadTypeRepository);
+    const removeBreadTypeUseCase = new RemoveBreadTypeUseCase(breadTypeRepository);
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -238,6 +254,14 @@ async function runSeeds() {
       removeStyleUseCase,
     );
 
+    const breadTypesService = new BreadTypesService(
+      createBreadTypeUseCase,
+      findAllBreadTypesUseCase,
+      findOneBreadTypeUseCase,
+      updateBreadTypeUseCase,
+      removeBreadTypeUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -270,7 +294,7 @@ async function runSeeds() {
     await seedFrostings(frostingsService, userRepository, frostingRepository);
     await seedFlowers(flowersService, userRepository, flowerRepository);
     await seedStyles(stylesService, userRepository, styleRepository);
-    // await seedBreadTypes(AppDataSource);
+    await seedBreadTypes(breadTypesService, userRepository, breadTypeRepository);
 
     // 8. Clientes (necesita usuarios)
     // await seedCustomers(AppDataSource);
