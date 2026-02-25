@@ -3,14 +3,13 @@ import { Repository } from 'typeorm';
 import { AppDataSource } from '../data-source';
 
 // Services
-import { UsersService } from '../../users/users.service';
 import { BranchesService } from '../../branches/branches.service';
+import { UsersService } from '../../users/users.service';
 
 // Entities
-import { User } from '../../users/entities/user.entity';
-import { Baker } from '../../bakers/entities/baker.entity';
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
+import { User } from '../../users/entities/user.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -20,8 +19,10 @@ import { RemoveBranchUseCase } from '../../branches/usecases/branch/remove-branc
 import { UpdateBranchUseCase } from '../../branches/usecases/branch/update-branch.usecase';
 import { CreatePhoneForBranchUseCase } from '../../branches/usecases/phones/create-phone-for-branch.usecase';
 import { UpdatePhoneForBranchUseCase } from '../../branches/usecases/phones/update-phone-for-branch.usecase';
+import { RegisterUserUseCase } from '../../users/usecases/register-user.usecase';
 
 // Seeds
+import { seedBranches } from './branches.seed';
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
 
@@ -34,10 +35,10 @@ async function runSeeds() {
     await AppDataSource.initialize();
 
     const userRepository: Repository<User> = AppDataSource.getRepository(User);
-    const bakerRepository: Repository<Baker> = AppDataSource.getRepository(Baker);
     const branchRepository: Repository<Branch> = AppDataSource.getRepository(Branch);
     const phoneRepository: Repository<Phone> = AppDataSource.getRepository(Phone);
 
+    const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const createBranchUseCase = new CreateBranchUseCase(branchRepository);
     const findAllBranchesUseCase = new FindAllBranchesUseCase(branchRepository);
     const findOneBranchUseCase = new FindOneBranchUseCase(branchRepository);
@@ -56,7 +57,7 @@ async function runSeeds() {
       updatePhoneForBranchUseCase
     );
 
-    const usersService = new UsersService(userRepository, bakerRepository, branchesService);
+    const usersService = new UsersService(userRepository, branchesService, registerUserUseCase);
 
     console.log('✅ Conexión establecida\n');
 
@@ -67,10 +68,10 @@ async function runSeeds() {
     await cleanDatabase(AppDataSource);
 
     // 1. Usuarios iniciales (necesarios para crear otros registros)
-    await seedInitialUsers(usersService);
+    await seedInitialUsers(usersService, userRepository);
 
     // 2. Sucursales (necesita usuarios)
-    //await seedBranches(AppDataSource);
+    await seedBranches(branchesService, userRepository, branchRepository);
 
     // 3. Usuarios adicionales (necesita sucursales para empleados)
     //await seedExtraUsers(AppDataSource);

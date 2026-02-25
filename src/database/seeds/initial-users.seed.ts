@@ -1,8 +1,10 @@
+import { Repository } from 'typeorm';
 import { RegisterUserDto } from '../../users/dto/register-user.dto';
+import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 import { UsersService } from '../../users/users.service';
 
-export async function seedInitialUsers(usersService: UsersService): Promise<void> {
+export async function seedInitialUsers(usersService: UsersService, repository: Repository<User>): Promise<void> {
   console.log('🌱 Iniciando seed de usuarios iniciales...');
 
   // Definir los usuarios iniciales
@@ -36,7 +38,9 @@ export async function seedInitialUsers(usersService: UsersService): Promise<void
   for (const userData of initialUsers) {
     try {
       // Verificar si el usuario ya existe
-      const existingUser = await usersService.findUserByTerm(userData.username);
+      const existingUser = await repository.findOne({
+        where: { username: userData.username },
+      });
 
       if (existingUser) {
         console.log(

@@ -1,23 +1,23 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { Baker } from "../../../bakers/entities/baker.entity";
-import { OrderAssignment } from "../../../bakers/entities/order-assignment.entity";
+import { OrderAssignment } from "../../../orders/entities/order-assignment.entity";
 import { OrderStatus } from "../../../orders/enums/order-status.enum";
+import { User } from '../../../users/entities/user.entity';
 
 @Injectable()
 export class GetAssignmentsUseCase {
     private readonly logger = new Logger(GetAssignmentsUseCase.name);
 
     constructor(
-        @InjectRepository(Baker)
-        private readonly bakerRepository: Repository<Baker>,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
         @InjectRepository(OrderAssignment)
         private readonly orderAssignmentRepository: Repository<OrderAssignment>,
     ) { }
 
     async execute(bakerId: string): Promise<OrderAssignment[]> {
-        const baker = await this.bakerRepository.findOne({
+        const baker = await this.userRepository.findOne({
             where: { id: bakerId },
         });
 

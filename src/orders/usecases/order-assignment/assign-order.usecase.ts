@@ -1,30 +1,30 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { AssignOrderDto } from "../../../bakers/dto/assign-order.dto";
-import { Baker } from "../../../bakers/entities/baker.entity";
-import { OrderAssignment } from "../../../bakers/entities/order-assignment.entity";
-import { OrdersService } from "../../../orders/orders.service";
+import { OrderAssignment } from "../../../orders/entities/order-assignment.entity";
 import { User } from "../../../users/entities/user.entity";
+import { UserRoles } from '../../../users/enums/user-role';
+import { AssignOrderDto } from "../../dto/assign-order.dto";
+import { Order } from '../../entities/order.entity';
 
 @Injectable()
 export class AssignOrderUseCase {
     private readonly logger = new Logger(AssignOrderUseCase.name);
 
     constructor(
-        @InjectRepository(Baker)
-        private readonly bakerRepository: Repository<Baker>,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+        @InjectRepository(Order)
+        private readonly orderRepository: Repository<Order>,
         @InjectRepository(OrderAssignment)
         private readonly orderAssignmentRepository: Repository<OrderAssignment>,
-        private readonly orderService: OrdersService,
     ) { }
-
 
     async execute(bakerId: string, assignOrderDto: AssignOrderDto, user: User): Promise<OrderAssignment> {
         const { orderId, assignedDate, notes } = assignOrderDto;
 
-        const baker = await this.bakerRepository.findOne({
-            where: { id: bakerId },
+        const baker = await this.userRepository.findOne({
+            where: { id: bakerId, role: UserRoles.BAKER },
         });
 
         if (!baker) {
@@ -32,7 +32,14 @@ export class AssignOrderUseCase {
             throw new BadRequestException(`Baker with identifier "${bakerId}" not found`);
         }
 
-        const order = await this.orderService.getOrderByTerm(orderId);
+        const order = await this.orderRepository.findOne({
+            where: { id: orderId },
+        });
+
+        if (!order) {
+            this.logger.warn(`Order with identifier "${orderId}" not found`);
+            throw new BadRequestException(`Order with identifier "${orderId}" not found`);
+        }
 
         const isAssigned = await this.orderAssignmentRepository.findOne({
             where: {
@@ -48,8 +55,8 @@ export class AssignOrderUseCase {
         const assignment = this.orderAssignmentRepository.create({
             baker,
             order,
-            assignedDate: assignedDate || new Date(),
-            notes: notes ?? '',
+            assignedDate,
+            notes,
             createdBy: user,
             updatedBy: user,
         });

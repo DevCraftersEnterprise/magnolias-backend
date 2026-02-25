@@ -38,11 +38,13 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { OrderStatsDto } from './dto/order-stats.dto';
+import { OrderAssignment } from './entities/order-assignment.entity';
+import { AssignOrderDto } from './dto/assign-order.dto';
 
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -82,7 +84,7 @@ export class OrdersController {
   getOrderStats(
     @CurrentUser() user: User,
     @Query() branchId?: string
-  ) : Promise <OrderStatsDto> {
+  ): Promise<OrderStatsDto> {
     return this.ordersService.getStats(user, branchId);
   }
 
@@ -321,5 +323,61 @@ export class OrdersController {
     @CurrentUser() user: User,
   ): Promise<Order> {
     return this.ordersService.markOrderAsCancel(cancelOrderDto, user);
+  }
+
+  // Assign Orders
+  @Post(':id/assign-order')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Assign order to baker',
+    description: 'Assigns an order to a specific baker.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the baker',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Order successfully assigned.',
+    type: OrderAssignment,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data or order already assigned.',
+  })
+  @ApiNotFoundResponse({ description: 'Baker or Order not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  assignOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignOrderDto: AssignOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<OrderAssignment> {
+    return this.ordersService.assignOrder(id, assignOrderDto, user);
+  }
+
+  @Get(':id/assignments')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get baker assignments',
+    description: 'Retrieves all order assignments for a specific baker.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the baker',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'List of assignments.',
+    type: [OrderAssignment],
+  })
+  @ApiNotFoundResponse({ description: 'Baker not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  getAssignments(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<OrderAssignment[]> {
+    return this.ordersService.getAssignments(id);
   }
 }

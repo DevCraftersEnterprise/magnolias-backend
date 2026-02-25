@@ -8,8 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Baker } from '../../bakers/entities/baker.entity';
-import { Order } from '../../orders/entities/order.entity';
+import { Order } from './order.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity({ name: 'order_assignments' })
@@ -22,9 +21,9 @@ export class OrderAssignment {
   id: string;
 
   @ApiHideProperty()
-  @ManyToOne(() => Baker, (baker) => baker.assignments, { nullable: false })
+  @ManyToOne(() => User, (baker) => baker.assignments, { nullable: false })
   @JoinColumn({ name: 'bakerId' })
-  baker: Baker;
+  baker: User;
 
   @ApiHideProperty()
   @ManyToOne(() => Order, { nullable: false })

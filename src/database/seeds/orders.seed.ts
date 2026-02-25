@@ -1,6 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Baker } from '../../bakers/entities/baker.entity';
-import { OrderAssignment } from '../../bakers/entities/order-assignment.entity';
+import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { Branch } from '../../branches/entities/branch.entity';
 import { Color } from '../../colors/entities/color.entity';
@@ -46,7 +45,7 @@ export async function seedOrders(dataSource: DataSource): Promise<void> {
   const colorRepository = dataSource.getRepository(Color);
   const breadTypeRepository = dataSource.getRepository(BreadType);
   const flowerRepository = dataSource.getRepository(Flower);
-  const bakerRepository = dataSource.getRepository(Baker);
+  const bakerRepository = dataSource.getRepository(User);
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },

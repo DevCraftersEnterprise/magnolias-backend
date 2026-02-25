@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AddressesModule } from './addresses/addresses.module';
 import { AuthModule } from './auth/auth.module';
-import { BakersModule } from './bakers/bakers.module';
 import { BranchesModule } from './branches/branches.module';
 import { BreadTypesModule } from './bread-types/bread-types.module';
 import { CategoriesModule } from './categories/categories.module';
@@ -31,11 +30,11 @@ import { UsersModule } from './users/users.module';
     CustomPassportModule,
     CustomThrottlerModule,
     DatabaseModule,
+    OrdersModule,
     UsersModule,
     BranchesModule,
     ProductsModule,
     ColorsModule,
-    OrdersModule,
     CustomersModule,
     BreadTypesModule,
     FillingsModule,
@@ -43,7 +42,6 @@ import { UsersModule } from './users/users.module';
     FrostingsModule,
     StylesModule,
     FlowersModule,
-    BakersModule,
     CategoriesModule,
     PrinterModule,
     FormatsModule,

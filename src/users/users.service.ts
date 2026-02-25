@@ -2,14 +2,13 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  Logger,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { isUUID } from 'class-validator';
+import { ResetPasswordDto } from 'src/auth/dto/reset-password.dto';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { Baker } from '../bakers/entities/baker.entity';
 import { BranchesService } from '../branches/branches.service';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -17,90 +16,21 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersFilterDto } from './dto/users-filter.dto';
 import { User } from './entities/user.entity';
 import { UserRoles } from './enums/user-role';
-import { ResetPasswordDto } from 'src/auth/dto/reset-password.dto';
+import { RegisterUserUseCase } from './usecases/register-user.usecase';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
 
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Baker)
-    private readonly bakerRepository: Repository<Baker>,
     private readonly branchService: BranchesService,
-  ) {}
+
+    private readonly registerUserUseCase: RegisterUserUseCase
+  ) { }
 
   async registerUser(dto: RegisterUserDto): Promise<Partial<User>> {
-    const { name, lastname, username, userkey, role, branchId, bakerId } = dto;
-
-    const userExist = await this.userRepository.findOne({
-      where: { username },
-    });
-
-    const requireBranchRoles = [UserRoles.EMPLOYEE, UserRoles.ASSISTANT];
-
-    if (userExist) throw new BadRequestException('Username already exists');
-
-    if (requireBranchRoles.includes(role) && !branchId) {
-      throw new BadRequestException(
-        `Users with role ${role} must be assigned to a branch`,
-      );
-    }
-
-    // Validate bakerId is required for BAKER role
-    if (role === UserRoles.BAKER && !bakerId) {
-      throw new BadRequestException(
-        'Users with role BAKER must be linked to a baker profile',
-      );
-    }
-
-    const branch = await this.branchService.findBranchByTerm(branchId!);
-
-    // Find and validate baker if bakerId is provided
-    let baker: Baker | null = null;
-    if (bakerId) {
-      baker = await this.bakerRepository.findOne({ where: { id: bakerId } });
-      if (!baker) {
-        throw new BadRequestException('Baker profile not found');
-      }
-
-      // Verify baker is not already linked to another user
-      const existingBakerUser = await this.userRepository.findOne({
-        where: { baker: { id: bakerId } },
-      });
-      if (existingBakerUser) {
-        throw new BadRequestException(
-          'This baker profile is already linked to another user',
-        );
-      }
-    }
-
-    const hashedKey = await argon2.hash(userkey);
-
-    const userData: Partial<User> = {
-      name,
-      lastname,
-      username,
-      userkey: hashedKey,
-      role,
-    };
-
-    if (branch) userData.branch = branch;
-    if (baker) userData.baker = baker;
-
-    const user = this.userRepository.create(userData);
-
-    await this.userRepository.save(user);
-
-    return {
-      name: user.name,
-      lastname: user.lastname,
-      username: user.username,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return await this.registerUserUseCase.execute(dto);
   }
 
   async findUsers(

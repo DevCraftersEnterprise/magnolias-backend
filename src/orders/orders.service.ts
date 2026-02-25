@@ -5,8 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
+import { UserRoles } from 'src/users/enums/user-role';
 import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { AddressesService } from '../addresses/addresses.service';
 import { BranchesService } from '../branches/branches.service';
+import { Branch } from '../branches/entities/branch.entity';
 import { OrderType } from '../common/enums/order-type.enum';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
@@ -15,20 +18,21 @@ import { OrderFlower } from '../flowers/entities/order-flower.entity';
 import { FlowersService } from '../flowers/flowers.service';
 import { ProductsService } from '../products/products.service';
 import { User } from '../users/entities/user.entity';
+import { AssignOrderDto } from './dto/assign-order.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { OrderStatsDto } from './dto/order-stats.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderAssignment } from './entities/order-assignment.entity';
 import { OrderCancellation } from './entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
-import { OrderStatsDto } from './dto/order-stats.dto';
-import { UserRoles } from 'src/users/enums/user-role';
-import { AddressesService } from '../addresses/addresses.service';
-import { Branch } from '../branches/entities/branch.entity';
+import { AssignOrderUseCase } from './usecases/order-assignment/assign-order.usecase';
+import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignments.usecase';
 
 @Injectable()
 export class OrdersService {
@@ -48,6 +52,9 @@ export class OrdersService {
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
     private readonly addressesService: AddressesService,
+
+    private readonly assignOrderUseCase: AssignOrderUseCase,
+    private readonly getAssignmentsUseCase: GetAssignmentsUseCase,
   ) { }
 
   private async generateOrderCode(
@@ -588,6 +595,14 @@ export class OrdersService {
     };
 
     return stats;
+  }
+
+  async assignOrder(bakerId: string, assignOrderDto: AssignOrderDto, user: User,): Promise<OrderAssignment> {
+    return await this.assignOrderUseCase.execute(bakerId, assignOrderDto, user);
+  }
+
+  async getAssignments(bakerId: string): Promise<OrderAssignment[]> {
+    return await this.getAssignmentsUseCase.execute(bakerId);
   }
 
 }
