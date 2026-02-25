@@ -1,122 +1,45 @@
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+  Injectable
 } from '@nestjs/common';
-import { CreateFlavorDto } from './dto/create-flavor.dto';
-import { UpdateFlavorDto } from './dto/update-flavor.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Flavor } from './entities/flavor.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { User } from '../users/entities/user.entity';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
-import { isUUID } from 'class-validator';
+import { User } from '../users/entities/user.entity';
+import { CreateFlavorDto } from './dto/create-flavor.dto';
+import { UpdateFlavorDto } from './dto/update-flavor.dto';
+import { Flavor } from './entities/flavor.entity';
+import { CreateFlavorUseCase } from './usecases/create-flavor.usecase';
+import { FindAllFlavorsUseCase } from './usecases/find-all-flavors.usecase';
+import { FindOneFlavorUseCase } from './usecases/find-one-flavor.usecase';
+import { RemoveFlavorUseCase } from './usecases/remove-flavor.usecase';
+import { UpdateFlavorUseCase } from './usecases/update-flavor.usecase';
 
 @Injectable()
 export class FlavorsService {
   constructor(
-    @InjectRepository(Flavor)
-    private readonly flavorRepository: Repository<Flavor>,
+    private readonly createFlavorUseCase: CreateFlavorUseCase,
+    private readonly findAllFlavorsUseCase: FindAllFlavorsUseCase,
+    private readonly findOneFlavorUseCase: FindOneFlavorUseCase,
+    private readonly updateFlavorUseCase: UpdateFlavorUseCase,
+    private readonly removeFlavorUseCase: RemoveFlavorUseCase
   ) { }
 
   async create(dto: CreateFlavorDto, user: User): Promise<Flavor> {
-    const { name } = dto;
-
-    const existingFlavor = await this.flavorRepository.findOne({
-      where: { name: name.toUpperCase() },
-    });
-
-    if (existingFlavor) {
-      throw new BadRequestException(`Flavor with name ${name} already exists`);
-    }
-
-    const flavor = this.flavorRepository.create({
-      ...dto,
-      name: name.toUpperCase(),
-      createdBy: user,
-      updatedBy: user,
-    });
-
-    return await this.flavorRepository.save(flavor);
+    return await this.createFlavorUseCase.execute(dto, user);
   }
 
-  async findAll(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<Flavor> | Flavor[]> {
-    const { limit, offset } = paginationDto;
-
-    const [flavors, total] = await this.flavorRepository.findAndCount({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-      },
-      take: limit,
-      skip: offset,
-      order: { name: 'ASC' },
-    });
-
-    if (limit !== undefined && offset !== undefined) {
-      return {
-        items: flavors,
-        total,
-        pagination: {
-          limit,
-          offset,
-          totalPages: Math.ceil(total / limit),
-          currentPage: Math.floor(offset / limit) + 1,
-        },
-      };
-    }
-
-    return flavors;
+  async findAll(paginationDto: PaginationDto,): Promise<PaginationResponse<Flavor> | Flavor[]> {
+    return await this.findAllFlavorsUseCase.execute(paginationDto);
   }
 
   async findOne(term: string): Promise<Flavor> {
-    const whereConditions: FindOptionsWhere<Flavor> = {};
-
-    if (isUUID(term)) whereConditions.id = term;
-    else whereConditions.name = term.toUpperCase();
-
-    const flavor = await this.flavorRepository.findOne({
-      where: whereConditions,
-    });
-
-    if (!flavor) {
-      throw new NotFoundException(`Flavor with term ${term} not found`);
-    }
-
-    return flavor;
+    return await this.findOneFlavorUseCase.execute(term);
   }
 
   async update(id: string, dto: UpdateFlavorDto, user: User): Promise<Flavor> {
-    const flavor = await this.findOne(id);
-
-    if (dto.name && dto.name !== flavor.name) {
-      const existingFlavor = await this.flavorRepository.findOne({
-        where: { name: dto.name.toUpperCase() },
-      });
-
-      if (existingFlavor && existingFlavor.id !== id) {
-        throw new BadRequestException(
-          `Another flavor with name ${dto.name} already exists`,
-        );
-      }
-    }
-
-    Object.assign(flavor, dto);
-    flavor.name = flavor.name.toUpperCase();
-    flavor.updatedBy = user;
-
-    return await this.flavorRepository.save(flavor);
+    return await this.updateFlavorUseCase.execute(id, dto, user);
   }
 
   async remove(id: string, user: User): Promise<void> {
-    const flavor = await this.findOne(id);
-    flavor.isActive = false;
-    flavor.updatedBy = user;
-    await this.flavorRepository.save(flavor);
+    return await this.removeFlavorUseCase.execute(id, user);
   }
 }

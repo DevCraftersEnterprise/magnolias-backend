@@ -7,6 +7,7 @@ import { BranchesService } from '../../branches/branches.service';
 import { UsersService } from '../../users/users.service';
 import { CategoriesService } from '../../categories/categories.service'
 import { ColorsService } from '../../colors/colors.service';
+import { FlavorsService } from '../../flavors/flavors.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
@@ -14,6 +15,7 @@ import { Phone } from '../../branches/entities/phone.entity';
 import { User } from '../../users/entities/user.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { Color } from '../../colors/entities/color.entity';
+import { Flavor } from '../../flavors/entities/flavor.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -39,6 +41,12 @@ import { RemoveCategoryUseCase } from '../../categories/usecases/remove-category
 
 import { CreateColorUseCase } from '../../colors/usecases/create-color.usecase';
 import { FindAllColorsUseCase } from '../../colors/usecases/find-all-colors.usecase';
+
+import { CreateFlavorUseCase } from '../../flavors/usecases/create-flavor.usecase';
+import { FindAllFlavorsUseCase } from '../../flavors/usecases/find-all-flavors.usecase';
+import { FindOneFlavorUseCase } from '../../flavors/usecases/find-one-flavor.usecase';
+import { UpdateFlavorUseCase } from '../../flavors/usecases/update-flavor.usecase';
+import { RemoveFlavorUseCase } from '../../flavors/usecases/remove-flavor.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -46,6 +54,7 @@ import { seedBranches } from './branches.seed';
 import { seedExtraUsers } from './extra-users.seed';
 import { seedCategories } from './categories.seed';
 import { seedColors } from './colors.seed';
+import { seedFlavors } from './flavors.seed';
 
 // Cargar variables de entorno
 config();
@@ -60,6 +69,7 @@ async function runSeeds() {
     const phoneRepository: Repository<Phone> = AppDataSource.getRepository(Phone);
     const categoryRepository: Repository<Category> = AppDataSource.getRepository(Category);
     const colorRepository: Repository<Color> = AppDataSource.getRepository(Color);
+    const flavorRepository: Repository<Flavor> = AppDataSource.getRepository(Flavor);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -84,6 +94,12 @@ async function runSeeds() {
 
     const createColorUseCase = new CreateColorUseCase(colorRepository);
     const findAllColorsUseCase = new FindAllColorsUseCase(colorRepository);
+
+    const createFlavorUseCase = new CreateFlavorUseCase(flavorRepository);
+    const findAllFlavorsUseCase = new FindAllFlavorsUseCase(flavorRepository);
+    const findOneFlavorUseCase = new FindOneFlavorUseCase(flavorRepository);
+    const updateFlavorUseCase = new UpdateFlavorUseCase(flavorRepository);
+    const removeFlavorUseCase = new RemoveFlavorUseCase(flavorRepository);
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -117,6 +133,14 @@ async function runSeeds() {
       findAllColorsUseCase
     );
 
+    const flavorsService = new FlavorsService(
+      createFlavorUseCase,
+      findAllFlavorsUseCase,
+      findOneFlavorUseCase,
+      updateFlavorUseCase,
+      removeFlavorUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -141,7 +165,7 @@ async function runSeeds() {
     await seedColors(colorsService, colorRepository);
 
     // 6. Ingredientes y opciones (todos necesitan usuarios)
-    // await seedFlavors(AppDataSource);
+    await seedFlavors(flavorsService, userRepository, flavorRepository);
     // await seedFillings(AppDataSource);
     // await seedFrostings(AppDataSource);
     // await seedFlowers(AppDataSource);
