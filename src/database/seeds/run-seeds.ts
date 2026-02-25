@@ -25,6 +25,7 @@ import { RegisterUserUseCase } from '../../users/usecases/register-user.usecase'
 import { seedBranches } from './branches.seed';
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
+import { seedExtraUsers } from './extra-users.seed';
 
 // Cargar variables de entorno
 config();
@@ -74,7 +75,7 @@ async function runSeeds() {
     await seedBranches(branchesService, userRepository, branchRepository);
 
     // 3. Usuarios adicionales (necesita sucursales para empleados)
-    //await seedExtraUsers(AppDataSource);
+    await seedExtraUsers(usersService, userRepository, branchRepository);
 
     // 4. Categorías (necesita usuarios)
     // await seedCategories(AppDataSource);
