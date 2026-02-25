@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
 import { FindOptionsWhere, Repository } from "typeorm";
@@ -41,7 +41,7 @@ export class FindOneBranchUseCase {
 
         if (!branch) {
             this.logger.warn(`Branch not found with term: ${term}`);
-            throw new Error(`Branch not found with term: ${term}`);
+            throw new NotFoundException(`Branch not found with term: ${term}`);
         }
 
         return branch;

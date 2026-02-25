@@ -1,0 +1,73 @@
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { ILike, Repository } from "typeorm";
+import { User } from "../entities/user.entity";
+import { UsersFilterDto } from "../dto/users-filter.dto";
+import { PaginationResponse } from '../../common/responses/pagination.response';
+
+@Injectable()
+export class FindAllUsersUseCase {
+    private readonly logger = new Logger(FindAllUsersUseCase.name);
+
+    constructor(
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+    ) { }
+
+    async execute(usersFilterDto: UsersFilterDto): Promise<PaginationResponse<User> | User[]> {
+        const { name, lastname, username, role, limit, offset } = usersFilterDto;
+
+        const [users, total] = await this.userRepository.findAndCount({
+            where: {
+                name: name ? ILike(`%${name}%`) : undefined,
+                lastname: lastname ? ILike(`%${lastname}%`) : undefined,
+                username: username ? ILike(`%${username}%`) : undefined,
+                role: role || undefined,
+            },
+            relations: {
+                branch: true,
+                branches: true
+            },
+            select: {
+                id: true,
+                name: true,
+                lastname: true,
+                username: true,
+                role: true,
+                area: true,
+                branch: {
+                    id: true,
+                    name: true,
+                },
+                branches: {
+                    id: true,
+                    name: true,
+                },
+                createdAt: true,
+                updatedAt: true,
+            },
+            order: { createdAt: 'DESC', name: 'ASC' },
+            skip: offset,
+            take: limit,
+        });
+
+        if (limit !== undefined && offset !== undefined) {
+            this.logger.log(`Found ${total} users matching filters. Returning page ${Math.floor(offset / limit) + 1} with ${users.length} users.`);
+
+            return {
+                items: users,
+                total,
+                pagination: {
+                    limit,
+                    offset,
+                    totalPages: Math.ceil(total / limit),
+                    currentPage: Math.floor(offset / limit) + 1,
+                }
+            }
+        }
+
+        this.logger.log(`Found ${total} users matching filters. Returning all results.`);
+
+        return users;
+    }
+}

@@ -13,6 +13,12 @@ import { User } from '../../users/entities/user.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
+import { FindAllUsersUseCase } from '../../users/usecases/find-all-users.usecase';
+import { FindOneUserUseCase } from '../../users/usecases/find-one-user.usecase';
+import { UpdateUserUseCase } from '../../users/usecases/update-user.usecase';
+import { RemoveUserUseCase } from '../../users/usecases/remove-user.usecase';
+import { ResetPasswordForUserUseCase } from '../../users/usecases/reset-password-for-user.usecase'
+
 import { FindAllBranchesUseCase } from '../../branches/usecases/branch/find-all-branches.usecase';
 import { FindOneBranchUseCase } from '../../branches/usecases/branch/find-one-branch.usecase';
 import { RemoveBranchUseCase } from '../../branches/usecases/branch/remove-branch.usecase';
@@ -22,9 +28,9 @@ import { UpdatePhoneForBranchUseCase } from '../../branches/usecases/phones/upda
 import { RegisterUserUseCase } from '../../users/usecases/register-user.usecase';
 
 // Seeds
-import { seedBranches } from './branches.seed';
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
+import { seedBranches } from './branches.seed';
 import { seedExtraUsers } from './extra-users.seed';
 
 // Cargar variables de entorno
@@ -40,6 +46,12 @@ async function runSeeds() {
     const phoneRepository: Repository<Phone> = AppDataSource.getRepository(Phone);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
+    const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
+    const findOneUserUseCase = new FindOneUserUseCase(userRepository);
+    const updateUserUseCase = new UpdateUserUseCase(userRepository, branchRepository);
+    const removeUserUseCase = new RemoveUserUseCase(userRepository);
+    const resetPasswordForUserUseCase = new ResetPasswordForUserUseCase(userRepository);
+
     const createBranchUseCase = new CreateBranchUseCase(branchRepository);
     const findAllBranchesUseCase = new FindAllBranchesUseCase(branchRepository);
     const findOneBranchUseCase = new FindOneBranchUseCase(branchRepository);
@@ -58,7 +70,14 @@ async function runSeeds() {
       updatePhoneForBranchUseCase
     );
 
-    const usersService = new UsersService(userRepository, branchesService, registerUserUseCase);
+    const usersService = new UsersService(
+      registerUserUseCase,
+      findAllUsersUseCase,
+      findOneUserUseCase,
+      updateUserUseCase,
+      removeUserUseCase,
+      resetPasswordForUserUseCase
+    );
 
     console.log('✅ Conexión establecida\n');
 
