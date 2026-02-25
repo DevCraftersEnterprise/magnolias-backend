@@ -23,24 +23,26 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { CurrentUser } from 'src/auth/decorators/curret-user.decorator';
-import { PaginationResponse } from '../common/responses/pagination.response';
-import { User } from '../users/entities/user.entity';
-import { UserRoles } from '../users/enums/user-role';
-import { BranchesService } from './branches.service';
-import { BranchesFilterDto } from './dto/branches-filter.dto';
-import { CreateBranchDto } from './dto/create-branch.dto';
-import { CreatePhonesDto } from './dto/create-phones.dto';
-import { UpdateBranchDto } from './dto/update-branch.dto';
-import { UpdatePhonesDto } from './dto/update-phones.dto';
-import { Branch } from './entities/branch.entity';
-import { Phone } from './entities/phone.entity';
+
+import { Auth } from '@/auth/decorators/auth.decorator';
+import { CurrentUser } from '@/auth/decorators/curret-user.decorator';
+import { PaginationResponse } from '@/common/responses/pagination.response';
+import { User } from '@/users/entities/user.entity';
+import { UserRoles } from '@/users/enums/user-role';
+
+import { BranchesService } from '@/branches/branches.service';
+import { BranchesFilterDto } from '@/branches/dto/branches-filter.dto';
+import { CreateBranchDto } from '@/branches/dto/create-branch.dto';
+import { CreatePhonesDto } from '@/branches/dto/create-phones.dto';
+import { UpdateBranchDto } from '@/branches/dto/update-branch.dto';
+import { UpdatePhonesDto } from '@/branches/dto/update-phones.dto';
+import { Branch } from '@/branches/entities/branch.entity';
+import { Phone } from '@/branches/entities/phone.entity';
 
 @ApiTags('Branches')
 @Controller('branches')
 export class BranchesController {
-  constructor(private readonly branchesService: BranchesService) {}
+  constructor(private readonly branchesService: BranchesService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

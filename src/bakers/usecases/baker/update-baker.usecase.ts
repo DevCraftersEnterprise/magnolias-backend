@@ -27,8 +27,10 @@ export class UpdateBakerUseCase {
 
         Object.assign(baker, updateBakerDto, { updateBy: user });
 
+        const updatedBaker = await this.bakerRepository.save(baker);
+
         this.logger.log(`Baker with ID ${id} updated successfully by user ${user.id}`);
 
-        return await this.bakerRepository.save(baker);
+        return updatedBaker;
     }
 }
