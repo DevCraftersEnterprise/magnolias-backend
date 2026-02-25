@@ -37,8 +37,10 @@ export class UpdateCommonAddressUseCase {
 
         Object.assign(address, updateCommonAddressDto, { updateBy: user });
 
+        const updatedCommonAddress = await this.commonAddressRepository.save(address);
+
         this.logger.log(`Address with ID ${id} updated successfully by user ${user.id}`);
 
-        return await this.commonAddressRepository.save(address);
+        return updatedCommonAddress;
     }
 }

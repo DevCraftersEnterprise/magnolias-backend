@@ -34,7 +34,10 @@ export class CreateCommonAddressUseCase {
             updatedBy: user,
         });
 
+        const savedCommonAddress = await this.commonAddressRepository.save(address);
+
         this.logger.log(`Created new address: ${street} ${number}, ${neighborhood} by user ${user.id}`);
-        return await this.commonAddressRepository.save(address);
+
+        return savedCommonAddress;
     }
 }
