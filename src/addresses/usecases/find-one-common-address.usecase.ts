@@ -13,7 +13,7 @@ export class FindOneCommonAddressUseCase {
     ) { }
 
     async execute(id: string): Promise<CommonAddress> {
-        this.logger.debug(`Finding common address with ID: ${id}`);
+        this.logger.log(`Finding common address with ID: ${id}`);
 
         const address = await this.commonAddressRepository.findOne({
             where: { id, isActive: true },
@@ -24,7 +24,7 @@ export class FindOneCommonAddressUseCase {
             throw new NotFoundException('Address with the specified ID not found');
         }
 
-        this.logger.debug(`Address with ID: ${id} found successfully`);
+        this.logger.log(`Address with ID: ${id} found successfully`);
         return address;
     }
 }

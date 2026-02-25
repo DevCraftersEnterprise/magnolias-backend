@@ -13,6 +13,7 @@ import { FrostingsService } from '../../frostings/frostings.service';
 import { FlowersService } from '../../flowers/flowers.service';
 import { StylesService } from '../../styles/styles.service';
 import { BreadTypesService } from '../../bread-types/bread-types.service';
+import { CustomersService } from '../../customers/customers.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
@@ -26,6 +27,8 @@ import { Frosting } from '../../frostings/entities/frosting.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
 import { Style } from '../../styles/entities/style.entity';
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
+import { Customer } from '../../customers/entities/customer.entity';
+import { CustomerAddress } from '../../customers/entities/customer-address.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -87,6 +90,12 @@ import { FindAllBreadTypesUseCase } from '../../bread-types/usecases/find-all-br
 import { FindOneBreadTypeUseCase } from '../../bread-types/usecases/find-one-bread-type.usecase';
 import { RemoveBreadTypeUseCase } from '../../bread-types/usecases/remove-bread-type.usecase';
 import { UpdateBreadTypeUseCase } from '../../bread-types/usecases/update-bread-type.usecase';
+
+import { CreateCustomerUseCase } from '../../customers/usecases/create-customer.usecase';
+import { FindAllCustomersUseCase } from '../../customers/usecases/find-all-customers.usecase';
+import { FindOneCustomerUseCase } from '../../customers/usecases/find-one-customer.usecase';
+import { UpdateCustomerUseCase } from '../../customers/usecases/update-customer.usecase';
+import { RemoveCustomerUseCase } from '../../customers/usecases/remove-customer.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -100,6 +109,7 @@ import { seedFrostings } from './frostings.seed';
 import { seedFlowers } from './flowers.seed';
 import { seedStyles } from './styles.seed';
 import { seedBreadTypes } from './bread-types.seed';
+import { seedCustomers } from './customers.seed';
 
 // Cargar variables de entorno
 config();
@@ -121,6 +131,8 @@ async function runSeeds() {
     const flowerRepository: Repository<Flower> = AppDataSource.getRepository(Flower);
     const styleRepository: Repository<Style> = AppDataSource.getRepository(Style);
     const breadTypeRepository: Repository<BreadType> = AppDataSource.getRepository(BreadType);
+    const customerRepository: Repository<Customer> = AppDataSource.getRepository(Customer);
+    const customerAddressRepository: Repository<CustomerAddress> = AppDataSource.getRepository(CustomerAddress);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -181,6 +193,12 @@ async function runSeeds() {
     const findOneBreadTypeUseCase = new FindOneBreadTypeUseCase(breadTypeRepository);
     const updateBreadTypeUseCase = new UpdateBreadTypeUseCase(breadTypeRepository);
     const removeBreadTypeUseCase = new RemoveBreadTypeUseCase(breadTypeRepository);
+
+    const createCustomerUseCase = new CreateCustomerUseCase(customerRepository, customerAddressRepository);
+    const findAllCustomersUseCase = new FindAllCustomersUseCase(customerRepository);
+    const findOneCustomerUseCase = new FindOneCustomerUseCase(customerRepository);
+    const updateCustomerUseCase = new UpdateCustomerUseCase(customerRepository, customerAddressRepository);
+    const removeCustomerUseCase = new RemoveCustomerUseCase(customerRepository);
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -262,6 +280,14 @@ async function runSeeds() {
       removeBreadTypeUseCase,
     );
 
+    const customersService = new CustomersService(
+      createCustomerUseCase,
+      findAllCustomersUseCase,
+      findOneCustomerUseCase,
+      updateCustomerUseCase,
+      removeCustomerUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -297,7 +323,7 @@ async function runSeeds() {
     await seedBreadTypes(breadTypesService, userRepository, breadTypeRepository);
 
     // 8. Clientes (necesita usuarios)
-    // await seedCustomers(AppDataSource);
+    await seedCustomers(customersService, userRepository, customerRepository);
 
     // 9. Productos (necesita categorías y usuarios)
     // await seedProducts(AppDataSource);

@@ -1,29 +1,15 @@
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CustomersService } from '../../customers/customers.service';
+import { CreateCustomerDto } from '../../customers/dto/create-customer.dto';
 import { Customer } from '../../customers/entities/customer.entity';
-import { CustomerAddress } from '../../customers/entities/customer-address.entity';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-interface SeedCustomerAddress {
-  street: string;
-  number?: string;
-  neighborhood?: string;
-  city?: string;
-}
-
-interface SeedCustomer {
-  fullName: string;
-  phone: string;
-  alternativePhone?: string;
-  email?: string;
-  address?: SeedCustomerAddress;
-}
-
-export async function seedCustomers(dataSource: DataSource): Promise<void> {
+export async function seedCustomers(
+  customersService: CustomersService,
+  userRepository: Repository<User>,
+  customerRepository: Repository<Customer>): Promise<void> {
   console.log('👤 Iniciando seed de clientes...');
-
-  const customerRepository = dataSource.getRepository(Customer);
-  const userRepository = dataSource.getRepository(User);
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -36,7 +22,7 @@ export async function seedCustomers(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const customers: SeedCustomer[] = [
+  const customers: CreateCustomerDto[] = [
     {
       fullName: 'María González',
       phone: '5511112222',
@@ -174,7 +160,7 @@ export async function seedCustomers(dataSource: DataSource): Promise<void> {
   ];
 
   let createdCount = 0;
-  const customerAddressRepository = dataSource.getRepository(CustomerAddress);
+
 
   for (const customerData of customers) {
     try {
@@ -189,28 +175,8 @@ export async function seedCustomers(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      const customer = customerRepository.create({
-        fullName: customerData.fullName,
-        phone: customerData.phone,
-        alternativePhone: customerData.alternativePhone,
-        email: customerData.email,
-        isActive: true,
-        createdBy: adminUser,
-        updatedBy: adminUser,
-      });
+      await customersService.createCustomer(customerData, adminUser)
 
-      const savedCustomer = await customerRepository.save(customer);
-
-      // Create customer address if provided
-      if (customerData.address) {
-        const customerAddress = customerAddressRepository.create({
-          ...customerData.address,
-          customer: savedCustomer,
-          createdBy: adminUser,
-          updatedBy: adminUser,
-        });
-        await customerAddressRepository.save(customerAddress);
-      }
 
       console.log(`   ✅ Cliente creado: ${customerData.fullName}`);
       createdCount++;
