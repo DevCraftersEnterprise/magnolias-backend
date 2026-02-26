@@ -67,8 +67,8 @@ export class CreateOrderUseCase {
             await this.handleDeliveryAddress(deliveryAddress, order, user, customer);
         }
 
-        if (flowers && orderType === OrderType.FLOR) {
-            this.logger.log('Handling flower details for FLOR order');
+        if (flowers) {
+            this.logger.log('Handling flower details for order');
             await this.handleFlowerForOrder(flowers, order, user);
         }
 
