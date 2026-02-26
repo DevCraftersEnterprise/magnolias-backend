@@ -714,8 +714,8 @@ export const getFlowersSection = (order: Order): Content | null => {
       widths: ['20%', '80%'],
       body: [
         [
-          labelCell('FLORES', { border: [false, false, false, false] }),
-          valueCell(flowersText, { border: [false, false, false, false] }),
+          labelCell('FLORES', { border: [true, true, true, false] }),
+          valueCell(flowersText, { border: [true, true, true, false] }),
         ],
       ],
     },
