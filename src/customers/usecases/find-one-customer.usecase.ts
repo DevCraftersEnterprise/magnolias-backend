@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
 import { FindOptionsWhere, Repository } from "typeorm";
@@ -47,7 +47,7 @@ export class FindOneCustomerUseCase {
 
         if (!customer) {
             this.logger.error(`Customer with term ${term} not found.`);
-            throw new BadRequestException(`Customer with term ${term} not found.`);
+            throw new NotFoundException(`Customer with term ${term} not found.`);
         }
 
         this.logger.log(`Found customer with term ${term}.`);
