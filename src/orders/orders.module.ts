@@ -19,12 +19,13 @@ import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { AssignOrderUseCase } from './usecases/order-assignment/assign-order.usecase';
 import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignments.usecase';
+import { ChangeOrderStatusUseCase } from './usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from './usecases/order/create-order.usecase';
 import { FindAllOrdersUseCase } from './usecases/order/find-all-orders.usecase';
-import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
+import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
+import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
-
 
 @Module({
   controllers: [OrdersController],
@@ -37,7 +38,8 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
     FindAllOrdersUseCase,
     FindOneOrderUseCase,
     UpdateOrderUseCase,
-
+    ChangeOrderStatusUseCase,
+    GetOrderStatsUseCase,
     AssignOrderUseCase,
     GetAssignmentsUseCase
   ],

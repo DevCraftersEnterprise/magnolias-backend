@@ -16,6 +16,7 @@ import { OrderType } from '../../../common/enums/order-type.enum';
 import { AddFlowerToOrderDto } from '../../../flowers/dto/add-flower-to-order.dto';
 import { FlowersService } from '../../../flowers/flowers.service';
 import { OrderFlower } from '../../entities/order-flower.entity';
+import { parseCurrency } from '../../utils/parse-currency.util';
 
 @Injectable()
 export class UpdateOrderUseCase {
@@ -80,7 +81,7 @@ export class UpdateOrderUseCase {
             await this.handleOrderFlowers(flowers, order, user);
         }
 
-        const remainingBalance = totalAmount - order.advancePayment;
+        const remainingBalance = totalAmount - parseCurrency(order.advancePayment);
         order.totalAmount = totalAmount;
         order.remainingBalance = remainingBalance;
         order.updatedBy = user;
@@ -284,6 +285,12 @@ export class UpdateOrderUseCase {
             } else {
                 const newDetail = this.orderDetailRepository.create({
                     ...detailDto,
+                    breadType: { id: detailDto.breadTypeId },
+                    filling: { id: detailDto.fillingId },
+                    flavor: { id: detailDto.flavorId },
+                    frosting: { id: detailDto.frostingId },
+                    style: { id: detailDto.styleId },
+                    color: { id: detailDto.colorId },
                     order,
                     product,
                     createdBy: user,
@@ -327,6 +334,7 @@ export class UpdateOrderUseCase {
             } else {
                 const newFlower = this.orderFlowerRepository.create({
                     ...flowerDto,
+                    color: { id: flowerDto.colorId },
                     order,
                     flower,
                     createdBy: user,
@@ -349,7 +357,7 @@ export class UpdateOrderUseCase {
         }
 
         if (order.orderType === OrderType.EVENTO) {
-            total += order.dessertsTotal + order.setupServiceCost;
+            total += parseCurrency(order.dessertsTotal) + parseCurrency(order.setupServiceCost);
         }
 
         return total;

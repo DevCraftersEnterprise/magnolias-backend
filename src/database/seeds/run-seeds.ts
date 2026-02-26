@@ -1,7 +1,6 @@
 import { config } from 'dotenv';
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../data-source';
-
 // Services
 import { BranchesService } from '../../branches/branches.service';
 import { UsersService } from '../../users/users.service';
@@ -15,7 +14,8 @@ import { StylesService } from '../../styles/styles.service';
 import { BreadTypesService } from '../../bread-types/bread-types.service';
 import { CustomersService } from '../../customers/customers.service';
 import { ProductsService } from '../../products/products.service';
-
+import { OrdersService } from '../../orders/orders.service';
+import { AddressesService } from '../../addresses/addresses.service';
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
@@ -32,7 +32,13 @@ import { Customer } from '../../customers/entities/customer.entity';
 import { CustomerAddress } from '../../customers/entities/customer-address.entity';
 import { Product } from '../../products/entities/product.entity';
 import { ProductPicture } from '../../products/entities/product-picture.entity';
-
+import { CommonAddress } from '../../addresses/entities/common-address.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
+import { OrderDetail } from '../../orders/entities/order-detail.entity';
+import { OrderFlower } from '../../orders/entities/order-flower.entity';
+import { OrderCancellation } from '../../orders/entities/order-cancellation.entity';
+import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
 import { FindAllUsersUseCase } from '../../users/usecases/find-all-users.usecase';
@@ -108,6 +114,24 @@ import { UpdateFavoriteProductStatusUseCase } from '../../products/usecases/upda
 import { RemoveProductUseCase } from '../../products/usecases/remove-product.usecase';
 import { UploadPicturesForProductUseCase } from '../../products/usecases/upload-pictures-for-product.usecase';
 import { HideProductPictureUseCase } from '../../products/usecases/hide-product-picture.usecase';
+
+import { CreateCommonAddressUseCase } from '../../addresses/usecases/create-common-address.usecase';
+import { FindAllCommonAddressesUseCase } from '../../addresses/usecases/find-all-common-addresses.usecase';
+import { FindOneCommonAddressUseCase } from '../../addresses/usecases/find-one-common-address.usecase';
+import { UpdateCommonAddressUseCase } from '../../addresses/usecases/update-common-address.usecase';
+import { RemoveCommonAddressUseCase } from '../../addresses/usecases/remove-common-address.usecase';
+
+import { CreateOrderUseCase } from '../../orders/usecases/order/create-order.usecase';
+import { SetPickupPersonUseCase } from '../../orders/usecases/order/set-pickup-person.usecase';
+import { FindAllOrdersUseCase } from '../../orders/usecases/order/find-all-orders.usecase';
+import { FindOneOrderUseCase } from '../../orders/usecases/order/find-one-order.usecase';
+import { UpdateOrderUseCase } from '../../orders/usecases/order/update-order.usecase';
+import { ChangeOrderStatusUseCase } from '../../orders/usecases/order/change-order-status.usecase';
+import { GetOrderStatsUseCase } from '../../orders/usecases/order/get-order-stats.usecase';
+import { AssignOrderUseCase } from '../../orders/usecases/order-assignment/assign-order.usecase';
+import { GetAssignmentsUseCase } from '../../orders/usecases/order-assignment/get-assignments.usecase';
+// Utils
+import { CheckForDuplicateAddressUtil } from '../../addresses/utils/check-for-duplicate-address.util';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -123,7 +147,7 @@ import { seedStyles } from './styles.seed';
 import { seedBreadTypes } from './bread-types.seed';
 import { seedCustomers } from './customers.seed';
 import { seedProducts } from './products.seed';
-
+import { seedOrders } from './orders.seed';
 
 // Cargar variables de entorno
 config();
@@ -149,6 +173,13 @@ async function runSeeds() {
     const customerAddressRepository: Repository<CustomerAddress> = AppDataSource.getRepository(CustomerAddress);
     const productRepository: Repository<Product> = AppDataSource.getRepository(Product);
     const productPictureRepository: Repository<ProductPicture> = AppDataSource.getRepository(ProductPicture);
+    const commonAddressRepository: Repository<CommonAddress> = AppDataSource.getRepository(CommonAddress);
+    const orderRepository: Repository<Order> = AppDataSource.getRepository(Order);
+    const orderDeliveryAddressRepository: Repository<OrderDeliveryAddress> = AppDataSource.getRepository(OrderDeliveryAddress);
+    const orderDetailRepository: Repository<OrderDetail> = AppDataSource.getRepository(OrderDetail);
+    const orderFlowerRepository: Repository<OrderFlower> = AppDataSource.getRepository(OrderFlower);
+    const orderCancellationRepository: Repository<OrderCancellation> = AppDataSource.getRepository(OrderCancellation);
+    const orderAssignmentRepository: Repository<OrderAssignment> = AppDataSource.getRepository(OrderAssignment);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -215,6 +246,22 @@ async function runSeeds() {
     const findOneCustomerUseCase = new FindOneCustomerUseCase(customerRepository);
     const updateCustomerUseCase = new UpdateCustomerUseCase(customerRepository, customerAddressRepository);
     const removeCustomerUseCase = new RemoveCustomerUseCase(customerRepository);
+
+    const checkForDuplicateAddressUtil = new CheckForDuplicateAddressUtil(commonAddressRepository);
+    const createCommonAddressUseCase = new CreateCommonAddressUseCase(commonAddressRepository, checkForDuplicateAddressUtil);
+    const findAllCommonAddressesUseCase = new FindAllCommonAddressesUseCase(commonAddressRepository);
+    const findOneCommonAddressUseCase = new FindOneCommonAddressUseCase(commonAddressRepository);
+    const updateCommonAddressUseCase = new UpdateCommonAddressUseCase(commonAddressRepository, checkForDuplicateAddressUtil);
+    const removeCommonAddressUseCase = new RemoveCommonAddressUseCase(commonAddressRepository);
+
+    const addressesService = new AddressesService(
+      commonAddressRepository,
+      createCommonAddressUseCase,
+      findAllCommonAddressesUseCase,
+      findOneCommonAddressUseCase,
+      updateCommonAddressUseCase,
+      removeCommonAddressUseCase,
+    );
 
     const branchesService = new BranchesService(
       createBranchUseCase,
@@ -324,6 +371,28 @@ async function runSeeds() {
       hideProductPictureUseCase,
     );
 
+    const createOrderUseCase = new CreateOrderUseCase(orderRepository, orderDeliveryAddressRepository, orderDetailRepository, orderFlowerRepository, customersService, branchesService, addressesService, productsService, flowersService);
+    const setPickupPersonUseCase = new SetPickupPersonUseCase(orderRepository);
+    const findAllOrdersUseCase = new FindAllOrdersUseCase(orderRepository);
+    const findOneOrderUseCase = new FindOneOrderUseCase(orderRepository);
+    const updateOrderUseCase = new UpdateOrderUseCase(orderRepository, orderDeliveryAddressRepository, orderDetailRepository, orderFlowerRepository, addressesService, productsService, flowersService);
+    const changeOrderStatusUseCase = new ChangeOrderStatusUseCase(orderRepository, orderCancellationRepository);
+    const getOrderStatsUseCase = new GetOrderStatsUseCase(orderRepository);
+    const assignOrderUseCase = new AssignOrderUseCase(userRepository, orderRepository, orderAssignmentRepository);
+    const getAssignmentsUseCase = new GetAssignmentsUseCase(userRepository, orderAssignmentRepository);
+
+    const ordersService = new OrdersService(
+      createOrderUseCase,
+      setPickupPersonUseCase,
+      findAllOrdersUseCase,
+      findOneOrderUseCase,
+      updateOrderUseCase,
+      changeOrderStatusUseCase,
+      getOrderStatsUseCase,
+      assignOrderUseCase,
+      getAssignmentsUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -365,7 +434,7 @@ async function runSeeds() {
     await seedProducts(productsService, userRepository, categoryRepository, productRepository);
 
     // 10. Pedidos (necesita clientes, sucursales, productos y usuarios)
-    // await seedOrders(AppDataSource);
+    await seedOrders(ordersService, customerRepository, branchRepository, productRepository, userRepository, flavorRepository, fillingRepository, frostingRepository, styleRepository, colorRepository, breadTypeRepository, flowerRepository);
 
     console.log('════════════════════════════════════════════════════');
     console.log('    🎉 TODOS LOS SEEDS SE EJECUTARON CORRECTAMENTE');

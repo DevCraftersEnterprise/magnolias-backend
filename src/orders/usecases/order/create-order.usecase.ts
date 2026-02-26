@@ -19,6 +19,7 @@ import { OrderDeliveryAddress } from '../../entities/order-delivery-address.enti
 import { OrderDetail } from '../../entities/order-detail.entity';
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { Order } from '../../entities/order.entity';
+import { parseCurrency } from '../../utils/parse-currency.util';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -92,6 +93,7 @@ export class CreateOrderUseCase {
             },
             order: { createdAt: 'DESC' },
             select: {
+                id: true,
                 orderCode: true,
                 createdAt: true,
             }
@@ -220,6 +222,7 @@ export class CreateOrderUseCase {
 
             const orderFlower = this.orderFlowerRepository.create({
                 ...flowerDto,
+                color: { id: flowerDto.colorId },
                 order,
                 flower,
                 createdBy: user,
@@ -262,6 +265,12 @@ export class CreateOrderUseCase {
 
             const orderDetail = this.orderDetailRepository.create({
                 ...detailDto,
+                breadType: { id: detailDto.breadTypeId },
+                filling: { id: detailDto.fillingId },
+                flavor: { id: detailDto.flavorId },
+                frosting: { id: detailDto.frostingId },
+                style: { id: detailDto.styleId },
+                color: { id: detailDto.colorId },
                 order,
                 product,
                 referenceImageUrl,
@@ -276,11 +285,11 @@ export class CreateOrderUseCase {
         await this.orderDetailRepository.save(orderDatails);
 
         if (order.orderType === OrderType.EVENTO) {
-            if (order.dessertsTotal) totalAmount += order.dessertsTotal;
-            if (order.setupServiceCost) totalAmount += order.setupServiceCost;
+            if (order.dessertsTotal) totalAmount += parseCurrency(order.dessertsTotal);
+            if (order.setupServiceCost) totalAmount += parseCurrency(order.setupServiceCost);
         }
 
-        const remainingBalance = totalAmount - order.advancePayment;
+        const remainingBalance = totalAmount - parseCurrency(order.advancePayment);
 
         Object.assign(order, { totalAmount, remainingBalance, updatedBy: user });
 
