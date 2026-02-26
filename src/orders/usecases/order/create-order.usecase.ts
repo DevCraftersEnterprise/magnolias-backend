@@ -109,7 +109,7 @@ export class CreateOrderUseCase {
             }
         }
 
-        return `${prefix}-${branch.name.toUpperCase()}-${year}-${sequence.toString().padStart(4, '0')}`;
+        return `${prefix.slice(0, 3)}-${branch.name.toUpperCase().replace(' ', '-')}-${year}-${sequence.toString().padStart(4, '0')}`;
     }
 
     private async handleDeliveryAddress(deliveryAddress: CreateOrderDeliveryAddressDto, order: Order, user: User, customer: Customer): Promise<void> {
@@ -290,6 +290,9 @@ export class CreateOrderUseCase {
         }
 
         const remainingBalance = totalAmount - parseCurrency(order.advancePayment);
+
+        if (order.orderType === OrderType.VITRINA) order.paidAmount = remainingBalance;
+
 
         Object.assign(order, { totalAmount, remainingBalance, updatedBy: user });
 

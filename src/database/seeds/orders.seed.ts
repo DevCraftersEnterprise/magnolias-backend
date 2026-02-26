@@ -148,7 +148,7 @@ export async function seedOrders(
           fillingId: fillings[0].id,
           flavorId: flavors[0].id,
           frostingId: frostings[0].id,
-          styleId: styles[0].id
+          styleId: styles[0].id,
         }
       ],
       flowers: [
@@ -162,6 +162,30 @@ export async function seedOrders(
     await ordersService.assignOrder(bakers[0].id, { orderId: order1.id, assignedDate: new Date(), notes: 'Pedido completo - prioridad alta' }, adminUser)
 
     console.log(`✅ Pedido DOMICILIO COMPLETO: ${order1.orderCode}`);
+    createdCount++;
+    // ═══════════════════════════════════════════════════════════════════════
+    // PEDIDO 2: VITRINA - ★☆☆ MÍNIMO - SOLO CAMPOS REQUERIDOS ★☆☆
+    // ═══════════════════════════════════════════════════════════════════════
+    const createOrderVit1: CreateOrderDto = {
+      orderType: OrderType.VITRINA,
+      deliveryDate: getFutureDate(1),
+      advancePayment: 225,
+      customerId: customers[1].id,
+      branchId: branches[1].id,
+      details: [
+        {
+          productSize: ProductSize.FIFTEEN_P,
+          price: 450,
+          quantity: 1,
+          hasWriting: false,
+          productId: products[0].id,
+        }
+      ]
+    }
+
+    const order2 = await ordersService.createOrder(createOrderVit1, adminUser);
+
+    console.log(`✅ Pedido VITRINA MÍNIMO: ${order2.orderCode}`);
     createdCount++;
   } catch (error) {
     console.error('   ❌ Error al crear pedidos:', error);

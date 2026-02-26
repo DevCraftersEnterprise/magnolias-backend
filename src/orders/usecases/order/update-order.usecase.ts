@@ -81,9 +81,14 @@ export class UpdateOrderUseCase {
             await this.handleOrderFlowers(flowers, order, user);
         }
 
-        const remainingBalance = totalAmount - parseCurrency(order.advancePayment);
+        const actualAdvencePayment = (updateOrderDto.advancePayment && updateOrderDto.advancePayment > parseCurrency(order.advancePayment)) ? updateOrderDto.advancePayment : parseCurrency(order.advancePayment);
+
+        const remainingBalance = totalAmount - actualAdvencePayment;
         order.totalAmount = totalAmount;
         order.remainingBalance = remainingBalance;
+
+        if (order.orderType === OrderType.VITRINA) order.paidAmount = remainingBalance;
+
         order.updatedBy = user;
 
         const updatedOrder = await this.orderRepository.save(order);
