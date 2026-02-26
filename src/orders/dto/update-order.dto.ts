@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsOptional, IsUUID, Min } from 'class-validator';
 import { CreateOrderDto } from './create-order.dto';
 
 export class UpdateOrderDto extends PartialType(CreateOrderDto) {
@@ -9,4 +9,12 @@ export class UpdateOrderDto extends PartialType(CreateOrderDto) {
   })
   @IsUUID()
   id: string;
+
+  @ApiProperty({
+    description: 'Payment amount for the order',
+    example: 500,
+  })
+  @IsOptional()
+  @Min(1, { message: 'Payment amount must be at least 1' })
+  payment?: number;
 }

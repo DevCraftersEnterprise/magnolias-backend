@@ -37,7 +37,7 @@ export class UpdateOrderUseCase {
     ) { }
 
     async execute(updateOrderDto: UpdateOrderDto, user: User): Promise<Order> {
-        const { id, deliveryDate, deliveryTime, deliveryAddress, details, flowers } = updateOrderDto;
+        const { id, deliveryDate, deliveryTime, deliveryAddress, details, flowers, payment = 0 } = updateOrderDto;
 
         this.logger.log(`Starting update process for order with ID: ${id}`);
 
@@ -81,9 +81,7 @@ export class UpdateOrderUseCase {
             await this.handleOrderFlowers(flowers, order, user);
         }
 
-        const actualAdvencePayment = (updateOrderDto.advancePayment && updateOrderDto.advancePayment > parseCurrency(order.advancePayment)) ? updateOrderDto.advancePayment : parseCurrency(order.advancePayment);
-
-        const remainingBalance = totalAmount - actualAdvencePayment;
+        const remainingBalance = totalAmount - order.advancePayment - payment;
         order.totalAmount = totalAmount;
         order.remainingBalance = remainingBalance;
 

@@ -19,6 +19,7 @@ import { Product } from '../../products/entities/product.entity';
 import { Style } from '../../styles/entities/style.entity';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
+import { EventServiceType } from '../../common/enums/event-service-type.enum';
 
 export async function seedOrders(
   ordersService: OrdersService,
@@ -36,53 +37,11 @@ export async function seedOrders(
 ): Promise<void> {
   console.log('📦 Iniciando seed de pedidos...');
 
-  const adminUser = await userRepository.findOne({
-    where: { role: UserRoles.ADMIN },
-  });
-
-  const bakers = await userRepository.find({
-    where: { role: UserRoles.BAKER },
-  })
-
-  if (!adminUser) {
-    console.log(
-      '   ⚠️  No se encontró usuario administrador, omitiendo seed de pedidos',
-    );
-    return;
-  }
-
-  // Obtener clientes existentes
-  const customers = await customerRepository.find({
-    relations: { address: true },
-    take: 5,
-  });
-
-  if (customers.length === 0) {
-    console.log('   ⚠️  No se encontraron clientes, omitiendo seed de pedidos');
-    return;
-  }
-
-  // Obtener sucursales existentes
-  const branches = await branchRepository.find({ take: 2 });
-
-  if (branches.length === 0) {
-    console.log(
-      '   ⚠️  No se encontraron sucursales, omitiendo seed de pedidos',
-    );
-    return;
-  }
-
-  // Obtener productos existentes
-  const products = await productRepository.find({ take: 10 });
-
-  if (products.length === 0) {
-    console.log(
-      '   ⚠️  No se encontraron productos, omitiendo seed de pedidos',
-    );
-    return;
-  }
-
-  // Obtener catálogos
+  const adminUser = await userRepository.findOne({ where: { role: UserRoles.ADMIN }, });
+  const bakers = await userRepository.find({ where: { role: UserRoles.BAKER }, })
+  const customers = await customerRepository.find({ relations: { address: true }, });
+  const branches = await branchRepository.find();
+  const products = await productRepository.find();
   const flavors = await flavorRepository.find();
   const fillings = await fillingRepository.find();
   const frostings = await frostingRepository.find();
@@ -91,12 +50,31 @@ export async function seedOrders(
   const breadTypes = await breadTypeRepository.find();
   const flowers = await flowerRepository.find();
 
-  if (flavors.length === 0 || fillings.length === 0 || frostings.length === 0) {
-    console.log(
-      '   ⚠️  No se encontraron catálogos básicos (sabores, rellenos, glaseados), omitiendo seed de pedidos',
-    );
+  if (!adminUser) {
+    console.log('⚠️ No se encontró usuario administrador, omitiendo seed de pedidos',);
     return;
   }
+
+  if (customers.length === 0) {
+    console.log('⚠️ No se encontraron clientes, omitiendo seed de pedidos');
+    return;
+  }
+
+  if (branches.length === 0) {
+    console.log('⚠️ No se encontraron sucursales, omitiendo seed de pedidos',);
+    return;
+  }
+
+  if (products.length === 0) {
+    console.log('⚠️ No se encontraron productos, omitiendo seed de pedidos',);
+    return;
+  }
+
+  if (flavors.length === 0 || fillings.length === 0 || frostings.length === 0) {
+    console.log('⚠️ No se encontraron catálogos básicos (sabores, rellenos, glaseados), omitiendo seed de pedidos',);
+    return;
+  }
+
   let createdCount = 0;
 
   // Helpers
@@ -172,6 +150,7 @@ export async function seedOrders(
       advancePayment: 225,
       customerId: customers[1].id,
       branchId: branches[1].id,
+      ticketNumber: 'TKT-VIT-001',
       details: [
         {
           productSize: ProductSize.FIFTEEN_P,
@@ -187,9 +166,162 @@ export async function seedOrders(
 
     console.log(`✅ Pedido VITRINA MÍNIMO: ${order2.orderCode}`);
     createdCount++;
+    // ═══════════════════════════════════════════════════════════════════════
+    // PEDIDO 3: DOMICILIO - ★★☆ SIN FLORES NI ESCRITURA ★★☆
+    // ═══════════════════════════════════════════════════════════════════════
+    const createOrderDom2: CreateOrderDto = {
+      orderType: OrderType.DOMICILIO,
+      deliveryRound: DeliveryRound.ROUND_2,
+      deliveryDate: getFutureDate(4),
+      deliveryTime: '16:00',
+      readyTime: '14:00',
+      advancePayment: 500,
+      paymentMethod: PaymentMethod.TRANSFER,
+      transferAccount: 'BBVA 1234567890',
+      ticketNumber: 'TKT-DOM-002',
+      hasPhotoReference: false,
+      customerId: customers[2].id,
+      branchId: branches[2].id,
+      deliveryAddress: {
+        newAddress: {
+          street: ' Calle Juárez',
+          neighborhood: 'Col. Roma',
+          number: '789',
+          city: ' Guadalajara',
+        },
+        useCustomerAddress: false,
+        reference: 'Frente al parque',
+        receiverName: 'Carlos López',
+        receiverPhone: '3398765432',
+      },
+      details: [
+        {
+          productSize: ProductSize.THIRTY_P,
+          price: 980,
+          quantity: 1,
+          hasWriting: false,
+          pipingLocation: PipingLocation.FULL_BORDER,
+          notes: 'Pastel liso sin decoración especial',
+          productId: products[1].id,
+          flavorId: flavors[6].id,
+          fillingId: fillings[10].id,
+          frostingId: frostings[4].id,
+        }
+      ]
+    }
+
+    const order3 = await ordersService.createOrder(createOrderDom2, adminUser);
+
+    await ordersService.assignOrder(bakers[0].id, { orderId: order3.id, assignedDate: new Date() }, adminUser)
+
+    console.log(`✅ Pedido DOMICILIO SIN FLORES: ${order3.orderCode}`);
+    createdCount++;
+    // ═══════════════════════════════════════════════════════════════════════
+    // PEDIDO 4: EVENTO - ★★★ COMPLETO CON MÚLTIPLES DETALLES ★★★
+    // ═══════════════════════════════════════════════════════════════════════
+    const createOrderEvt1: CreateOrderDto = {
+      orderType: OrderType.EVENTO,
+      deliveryRound: DeliveryRound.ROUND_1,
+      deliveryDate: getFutureDate(10),
+      deliveryTime: '15:00',
+      readyTime: '13:00',
+      eventTime: '18:00',
+      setupTime: '15:30',
+      branchDepartureTime: '14:30',
+      setupPersonName: 'Roberto Hernández',
+      eventServices: [
+        EventServiceType.DESSERT_TABLE,
+        EventServiceType.CAKE,
+        EventServiceType.CHEESE_TABLE,
+        EventServiceType.PLATED
+      ],
+      guestCount: 200,
+      advancePayment: 12500,
+      dessertsTotal: 18000,
+      setupServiceCost: 5000,
+      paymentMethod: PaymentMethod.MIXED,
+      ticketNumber: 'TKT-EVT-001',
+      requiresInvoice: true,
+      hasPhotoReference: true,
+      customerId: customers[3].id,
+      branchId: branches[1].id,
+      deliveryAddress: {
+        saveAsCommonAddress: true,
+        useCustomerAddress: false,
+        commonAddressName: 'Salón de eventos "Villa Jardín"',
+        newAddress: {
+          street: 'Av. Patria',
+          neighborhood: 'Col. Providencia',
+          number: '1200',
+          betweenStreets: 'Entre Av. Americas y López Mateos',
+          city: 'Zapopan',
+          postalCode: '45030',
+        },
+        deliveryNotes: 'Estacionamiento por la parte trasera, montacargas disponible',
+        receiverName: 'Coordinador del evento',
+        receiverPhone: '3311112222'
+      },
+      details: [
+        {
+          productSize: ProductSize.CUSTOM,
+          customSize: '200 personas',
+          price: 8000,
+          quantity: 1,
+          hasWriting: true,
+          writingText: 'Feliz Boda Ana y Carlos',
+          writingLocation: WritingLocation.PLAQUE,
+          pipingLocation: PipingLocation.FULL_BORDER,
+          notes: 'Pastel principal de 4 pisos, diseño clásico elegante',
+          productId: products[5].id,
+          flavorId: flavors[2].id,
+          fillingId: fillings[5].id,
+          frostingId: frostings[3].id,
+          styleId: styles[4].id,
+          colorId: colors[17].id,
+          breadTypeId: breadTypes[1].id,
+        },
+        {
+          price: 35,
+          quantity: 100,
+          hasWriting: false,
+          notes: 'Cupcakes decorados con iniciales A&C',
+          productId: products[8].id,
+          flavorId: flavors[4].id,
+          fillingId: fillings[7].id,
+          frostingId: frostings[2].id,
+          colorId: colors[5].id,
+        },
+        {
+          price: 25,
+          quantity: 15,
+          hasWriting: false,
+          notes: 'Variedad de pan dulce tradicional',
+          productId: products[9].id,
+        },
+        {
+          price: 25,
+          quantity: 10,
+          hasWriting: false,
+          notes: 'Variedad de pan dulce tradicional',
+          productId: products[11].id,
+        }
+      ],
+      flowers: [
+        { flowerId: flowers[0].id, colorId: colors[17].id, quantity: 30, notes: 'Decoración del pastel principal' },
+        { flowerId: flowers[4].id, colorId: colors[0].id, quantity: 20, notes: 'Para decoración adicional' },
+        { flowerId: flowers[3].id, quantity: 15, notes: 'Para decoración adicional' },
+      ]
+    }
+
+    const order4 = await ordersService.createOrder(createOrderEvt1, adminUser);
+
+    await ordersService.assignOrder(bakers[4].id, { orderId: order4.id, assignedDate: new Date() }, adminUser);
+
+    console.log(`✅ Pedido EVENTO COMPLETO: ${order4.orderCode}`);
+    createdCount++;
   } catch (error) {
-    console.error('   ❌ Error al crear pedidos:', error);
+    console.error('❌ Error al crear pedidos:', error);
   }
 
-  console.log(`   📊 Total pedidos creados: ${createdCount}\n`);
+  console.log(`📊 Total pedidos creados: ${createdCount}\n`);
 }
