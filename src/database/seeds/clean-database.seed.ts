@@ -23,8 +23,6 @@ export async function cleanDatabase(dataSource: DataSource): Promise<void> {
       'products',
       // Clientes
       'customers',
-      // Pasteleros
-      'bakers',
       // Catálogos
       'bread_types',
       'styles',
