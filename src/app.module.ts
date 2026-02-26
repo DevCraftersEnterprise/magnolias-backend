@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AddressesModule } from './addresses/addresses.module';
 import { AuthModule } from './auth/auth.module';
-import { BakersModule } from './bakers/bakers.module';
 import { BranchesModule } from './branches/branches.module';
 import { BreadTypesModule } from './bread-types/bread-types.module';
 import { CategoriesModule } from './categories/categories.module';
@@ -14,14 +14,13 @@ import { DatabaseModule } from './database/database.module';
 import { FillingsModule } from './fillings/fillings.module';
 import { FlavorsModule } from './flavors/flavors.module';
 import { FlowersModule } from './flowers/flowers.module';
+import { FormatsModule } from './formats/formats.module';
 import { FrostingsModule } from './frostings/frostings.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrinterModule } from './printer/printer.module';
 import { ProductsModule } from './products/products.module';
 import { StylesModule } from './styles/styles.module';
 import { UsersModule } from './users/users.module';
-import { FormatsModule } from './formats/formats.module';
-import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -31,11 +30,11 @@ import { AddressesModule } from './addresses/addresses.module';
     CustomPassportModule,
     CustomThrottlerModule,
     DatabaseModule,
+    OrdersModule,
     UsersModule,
     BranchesModule,
     ProductsModule,
     ColorsModule,
-    OrdersModule,
     CustomersModule,
     BreadTypesModule,
     FillingsModule,
@@ -43,7 +42,6 @@ import { AddressesModule } from './addresses/addresses.module';
     FrostingsModule,
     StylesModule,
     FlowersModule,
-    BakersModule,
     CategoriesModule,
     PrinterModule,
     FormatsModule,
@@ -52,4 +50,4 @@ import { AddressesModule } from './addresses/addresses.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

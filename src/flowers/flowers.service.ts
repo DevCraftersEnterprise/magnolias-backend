@@ -1,120 +1,43 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { PaginationResponse } from '../common/responses/pagination.response';
+import { User } from '../users/entities/user.entity';
 import { CreateFlowerDto } from './dto/create-flower.dto';
+import { FlowersFilterDto } from './dto/flowers-filter.dto';
 import { UpdateFlowerDto } from './dto/update-flower.dto';
 import { Flower } from './entities/flower.entity';
-import { User } from '../users/entities/user.entity';
-import { isUUID } from 'class-validator';
-import { PaginationResponse } from '../common/responses/pagination.response';
-import { FlowersFilterDto } from './dto/flowers-filter.dto';
+import { CreateFlowerUseCase } from './usecases/create-flower.usecase';
+import { FindAllFlowersUseCase } from './usecases/find-all-flowers.usecase';
+import { FindOneFlowerUseCase } from './usecases/find-one-flower.usecase';
+import { RemoveFlowerUseCase } from './usecases/remove-flower.usecase';
+import { UpdateFlowerUseCase } from './usecases/update-flower.usecase';
 
 @Injectable()
 export class FlowersService {
   constructor(
-    @InjectRepository(Flower)
-    private readonly flowerRepository: Repository<Flower>,
+    private readonly createFlowerUseCase: CreateFlowerUseCase,
+    private readonly findAllFlowersUseCase: FindAllFlowersUseCase,
+    private readonly findOneFlowerUseCase: FindOneFlowerUseCase,
+    private readonly updateFlowerUseCase: UpdateFlowerUseCase,
+    private readonly removeFlowerUseCase: RemoveFlowerUseCase,
   ) { }
 
   async create(createFlowerDto: CreateFlowerDto, user: User): Promise<Flower> {
-    const existingFlower = await this.flowerRepository.findOne({
-      where: { name: createFlowerDto.name.toUpperCase() },
-    });
-
-    if (existingFlower) {
-      throw new Error(
-        `Flower with name ${createFlowerDto.name} already exists`,
-      );
-    }
-
-    const flower = this.flowerRepository.create({
-      ...createFlowerDto,
-      name: createFlowerDto.name.toUpperCase(),
-      createdBy: user,
-      updatedBy: user,
-    });
-
-    return await this.flowerRepository.save(flower);
+    return await this.createFlowerUseCase.execute(createFlowerDto, user);
   }
 
-  async findAll(
-    flowersFilterDto: FlowersFilterDto,
-  ): Promise<PaginationResponse<Flower> | Flower[]> {
-    const { limit, offset, isActive, name } = flowersFilterDto ?? {};
-
-    const whereOptions: FindOptionsWhere<Flower> = {};
-
-    if (isActive !== undefined) whereOptions.isActive = isActive;
-    if (name) whereOptions.name = ILike(`%${name}%`);
-
-    const [flowers, total] = await this.flowerRepository.findAndCount({
-      where: whereOptions,
-      order: { createdAt: 'DESC' },
-      skip: offset ?? undefined,
-      take: limit ?? undefined,
-    });
-
-    if (limit !== undefined && offset !== undefined) {
-      return {
-        items: flowers,
-        total,
-        pagination: {
-          limit,
-          offset,
-          currentPage: Math.floor(offset / limit) + 1,
-          totalPages: Math.ceil(total / limit),
-        },
-      };
-    }
-    return flowers;
+  async findAll(flowersFilterDto: FlowersFilterDto,): Promise<PaginationResponse<Flower> | Flower[]> {
+    return await this.findAllFlowersUseCase.execute(flowersFilterDto);
   }
 
   async findOne(term: string): Promise<Flower> {
-    const whereCondition: FindOptionsWhere<Flower> = {};
-
-    if (isUUID(term)) whereCondition.id = term;
-    else whereCondition.name = term.toUpperCase();
-
-    const flower = await this.flowerRepository.findOne({
-      where: whereCondition,
-    });
-
-    if (!flower) {
-      throw new Error(`Flower with identifier ${term} not found`);
-    }
-    return flower;
+    return await this.findOneFlowerUseCase.execute(term);
   }
 
-  async update(
-    id: string,
-    updateFlowerDto: UpdateFlowerDto,
-    user: User,
-  ): Promise<Flower> {
-    const flower = await this.findOne(id);
-
-    if (updateFlowerDto.name && updateFlowerDto.name !== flower.name) {
-      const existingFlower = await this.flowerRepository.findOne({
-        where: { name: updateFlowerDto.name.toUpperCase() },
-      });
-
-      if (existingFlower && existingFlower.id !== flower.id) {
-        throw new BadRequestException(
-          `Another flower with name "${updateFlowerDto.name}" already exists`,
-        );
-      }
-    }
-
-    Object.assign(flower, updateFlowerDto);
-    flower.name = flower.name.toUpperCase();
-    flower.updatedBy = user;
-
-    return await this.flowerRepository.save(flower);
+  async update(id: string, updateFlowerDto: UpdateFlowerDto, user: User,): Promise<Flower> {
+    return await this.updateFlowerUseCase.execute(id, updateFlowerDto, user);
   }
 
   async remove(id: string, user: User): Promise<void> {
-    const flower = await this.findOne(id);
-    flower.isActive = false;
-    flower.updatedBy = user;
-    await this.flowerRepository.save(flower);
+    return await this.removeFlowerUseCase.execute(id, user);
   }
 }

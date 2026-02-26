@@ -37,7 +37,7 @@ import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 @Auth([UserRoles.SUPER, UserRoles.ADMIN])
 @ApiBearerAuth('access-token')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
@@ -128,7 +128,7 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   findUsers(
     @Query() filterDto: UsersFilterDto,
-  ): Promise<PaginationResponse<Partial<User>>> {
+  ): Promise<PaginationResponse<User> | User[]> {
     return this.usersService.findUsers(filterDto);
   }
 
@@ -180,7 +180,7 @@ export class UsersController {
     description:
       'Resets the password for user following certain restriction, based on user level',
   })
-  @ApiOkResponse({ description: 'Password successfully reset.', type: String })
+  @ApiOkResponse({ description: 'Password successfully reset.', type: User })
   @ApiForbiddenResponse({
     description:
       'The user try to reset a password for a similar or higher role',
@@ -188,7 +188,7 @@ export class UsersController {
   resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
     @CurrentUser() user: User,
-  ): Promise<string> {
+  ): Promise<Partial<User>> {
     return this.usersService.resetPassword(resetPasswordDto, user);
   }
 

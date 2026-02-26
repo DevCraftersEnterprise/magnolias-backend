@@ -1,3 +1,4 @@
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -8,9 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Branch } from './branch.entity';
+import { Branch } from '../../branches/entities/branch.entity';
 import { User } from '../../users/entities/user.entity';
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'phones' })
 export class Phone {

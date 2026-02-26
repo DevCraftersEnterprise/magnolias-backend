@@ -1,3 +1,4 @@
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +10,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'common_addresses' })
 @Index(['street', 'number', 'neighborhood'], { unique: true })

@@ -1,18 +1,13 @@
-import { DataSource } from 'typeorm';
-import { Category } from '../../categories/entities/category.entity';
+import { Repository } from 'typeorm';
+import { CategoriesService } from '../../categories/categories.service';
+import { CreateCategoryDto } from '../../categories/dto/create-category.dto';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-interface SeedCategory {
-  name: string;
-  description: string;
-}
-
-export async function seedCategories(dataSource: DataSource): Promise<void> {
+export async function seedCategories(categoryService: CategoriesService, userRepository: Repository<User>): Promise<void> {
   console.log('📁 Iniciando seed de categorías...');
 
-  const categoryRepository = dataSource.getRepository(Category);
-  const userRepository = dataSource.getRepository(User);
+
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -25,7 +20,7 @@ export async function seedCategories(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const categories: SeedCategory[] = [
+  const categories: CreateCategoryDto[] = [
     {
       name: 'Pasteles',
       description: 'Pasteles decorados para toda ocasión',
@@ -56,26 +51,8 @@ export async function seedCategories(dataSource: DataSource): Promise<void> {
 
   for (const categoryData of categories) {
     try {
-      const existing = await categoryRepository.findOne({
-        where: { name: categoryData.name },
-      });
+      await categoryService.create(categoryData, adminUser)
 
-      if (existing) {
-        console.log(
-          `   ⏭️  Categoría '${categoryData.name}' ya existe, omitiendo...`,
-        );
-        continue;
-      }
-
-      const category = categoryRepository.create({
-        name: categoryData.name,
-        description: categoryData.description,
-        isActive: true,
-        createdBy: adminUser,
-        updatedBy: adminUser,
-      });
-
-      await categoryRepository.save(category);
       console.log(`   ✅ Categoría creada: ${categoryData.name}`);
       createdCount++;
     } catch (error) {

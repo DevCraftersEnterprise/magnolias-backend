@@ -1,17 +1,13 @@
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { ColorsService } from '../../colors/colors.service';
+import { CreateColorDto } from '../../colors/dto/create-color.dto';
 import { Color } from '../../colors/entities/color.entity';
 
-interface SeedColor {
-  name: string;
-  value: string;
-}
 
-export async function seedColors(dataSource: DataSource): Promise<void> {
+export async function seedColors(colorsService: ColorsService, colorRepository: Repository<Color>): Promise<void> {
   console.log('🎨 Iniciando seed de colores...');
 
-  const colorRepository = dataSource.getRepository(Color);
-
-  const colors: SeedColor[] = [
+  const colors: CreateColorDto[] = [
     { name: 'Rosa Pastel', value: '#FFB6C1' },
     { name: 'Azul Cielo', value: '#87CEEB' },
     { name: 'Lavanda', value: '#E6E6FA' },
@@ -47,12 +43,8 @@ export async function seedColors(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      const color = colorRepository.create({
-        name: colorData.name,
-        value: colorData.value,
-      });
+      await colorsService.create(colorData);
 
-      await colorRepository.save(color);
       console.log(`   ✅ Color creado: ${colorData.name} (${colorData.value})`);
       createdCount++;
     } catch (error) {

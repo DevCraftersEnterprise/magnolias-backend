@@ -250,4 +250,24 @@ export class CreateOrderDto {
   @IsNotEmpty({ message: 'At least one flower is required for FLOR orders' })
   @IsOptional()
   flowers?: AddFlowerToOrderDto[];
+
+  @ApiPropertyOptional({
+    description: 'Desserts total amount (for event orders)',
+    example: 200.0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Desserts total must be a number' })
+  @Min(0, { message: 'Desserts total must be at least 0' })
+  dessertsTotal?: number;
+
+  @ApiPropertyOptional({
+    description: 'Setup service cost (for event orders)',
+    example: 200.0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Setup service cost must be a number' })
+  @Min(0, { message: 'Setup service cost must be at least 0' })
+  setupServiceCost?: number;
 }

@@ -1,22 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Color } from './entities/color.entity';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginationResponse } from '../common/responses/pagination.response';
 import { CreateColorDto } from './dto/create-color.dto';
+import { Color } from './entities/color.entity';
+import { CreateColorUseCase } from './usecases/create-color.usecase';
+import { FindAllColorsUseCase } from './usecases/find-all-colors.usecase';
 
 @Injectable()
 export class ColorsService {
   constructor(
-    @InjectRepository(Color)
-    private readonly colorRepository: Repository<Color>,
-  ) {}
+    private readonly createColorUseCase: CreateColorUseCase,
+    private readonly findAllColorsUseCase: FindAllColorsUseCase,
+  ) { }
 
-  create(createColorDto: CreateColorDto) {
-    const color = this.colorRepository.create(createColorDto);
-    return this.colorRepository.save(color);
+  async create(createColorDto: CreateColorDto): Promise<Color> {
+    return this.createColorUseCase.execute(createColorDto);
   }
 
-  findAll() {
-    return this.colorRepository.find();
+  async findAll(paginationDto: PaginationDto): Promise<PaginationResponse<Color> | Color[]> {
+    return this.findAllColorsUseCase.execute(paginationDto);
   }
 }

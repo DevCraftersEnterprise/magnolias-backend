@@ -1,18 +1,16 @@
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CreateFlavorDto } from '../../flavors/dto/create-flavor.dto';
 import { Flavor } from '../../flavors/entities/flavor.entity';
+import { FlavorsService } from '../../flavors/flavors.service';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-interface SeedFlavor {
-  name: string;
-  description: string;
-}
 
-export async function seedFlavors(dataSource: DataSource): Promise<void> {
+export async function seedFlavors(
+  flavorsService: FlavorsService,
+  userRepository: Repository<User>,
+  flavorRepository: Repository<Flavor>): Promise<void> {
   console.log('🍰 Iniciando seed de sabores...');
-
-  const flavorRepository = dataSource.getRepository(Flavor);
-  const userRepository = dataSource.getRepository(User);
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -25,7 +23,7 @@ export async function seedFlavors(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const flavors: SeedFlavor[] = [
+  const flavors: CreateFlavorDto[] = [
     { name: 'Chocolate', description: 'Chocolate oscuro de calidad premium' },
     { name: 'Vainilla', description: 'Vainilla natural de Madagascar' },
     { name: 'Fresa', description: 'Fresas frescas naturales' },
@@ -58,15 +56,7 @@ export async function seedFlavors(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      const flavor = flavorRepository.create({
-        name: flavorData.name,
-        description: flavorData.description,
-        isActive: true,
-        createdBy: adminUser,
-        updatedBy: adminUser,
-      });
-
-      await flavorRepository.save(flavor);
+      await flavorsService.create(flavorData, adminUser);
       console.log(`   ✅ Sabor creado: ${flavorData.name}`);
       createdCount++;
     } catch (error) {

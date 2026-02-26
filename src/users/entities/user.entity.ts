@@ -5,13 +5,16 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Baker } from '../../bakers/entities/baker.entity';
 import { Branch } from '../../branches/entities/branch.entity';
+import { BakerArea } from '../../common/enums/baker-area.enum';
+import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
 import { UserRoles } from '../enums/user-role';
 
 @Entity({ name: 'users' })
@@ -77,9 +80,30 @@ export class User {
   branch: Branch;
 
   @ApiHideProperty()
-  @OneToOne(() => Baker, { nullable: true })
-  @JoinColumn({ name: 'bakerId' })
-  baker?: Baker;
+  @ManyToMany(() => Branch, { nullable: true })
+  @JoinTable({
+    name: 'baker_branches',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'branchId', referencedColumnName: 'id' },
+  })
+  branches?: Branch[];
+
+  @ApiProperty({ description: 'Work area of the baker', enum: BakerArea, required: false })
+  @Column({ type: 'enum', enum: BakerArea, nullable: true })
+  area?: BakerArea;
+
+  @ApiProperty({ description: 'Specialty description', required: false })
+  @Column({ type: 'text', nullable: true })
+  specialty?: string;
+
+  @ApiProperty({ description: 'Phone number', required: false })
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  phone?: string;
+
+  // Relación con asignaciones de órdenes
+  @ApiHideProperty()
+  @OneToMany(() => OrderAssignment, (assignment) => assignment.baker)
+  assignments?: OrderAssignment[];
 
   @ApiProperty({
     description: 'Creation timestamp',
