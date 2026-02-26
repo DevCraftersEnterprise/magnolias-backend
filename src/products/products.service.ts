@@ -1,291 +1,67 @@
 import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException,
+  Injectable
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { isUUID } from 'class-validator';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { CategoriesService } from '../categories/categories.service';
 import { PaginationResponse } from '../common/responses/pagination.response';
-import { uploadPictureToCloudinary } from '../common/utils/upload-to-cloudinary';
 import { User } from '../users/entities/user.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsFilterDto } from './dto/products-filter.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ProductPicture } from './entities/product-picture.entity';
 import { Product } from './entities/product.entity';
+import { CreateProductUseCase } from './usecases/create-product.usecase';
+import { FindAllProductsUseCase } from './usecases/find-all-products.usecase';
+import { FindOneProductUseCase } from './usecases/find-one-product.usecase';
+import { HideProductPictureUseCase } from './usecases/hide-product-picture.usecase';
+import { RemoveProductUseCase } from './usecases/remove-product.usecase';
+import { UpdateFavoriteProductStatusUseCase } from './usecases/update-favorite-product-status.usecase';
+import { UpdateProductUseCase } from './usecases/update-product.usecase';
+import { UploadPicturesForProductUseCase } from './usecases/upload-pictures-for-product.usecase';
 
 @Injectable()
 export class ProductsService {
-  private readonly logger = new Logger(ProductsService.name);
-
   constructor(
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>,
-    @InjectRepository(ProductPicture)
-    private readonly productPictureRepository: Repository<ProductPicture>,
-    private readonly categoriesService: CategoriesService,
+    private readonly createProductUseCase: CreateProductUseCase,
+    private readonly findAllProductsUseCase: FindAllProductsUseCase,
+    private readonly findOneProductUseCase: FindOneProductUseCase,
+    private readonly updateProductUseCase: UpdateProductUseCase,
+    private readonly updateFavoriteProductStatusUseCase: UpdateFavoriteProductStatusUseCase,
+    private readonly removeProductUseCase: RemoveProductUseCase,
+    private readonly uploadPicturesForProductUseCase: UploadPicturesForProductUseCase,
+    private readonly hideProductPictureUseCase: HideProductPictureUseCase,
   ) { }
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
-    const { name, description = '', categoryId } = dto;
-
-    const category = await this.categoriesService.findOne(categoryId);
-
-    const productData: Partial<Product> = {
-      name,
-      description,
-      category,
-      createdBy: user,
-      updatedBy: user,
-    };
-
-    const product = this.productRepository.create(productData);
-    await this.productRepository.save(product);
-    return product;
+    return await this.createProductUseCase.execute(dto, user);
   }
 
-  async findProducts(
-    filters: ProductsFilterDto,
-  ): Promise<PaginationResponse<Product> | Product[]> {
-    const { name, description = '', limit, offset } = filters;
-
-    const whereConditions: FindOptionsWhere<Product> = {};
-
-    if (name) whereConditions.name = ILike(`%${name}%`);
-    if (description) whereConditions.description = ILike(`%${description}%`);
-
-    const [products, total] = await this.productRepository.findAndCount({
-      where: {
-        ...whereConditions,
-        pictures: { isActive: true },
-      },
-      relations: {
-        category: true,
-        pictures: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isFavorite: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        category: {
-          id: true,
-          name: true,
-        },
-        pictures: {
-          imageUrl: true,
-        },
-      },
-      order: { createdAt: 'DESC' },
-      skip: offset,
-      take: limit,
-    });
-
-    if (limit !== undefined && offset !== undefined) {
-      return {
-        items: products,
-        total,
-        pagination: {
-          limit,
-          offset,
-          totalPages: Math.ceil(total / limit),
-          currentPage: Math.floor(offset / limit) + 1,
-        },
-      };
-    }
-
-    return products;
+  async findProducts(filters: ProductsFilterDto,): Promise<PaginationResponse<Product> | Product[]> {
+    return await this.findAllProductsUseCase.execute(filters);
   }
 
   async findProductByTerm(term: string): Promise<Product> {
-    const whereConditions: FindOptionsWhere<Product>[] = [];
-
-    if (isUUID(term)) whereConditions.push({ id: term });
-    whereConditions.push({ name: ILike(`%${term}%`) });
-
-    const product = await this.productRepository.findOne({
-      where: { ...whereConditions, pictures: { isActive: true } },
-      relations: { pictures: true, category: true },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        isFavorite: true,
-        createdAt: true,
-        updatedAt: true,
-        category: {
-          id: true,
-          name: true,
-        },
-        pictures: {
-          imageUrl: true,
-        },
-      },
-    });
-
-    if (!product) {
-      throw new NotFoundException(
-        `Product not found with the provided term: ${term}`,
-      );
-    }
-
-    return product;
+    return await this.findOneProductUseCase.execute(term);
   }
+
   async findFavoriteProduct(): Promise<Product> {
-    const product = await this.productRepository.findOne({
-      where: { isFavorite: true, pictures: { isActive: true } },
-      relations: { pictures: true, category: true },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        isFavorite: true,
-        createdAt: true,
-        updatedAt: true,
-        category: {
-          id: true,
-          name: true,
-        },
-        pictures: {
-          imageUrl: true,
-        },
-      },
-    });
-
-    if (!product) throw new NotFoundException(`Favorite product not found`);
-
-    return product;
+    return await this.findOneProductUseCase.favorite();
   }
 
   async updateProduct(dto: UpdateProductDto, user: User): Promise<Product> {
-    const { id, name, description, isActive, categoryId } = dto;
-
-    const product = await this.productRepository.preload({ id });
-
-    if (!product) throw new NotFoundException('Product does not exist');
-
-    if (categoryId) {
-      const category = await this.categoriesService.findOne(categoryId);
-
-      if (product.category.id !== category.id) product.category = category;
-    }
-
-    product.name = name ?? product.name;
-    product.description = description ?? product.description;
-    product.isActive = isActive ?? product.isActive;
-    product.updatedBy = user;
-
-    const updatedProduct = await this.productRepository.save(product);
-
-    return updatedProduct;
+    return await this.updateProductUseCase.execute(dto, user);
   }
 
-  async updateProductFavoriteStatus(
-    dto: UpdateProductDto,
-    user: User,
-  ): Promise<Product> {
-    const { id } = dto;
-
-    const oldFavoriteProduct = await this.productRepository.findOne({
-      where: { isFavorite: true },
-    });
-
-    if (oldFavoriteProduct && oldFavoriteProduct.id !== id) {
-      oldFavoriteProduct.isFavorite = false;
-      oldFavoriteProduct.updatedBy = user;
-      await this.productRepository.save(oldFavoriteProduct);
-    }
-
-    const product = await this.productRepository.preload({ id });
-
-    if (!product) throw new NotFoundException('Product does not exist');
-
-    product.isFavorite = true;
-    product.updatedBy = user;
-
-    const favorite = await this.productRepository.save(product);
-
-    return this.findProductByTerm(favorite.id);
+  async updateProductFavoriteStatus(dto: UpdateProductDto, user: User,): Promise<Product> {
+    return await this.updateFavoriteProductStatusUseCase.execute(dto, user);
   }
 
   async deleteProduct(dto: UpdateProductDto, user: User): Promise<void> {
-    const { id } = dto;
-
-    const isProductActive = await this.productRepository.findOne({
-      where: { id, isActive: true },
-    });
-
-    if (!isProductActive) {
-      throw new NotFoundException(
-        'Product does not exist or is already inactive',
-      );
-    }
-
-    await this.productRepository.update(id, {
-      isActive: false,
-      updatedBy: user,
-    });
+    return await this.removeProductUseCase.execute(dto, user);
   }
 
-  async uploadProductPicture(
-    files: Express.Multer.File[],
-    dto: UpdateProductDto,
-    user: User,
-  ): Promise<Product> {
-    const { id } = dto;
-
-    const product = await this.findProductByTerm(id);
-
-    if (!product) throw new NotFoundException('Product does not exist');
-
-    const folder =
-      process.env.NODE_ENV === 'development'
-        ? `dev/product/pictures/${id}`
-        : `product/pictures/${id}`;
-
-    const picturesPromises = files.map((file) => {
-      const fileName = `${Date.now()}-${id}`;
-      return uploadPictureToCloudinary(file.buffer, folder, fileName);
-    });
-
-    const imageUrls = await Promise.all(picturesPromises);
-
-    const pictures = imageUrls.map((url) =>
-      this.productPictureRepository.create({
-        imageUrl: url,
-        createdBy: user,
-        updatedBy: user,
-        product,
-      }),
-    );
-
-    await this.productPictureRepository.save(pictures);
-
-    return this.findProductByTerm(id);
+  async uploadProductPicture(files: Express.Multer.File[], dto: UpdateProductDto, user: User,): Promise<Product> {
+    return await this.uploadPicturesForProductUseCase.execute(files, dto, user);
   }
 
   async hideProductPicture(id: string, user: User): Promise<void> {
-    if (!isUUID(id)) throw new BadRequestException('Invalid UUID format');
-
-    const pictureVisible = await this.productPictureRepository.findOne({
-      where: { id, isActive: true },
-    });
-
-    if (!pictureVisible) {
-      throw new NotFoundException('Picture not found or already hidden');
-    }
-
-    pictureVisible.isActive = false;
-    pictureVisible.updatedBy = user;
-
-    await this.productPictureRepository.save(pictureVisible);
+    return await this.hideProductPictureUseCase.execute(id, user);
   }
 }

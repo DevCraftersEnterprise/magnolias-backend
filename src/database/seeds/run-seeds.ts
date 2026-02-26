@@ -14,6 +14,7 @@ import { FlowersService } from '../../flowers/flowers.service';
 import { StylesService } from '../../styles/styles.service';
 import { BreadTypesService } from '../../bread-types/bread-types.service';
 import { CustomersService } from '../../customers/customers.service';
+import { ProductsService } from '../../products/products.service';
 
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
@@ -29,6 +30,8 @@ import { Style } from '../../styles/entities/style.entity';
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { Customer } from '../../customers/entities/customer.entity';
 import { CustomerAddress } from '../../customers/entities/customer-address.entity';
+import { Product } from '../../products/entities/product.entity';
+import { ProductPicture } from '../../products/entities/product-picture.entity';
 
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
@@ -96,6 +99,15 @@ import { FindAllCustomersUseCase } from '../../customers/usecases/find-all-custo
 import { FindOneCustomerUseCase } from '../../customers/usecases/find-one-customer.usecase';
 import { UpdateCustomerUseCase } from '../../customers/usecases/update-customer.usecase';
 import { RemoveCustomerUseCase } from '../../customers/usecases/remove-customer.usecase';
+
+import { CreateProductUseCase } from '../../products/usecases/create-product.usecase';
+import { FindAllProductsUseCase } from '../../products/usecases/find-all-products.usecase';
+import { FindOneProductUseCase } from '../../products/usecases/find-one-product.usecase';
+import { UpdateProductUseCase } from '../../products/usecases/update-product.usecase';
+import { UpdateFavoriteProductStatusUseCase } from '../../products/usecases/update-favorite-product-status.usecase';
+import { RemoveProductUseCase } from '../../products/usecases/remove-product.usecase';
+import { UploadPicturesForProductUseCase } from '../../products/usecases/upload-pictures-for-product.usecase';
+import { HideProductPictureUseCase } from '../../products/usecases/hide-product-picture.usecase';
 // Seeds
 import { cleanDatabase } from './clean-database.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -110,6 +122,8 @@ import { seedFlowers } from './flowers.seed';
 import { seedStyles } from './styles.seed';
 import { seedBreadTypes } from './bread-types.seed';
 import { seedCustomers } from './customers.seed';
+import { seedProducts } from './products.seed';
+
 
 // Cargar variables de entorno
 config();
@@ -133,6 +147,8 @@ async function runSeeds() {
     const breadTypeRepository: Repository<BreadType> = AppDataSource.getRepository(BreadType);
     const customerRepository: Repository<Customer> = AppDataSource.getRepository(Customer);
     const customerAddressRepository: Repository<CustomerAddress> = AppDataSource.getRepository(CustomerAddress);
+    const productRepository: Repository<Product> = AppDataSource.getRepository(Product);
+    const productPictureRepository: Repository<ProductPicture> = AppDataSource.getRepository(ProductPicture);
 
     const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
@@ -288,6 +304,26 @@ async function runSeeds() {
       removeCustomerUseCase,
     );
 
+    const createProductUseCase = new CreateProductUseCase(productRepository, categoriesService);
+    const findAllProductsUseCase = new FindAllProductsUseCase(productRepository);
+    const findOneProductUseCase = new FindOneProductUseCase(productRepository);
+    const updateProductUseCase = new UpdateProductUseCase(productRepository, categoriesService);
+    const updateFavoriteProductStatusUseCase = new UpdateFavoriteProductStatusUseCase(productRepository);
+    const removeProductUseCase = new RemoveProductUseCase(productRepository);
+    const uploadPicturesForProductUseCase = new UploadPicturesForProductUseCase(productRepository, productPictureRepository);
+    const hideProductPictureUseCase = new HideProductPictureUseCase(productPictureRepository);
+
+    const productsService = new ProductsService(
+      createProductUseCase,
+      findAllProductsUseCase,
+      findOneProductUseCase,
+      updateProductUseCase,
+      updateFavoriteProductStatusUseCase,
+      removeProductUseCase,
+      uploadPicturesForProductUseCase,
+      hideProductPictureUseCase,
+    );
+
     console.log('✅ Conexión establecida\n');
 
     console.log('════════════════════════════════════════════════════');
@@ -326,7 +362,7 @@ async function runSeeds() {
     await seedCustomers(customersService, userRepository, customerRepository);
 
     // 9. Productos (necesita categorías y usuarios)
-    // await seedProducts(AppDataSource);
+    await seedProducts(productsService, userRepository, categoryRepository, productRepository);
 
     // 10. Pedidos (necesita clientes, sucursales, productos y usuarios)
     // await seedOrders(AppDataSource);
