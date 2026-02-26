@@ -608,7 +608,7 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
       ],
       [
         labelCell('ESTILO Y COLOR DEL ESCRITO', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(`${detail?.style?.name}, ${detail?.color?.name}`), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(`${detail?.style?.name ?? ''}\n ${detail?.color?.name ?? ''}`), { border: [true, true, true, true] }),
         labelCell('UBICACIÓN DEL ESCRITO', { border: [true, true, true, true] }),
         valueCell(
           detail?.writingLocation
@@ -623,7 +623,7 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         labelCell('ESTILO Y COLOR DE POMPEADO', {
           border: [true, true, true, false],
         }),
-        valueCell(toUpperSafe(`${detail?.style?.name}, ${detail?.color?.name}`), {
+        valueCell(toUpperSafe(`${detail?.style?.name ?? ''}\n${detail?.color?.name ?? ''}`), {
           border: [true, true, true, false],
         }),
         labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
