@@ -319,6 +319,62 @@ export async function seedOrders(
 
     console.log(`✅ Pedido EVENTO COMPLETO: ${order4.orderCode}`);
     createdCount++;
+    // ═══════════════════════════════════════════════════════════════════════
+    // PEDIDO 5: PERSONALIZADO - ★★☆ CON ESCRITURA PERO SIN PIPING ★★☆
+    // ═══════════════════════════════════════════════════════════════════════
+    const createCustomOrder1: CreateOrderDto = {
+      orderType: OrderType.PERSONALIZADO,
+      deliveryDate: getFutureDate(6),
+      deliveryTime: '14:00',
+      readyTime: '11:00',
+      advancePayment: 1750,
+      paymentMethod: PaymentMethod.CARD,
+      ticketNumber: 'TKT-PER-001',
+      hasPhotoReference: true,
+      requiresInvoice: true,
+      customerId: customers[3].id,
+      branchId: branches[0].id,
+      deliveryAddress: {
+        useCustomerAddress: false,
+        newAddress: {
+          street: 'Av. Vallarta',
+          number: '2500',
+          neighborhood: 'Arcos Vallarta',
+          city: 'Guadalajara',
+          postalCode: '44130'
+        },
+        receiverName: 'Empresa XYZ - Recepción',
+        receiverPhone: '3344556677'
+      },
+      details: [
+        {
+          productSize: ProductSize.CUSTOM,
+          customSize: '80 personas',
+          price: 3500,
+          quantity: 1,
+          hasWriting: true,
+          writingText: 'Felicitaciones Equipo 2026',
+          writingLocation: WritingLocation.CENTER,
+          notes: 'Diseño corporativo con logo impreso en oblea',
+          productId: products[0].id,
+          flavorId: flavors[0].id,
+          fillingId: fillings[4].id,
+          frostingId: frostings[4].id,
+          styleId: styles[0].id,
+          colorId: colors[8].id,
+        }
+      ],
+      flowers: [
+        { flowerId: flowers[0].id, quantity: 3, }
+      ]
+    }
+
+    const order5 = await ordersService.createOrder(createCustomOrder1, adminUser);
+
+    // await ordersService.assignOrder(bakers[4].id, { orderId: order5.id, assignedDate: new Date() }, adminUser);
+
+    console.log(`✅ Pedido PERSONALIZADO: ${order5.orderCode}`);
+    createdCount++;
   } catch (error) {
     console.error('❌ Error al crear pedidos:', error);
   }
