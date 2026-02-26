@@ -10,25 +10,24 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { User } from 'src/users/entities/user.entity';
-import { sanitizeUser } from 'src/users/utils/sanitized-user.util';
-import { AuthService } from './auth.service';
-import { CurrentUser } from './decorators/curret-user.decorator';
-import { LoginUserDto } from './dto/login-user.dto';
-import { AccessTokenGuard } from './guards/access-token.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { LoginThrottleGuard } from './guards/login-throttle.guard';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { LoginResponse } from './responses/login.response';
-import { RefreshTokenResponse } from './responses/refresh-token.response';
-
+import { AuthService } from '../auth/auth.service';
+import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { LoginUserDto } from '../auth/dto/login-user.dto';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoginThrottleGuard } from '../auth/guards/login-throttle.guard';
+import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
+import { LoginResponse } from '../auth/responses/login.response';
+import { RefreshTokenResponse } from '../auth/responses/refresh-token.response';
+import { User } from '../users/entities/user.entity';
+import { sanitizeUser } from '../users/utils/sanitized-user.util';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly loginThrottleGuard: LoginThrottleGuard,
-  ) {}
+  ) { }
 
   @Post('login')
   @UseGuards(LoginThrottleGuard)

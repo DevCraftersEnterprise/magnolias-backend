@@ -20,7 +20,7 @@
 
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
-import { reEncrypt, isEncrypted } from '../common/utils/encryption.util';
+import { isEncrypted, reEncrypt } from '../common/utils/encryption.util';
 
 config();
 

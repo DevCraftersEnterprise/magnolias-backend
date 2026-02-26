@@ -17,14 +17,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { AddressesService } from '../addresses/addresses.service';
+import { CreateCommonAddressDto } from '../addresses/dto/create-common-address.dto';
+import { UpdateCommonAddressDto } from '../addresses/dto/update-common-address.dto';
+import { CommonAddress } from '../addresses/entities/common-address.entity';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { UserRoles } from '../users/enums/user-role';
-import { AddressesService } from './addresses.service';
-import { CreateCommonAddressDto } from './dto/create-common-address.dto';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
 import { User } from '../users/entities/user.entity';
-import { CommonAddress } from './entities/common-address.entity';
-import { UpdateCommonAddressDto } from './dto/update-common-address.dto';
+import { UserRoles } from '../users/enums/user-role';
 
 @ApiTags('Common Addresses')
 @ApiBearerAuth('access-token')

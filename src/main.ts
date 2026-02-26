@@ -22,7 +22,6 @@ async function bootstrap() {
     .setTitle('Magnolias API')
     .setDescription('API documentation for the Magnolias application')
     .setVersion('1.0')
-    .addTag('magnolias')
     .addBearerAuth(
       {
         type: 'http',

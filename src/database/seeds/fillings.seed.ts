@@ -1,18 +1,16 @@
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Filling } from '../../fillings/entities/filling.entity';
+import { FillingsService } from '../../fillings/fillings.service';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
+import { CreateFillingDto } from '../../fillings/dto/create-filling.dto';
 
-interface SeedFilling {
-  name: string;
-  description: string;
-}
-
-export async function seedFillings(dataSource: DataSource): Promise<void> {
+export async function seedFillings(
+  fillingsService: FillingsService,
+  userRepository: Repository<User>,
+  fillingRepository: Repository<Filling>): Promise<void> {
   console.log('🥧 Iniciando seed de rellenos...');
 
-  const fillingRepository = dataSource.getRepository(Filling);
-  const userRepository = dataSource.getRepository(User);
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -25,7 +23,7 @@ export async function seedFillings(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const fillings: SeedFilling[] = [
+  const fillings: CreateFillingDto[] = [
     { name: 'Crema Pastelera', description: 'Crema pastelera tradicional' },
     {
       name: 'Ganache de Chocolate',
@@ -60,15 +58,7 @@ export async function seedFillings(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      const filling = fillingRepository.create({
-        name: fillingData.name,
-        description: fillingData.description,
-        isActive: true,
-        createdBy: adminUser,
-        updatedBy: adminUser,
-      });
-
-      await fillingRepository.save(filling);
+      await fillingsService.create(fillingData, adminUser);
       console.log(`   ✅ Relleno creado: ${fillingData.name}`);
       createdCount++;
     } catch (error) {

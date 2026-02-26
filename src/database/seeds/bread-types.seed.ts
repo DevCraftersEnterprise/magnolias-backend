@@ -1,18 +1,16 @@
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { BreadTypesService } from '../../bread-types/bread-types.service';
+import { CreateBreadTypeDto } from '../../bread-types/dto/create-bread-type.dto';
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-interface SeedBreadType {
-  name: string;
-  description: string;
-}
-
-export async function seedBreadTypes(dataSource: DataSource): Promise<void> {
+export async function seedBreadTypes(
+  breadTypesService: BreadTypesService,
+  userRepository: Repository<User>,
+  breadTypeRepository: Repository<BreadType>,
+): Promise<void> {
   console.log('� Iniciando seed de tipos de pan para pastel...');
-
-  const breadTypeRepository = dataSource.getRepository(BreadType);
-  const userRepository = dataSource.getRepository(User);
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -25,7 +23,7 @@ export async function seedBreadTypes(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const breadTypes: SeedBreadType[] = [
+  const breadTypes: CreateBreadTypeDto[] = [
     { name: 'Vainilla', description: 'Pan de vainilla clásico, suave y esponjoso' },
     { name: 'Chocolate', description: 'Pan de chocolate intenso' },
     { name: 'Fresa', description: 'Pan con sabor a fresa natural' },
@@ -53,15 +51,7 @@ export async function seedBreadTypes(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      const breadType = breadTypeRepository.create({
-        name: breadTypeData.name,
-        description: breadTypeData.description,
-        isActive: true,
-        createdBy: adminUser,
-        updatedBy: adminUser,
-      });
-
-      await breadTypeRepository.save(breadType);
+      await breadTypesService.create(breadTypeData, adminUser);
       console.log(`   ✅ Tipo de pan creado: ${breadTypeData.name}`);
       createdCount++;
     } catch (error) {

@@ -14,7 +14,7 @@ import { Branch } from '../../branches/entities/branch.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { OrderType } from '../../common/enums/order-type.enum';
 import { Customer } from '../../customers/entities/customer.entity';
-import { OrderFlower } from '../../flowers/entities/order-flower.entity';
+import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderStatus } from '../enums/order-status.enum';
 import { OrderDetail } from './order-detail.entity';

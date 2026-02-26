@@ -9,11 +9,11 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
-import { META_ROLE } from '../decorators/role-protected.decorator';
+import { META_ROLE } from '../../auth/decorators/role-protected.decorator';
 
 @Injectable()
 export class UserRoleGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) { }
 
   canActivate(
     context: ExecutionContext,
@@ -30,7 +30,7 @@ export class UserRoleGuard implements CanActivate {
 
     if (!user) throw new BadRequestException('User not found');
 
-    const hasValidRole = roles.includes(user.role as UserRoles);
+    const hasValidRole = roles.includes(user.role);
     if (hasValidRole) return true;
 
     throw new ForbiddenException('User does not have the required role');

@@ -1,97 +1,47 @@
 import {
-  ConflictException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CreateCommonAddressDto } from '../addresses/dto/create-common-address.dto';
+import { UpdateCommonAddressDto } from '../addresses/dto/update-common-address.dto';
+import { CommonAddress } from '../addresses/entities/common-address.entity';
+import { CreateCommonAddressUseCase } from '../addresses/usecases/create-common-address.usecase';
+import { FindAllCommonAddressesUseCase } from '../addresses/usecases/find-all-common-addresses.usecase';
+import { FindOneCommonAddressUseCase } from '../addresses/usecases/find-one-common-address.usecase';
+import { RemoveCommonAddressUseCase } from '../addresses/usecases/remove-common-address.usecase';
+import { UpdateCommonAddressUseCase } from '../addresses/usecases/update-common-address.usecase';
 import { User } from '../users/entities/user.entity';
-import { CreateCommonAddressDto } from './dto/create-common-address.dto';
-import { UpdateCommonAddressDto } from './dto/update-common-address.dto';
-import { CommonAddress } from './entities/common-address.entity';
-
 @Injectable()
 export class AddressesService {
   constructor(
     @InjectRepository(CommonAddress)
     private commonAddressRepository: Repository<CommonAddress>,
-  ) {}
+    private readonly createCommonAddressUseCase: CreateCommonAddressUseCase,
+    private readonly findAllCommonAddressesUseCase: FindAllCommonAddressesUseCase,
+    private readonly findOneCommonAddressUseCase: FindOneCommonAddressUseCase,
+    private readonly updateCommonAddressUseCase: UpdateCommonAddressUseCase,
+    private readonly removeCommonAddressUseCase: RemoveCommonAddressUseCase
+  ) { }
 
-  async create(
-    createAddressDto: CreateCommonAddressDto,
-    user: User,
-  ): Promise<CommonAddress> {
-    const existing = await this.commonAddressRepository.findOne({
-      where: {
-        street: createAddressDto.street,
-        number: createAddressDto.number,
-        neighborhood: createAddressDto.neighborhood,
-      },
-    });
-
-    if (existing) {
-      throw new ConflictException(
-        'An adress with the same street, number, and neighborhood already exists.',
-      );
-    }
-
-    const address = this.commonAddressRepository.create({
-      ...createAddressDto,
-      createdBy: user,
-      updatedBy: user,
-    });
-
-    return this.commonAddressRepository.save(address);
+  async create(createAddressDto: CreateCommonAddressDto, user: User,): Promise<CommonAddress> {
+    return await this.createCommonAddressUseCase.execute(createAddressDto, user);
   }
 
   async findAll(search?: string): Promise<CommonAddress[]> {
-    const whereConditions: FindOptionsWhere<CommonAddress> = {};
-
-    if (search) {
-      return this.commonAddressRepository.find({
-        where: [
-          { ...whereConditions, name: ILike(`%${search}%`) },
-          { ...whereConditions, street: ILike(`%${search}%`) },
-          { ...whereConditions, neighborhood: ILike(`%${search}%`) },
-        ],
-        order: { usageCount: 'DESC', name: 'ASC' },
-        take: 20,
-      });
-    }
-
-    return this.commonAddressRepository.find({
-      where: whereConditions,
-      order: { usageCount: 'DESC', name: 'ASC' },
-    });
+    return await this.findAllCommonAddressesUseCase.execute(search);
   }
 
   async findOne(id: string): Promise<CommonAddress> {
-    const address = await this.commonAddressRepository.findOne({
-      where: { id, isActive: true },
-    });
-
-    if (!address) throw new NotFoundException('Address not found');
-
-    return address;
+    return await this.findOneCommonAddressUseCase.execute(id);
   }
 
-  async update(
-    id: string,
-    updateAddressDto: UpdateCommonAddressDto,
-    user: User,
-  ): Promise<CommonAddress> {
-    const address = await this.findOne(id);
-
-    Object.assign(address, updateAddressDto, { updatedBy: user });
-
-    return this.commonAddressRepository.save(address);
+  async update(id: string, updateAddressDto: UpdateCommonAddressDto, user: User,): Promise<CommonAddress> {
+    return await this.updateCommonAddressUseCase.execute(id, updateAddressDto, user);
   }
 
   async remove(id: string, user: User): Promise<void> {
-    const address = await this.findOne(id);
-    address.isActive = false;
-    address.updatedBy = user;
-    await this.commonAddressRepository.save(address);
+    return await this.removeCommonAddressUseCase.execute(id, user);
   }
 
   async incrementUsageCount(id: string): Promise<void> {

@@ -1,18 +1,16 @@
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CreateFlowerDto } from '../../flowers/dto/create-flower.dto';
 import { Flower } from '../../flowers/entities/flower.entity';
+import { FlowersService } from '../../flowers/flowers.service';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-interface SeedFlower {
-  name: string;
-  description: string;
-}
-
-export async function seedFlowers(dataSource: DataSource): Promise<void> {
+export async function seedFlowers(
+  flowersService: FlowersService,
+  userRepository: Repository<User>,
+  flowerRepository: Repository<Flower>
+): Promise<void> {
   console.log('🌸 Iniciando seed de flores...');
-
-  const flowerRepository = dataSource.getRepository(Flower);
-  const userRepository = dataSource.getRepository(User);
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -25,7 +23,7 @@ export async function seedFlowers(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const flowers: SeedFlower[] = [
+  const flowers: CreateFlowerDto[] = [
     { name: 'Rosa', description: 'Rosa clásica decorativa' },
     { name: 'Margarita', description: 'Margarita blanca simple' },
     { name: 'Girasol', description: 'Girasol grande decorativo' },
@@ -55,15 +53,8 @@ export async function seedFlowers(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      const flower = flowerRepository.create({
-        name: flowerData.name,
-        description: flowerData.description,
-        isActive: true,
-        createdBy: adminUser,
-        updatedBy: adminUser,
-      });
+      await flowersService.create(flowerData, adminUser);
 
-      await flowerRepository.save(flower);
       console.log(`   ✅ Flor creada: ${flowerData.name}`);
       createdCount++;
     } catch (error) {

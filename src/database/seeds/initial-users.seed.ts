@@ -1,29 +1,20 @@
-import * as argon2 from 'argon2';
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { RegisterUserDto } from '../../users/dto/register-user.dto';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
+import { UsersService } from '../../users/users.service';
 
-interface SeedUser {
-  name: string;
-  lastname: string;
-  username: string;
-  userkey: string;
-  role: UserRoles;
-}
-
-export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
+export async function seedInitialUsers(usersService: UsersService, repository: Repository<User>): Promise<void> {
   console.log('🌱 Iniciando seed de usuarios iniciales...');
 
-  const userRepository = dataSource.getRepository(User);
-
   // Definir los usuarios iniciales
-  const initialUsers: SeedUser[] = [
+  const initialUsers: RegisterUserDto[] = [
     {
-      name: 'Cristian',
-      lastname: 'Corona',
-      username: 'cristianc',
-      userkey: '112233',
-      role: UserRoles.ADMIN,
+      name: 'Sergio',
+      lastname: 'Barreras',
+      username: 'sergiobg',
+      userkey: '200999',
+      role: UserRoles.SUPER,
     },
     {
       name: 'Mónica',
@@ -33,10 +24,10 @@ export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
       role: UserRoles.ADMIN,
     },
     {
-      name: 'Sergio',
-      lastname: 'Barreras',
-      username: 'sergiobg',
-      userkey: '200999',
+      name: 'Cristian',
+      lastname: 'Corona',
+      username: 'cristianc',
+      userkey: '112233',
       role: UserRoles.SUPER,
     },
   ];
@@ -47,7 +38,7 @@ export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
   for (const userData of initialUsers) {
     try {
       // Verificar si el usuario ya existe
-      const existingUser = await userRepository.findOne({
+      const existingUser = await repository.findOne({
         where: { username: userData.username },
       });
 
@@ -59,20 +50,8 @@ export async function seedInitialUsers(dataSource: DataSource): Promise<void> {
         continue;
       }
 
-      // Hashear la userkey
-      const hashedKey = await argon2.hash(userData.userkey);
+      await usersService.registerUser(userData);
 
-      // Crear el usuario
-      const user = userRepository.create({
-        name: userData.name,
-        lastname: userData.lastname,
-        username: userData.username,
-        userkey: hashedKey,
-        role: userData.role,
-        isActive: true,
-      });
-
-      await userRepository.save(user);
       console.log(
         `   ✅ Usuario creado: ${userData.name} ${userData.lastname} (${userData.username}) - Rol: ${userData.role}`,
       );
