@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class FixOrderAssignmentsBakerFK1772160100000 implements MigrationInterface {
-    name = 'FixOrderAssignmentsBakerFK1772160100000'
+export class FixOrderAssignmentsBakerFK1772159900000 implements MigrationInterface {
+    name = 'FixOrderAssignmentsBakerFK1772159900000'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Verificar si existe la FK que apunta a bakers
