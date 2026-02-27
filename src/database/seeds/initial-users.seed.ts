@@ -21,7 +21,7 @@ export async function seedInitialUsers(usersService: UsersService, repository: R
       lastname: 'Chaves',
       username: 'monipanecito',
       userkey: '224466',
-      role: UserRoles.SUPER,
+      role: UserRoles.ADMIN,
     },
     {
       name: 'Cristian',
