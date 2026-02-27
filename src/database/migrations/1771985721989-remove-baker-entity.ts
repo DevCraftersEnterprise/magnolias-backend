@@ -48,10 +48,46 @@ export class RemoveBakerEntity1771985721989 implements MigrationInterface {
         }
 
         // 4. Agregar nuevas columnas a users
-        await queryRunner.query(`CREATE TYPE "public"."users_area_enum" AS ENUM('BO', 'PA', 'PE', 'CK', '3L')`);
-        await queryRunner.query(`ALTER TABLE "users" ADD "area" "public"."users_area_enum"`);
-        await queryRunner.query(`ALTER TABLE "users" ADD "specialty" text`);
-        await queryRunner.query(`ALTER TABLE "users" ADD "phone" character varying(20)`);
+        // Verificar si el enum ya existe
+        const enumExists = await queryRunner.query(`
+            SELECT 1 FROM pg_type 
+            WHERE typname = 'users_area_enum'
+        `);
+
+        if (enumExists.length === 0) {
+            await queryRunner.query(`CREATE TYPE "public"."users_area_enum" AS ENUM('BO', 'PA', 'PE', 'CK', '3L')`);
+        }
+
+        // Verificar si las columnas ya existen antes de agregarlas
+        const areaColumnExists = await queryRunner.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'area'
+        `);
+
+        if (areaColumnExists.length === 0) {
+            await queryRunner.query(`ALTER TABLE "users" ADD "area" "public"."users_area_enum"`);
+        }
+
+        const specialtyColumnExists = await queryRunner.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'specialty'
+        `);
+
+        if (specialtyColumnExists.length === 0) {
+            await queryRunner.query(`ALTER TABLE "users" ADD "specialty" text`);
+        }
+
+        const phoneColumnExists = await queryRunner.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'phone'
+        `);
+
+        if (phoneColumnExists.length === 0) {
+            await queryRunner.query(`ALTER TABLE "users" ADD "phone" character varying(20)`);
+        }
 
         // 5. Migrar datos de bakers a users si la tabla existe y tiene datos
         const bakersTableExists = await queryRunner.query(`
@@ -80,6 +116,13 @@ export class RemoveBakerEntity1771985721989 implements MigrationInterface {
                     NULL
                 FROM bakers b
                 WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.id = b.id)
+            `);
+
+            // Eliminar order_assignments huérfanos (que no tienen usuario correspondiente)
+            await queryRunner.query(`
+                DELETE FROM order_assignments 
+                WHERE "bakerId" IS NOT NULL 
+                AND "bakerId" NOT IN (SELECT id FROM users)
             `);
         }
 
