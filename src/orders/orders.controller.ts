@@ -107,7 +107,7 @@ export class OrdersController {
   })
   getOrderStats(
     @CurrentUser() user: User,
-    @Query() branchId?: string
+    @Query('branchId') branchId?: string
   ): Promise<OrderStatsResponse> {
     return this.ordersService.getStats(user, branchId);
   }
