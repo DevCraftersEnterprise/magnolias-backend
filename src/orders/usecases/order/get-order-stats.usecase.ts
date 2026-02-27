@@ -22,7 +22,7 @@ export class GetOrderStatsUseCase {
         let filterBranchId: string | undefined;
 
         if (user.role === UserRoles.ADMIN || user.role === UserRoles.SUPER) {
-            filterBranchId = branchId;
+            if (branchId) filterBranchId = branchId;
         } else {
             if (!user.branch.id) {
                 this.logger.error(`User ${user.id} does not have an associated branch`);
