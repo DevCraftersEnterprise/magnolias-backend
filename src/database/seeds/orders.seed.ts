@@ -37,9 +37,15 @@ export async function seedOrders(
 ): Promise<void> {
   console.log('📦 Iniciando seed de pedidos...');
 
-  const adminUser = await userRepository.findOne({ where: { role: UserRoles.ADMIN }, });
-  const bakers = await userRepository.find({ where: { role: UserRoles.BAKER }, })
-  const customers = await customerRepository.find({ relations: { address: true }, });
+  const adminUser = await userRepository.findOne({
+    where: { role: UserRoles.ADMIN },
+  });
+  const bakers = await userRepository.find({
+    where: { role: UserRoles.BAKER },
+  });
+  const customers = await customerRepository.find({
+    relations: { address: true },
+  });
   const branches = await branchRepository.find();
   const products = await productRepository.find();
   const flavors = await flavorRepository.find();
@@ -51,7 +57,9 @@ export async function seedOrders(
   const flowers = await flowerRepository.find();
 
   if (!adminUser) {
-    console.log('⚠️ No se encontró usuario administrador, omitiendo seed de pedidos',);
+    console.log(
+      '⚠️ No se encontró usuario administrador, omitiendo seed de pedidos',
+    );
     return;
   }
 
@@ -61,17 +69,19 @@ export async function seedOrders(
   }
 
   if (branches.length === 0) {
-    console.log('⚠️ No se encontraron sucursales, omitiendo seed de pedidos',);
+    console.log('⚠️ No se encontraron sucursales, omitiendo seed de pedidos');
     return;
   }
 
   if (products.length === 0) {
-    console.log('⚠️ No se encontraron productos, omitiendo seed de pedidos',);
+    console.log('⚠️ No se encontraron productos, omitiendo seed de pedidos');
     return;
   }
 
   if (flavors.length === 0 || fillings.length === 0 || frostings.length === 0) {
-    console.log('⚠️ No se encontraron catálogos básicos (sabores, rellenos, glaseados), omitiendo seed de pedidos',);
+    console.log(
+      '⚠️ No se encontraron catálogos básicos (sabores, rellenos, glaseados), omitiendo seed de pedidos',
+    );
     return;
   }
 
@@ -87,7 +97,7 @@ export async function seedOrders(
   try {
     // ═══════════════════════════════════════════════════════════════════════
     // PEDIDO 1: DOMICILIO - ★★★ COMPLETO - TODOS LOS CAMPOS ★★★
-    // ═══════════════════════════════════════════════════════════════════════    
+    // ═══════════════════════════════════════════════════════════════════════
     const createOrderDom1: CreateOrderDto = {
       orderType: OrderType.DOMICILIO,
       deliveryRound: DeliveryRound.ROUND_1,
@@ -107,7 +117,7 @@ export async function seedOrders(
         deliveryNotes: 'Tocar el timbre 2 veces',
         reference: 'Casa azul con portón negro',
         receiverName: 'María García',
-        receiverPhone: '3312345678'
+        receiverPhone: '3312345678',
       },
       details: [
         {
@@ -127,17 +137,35 @@ export async function seedOrders(
           flavorId: flavors[0].id,
           frostingId: frostings[0].id,
           styleId: styles[0].id,
-        }
+        },
       ],
       flowers: [
-        { flowerId: flowers[0].id, colorId: colors[0].id, quantity: 6, notes: 'Borde superior' },
-        { flowerId: flowers[1].id, colorId: colors[1].id, quantity: 4, notes: 'Centro del pastel' },
-      ]
+        {
+          flowerId: flowers[0].id,
+          colorId: colors[0].id,
+          quantity: 6,
+          notes: 'Borde superior',
+        },
+        {
+          flowerId: flowers[1].id,
+          colorId: colors[1].id,
+          quantity: 4,
+          notes: 'Centro del pastel',
+        },
+      ],
     };
 
     const order1 = await ordersService.createOrder(createOrderDom1, adminUser);
 
-    await ordersService.assignOrder(bakers[0].id, { orderId: order1.id, assignedDate: new Date(), notes: 'Pedido completo - prioridad alta' }, adminUser)
+    await ordersService.assignOrder(
+      bakers[0].id,
+      {
+        orderId: order1.id,
+        assignedDate: new Date(),
+        notes: 'Pedido completo - prioridad alta',
+      },
+      adminUser,
+    );
 
     console.log(`✅ Pedido DOMICILIO COMPLETO: ${order1.orderCode}`);
     createdCount++;
@@ -158,9 +186,9 @@ export async function seedOrders(
           quantity: 1,
           hasWriting: false,
           productId: products[0].id,
-        }
-      ]
-    }
+        },
+      ],
+    };
 
     const order2 = await ordersService.createOrder(createOrderVit1, adminUser);
 
@@ -206,13 +234,17 @@ export async function seedOrders(
           flavorId: flavors[6].id,
           fillingId: fillings[10].id,
           frostingId: frostings[4].id,
-        }
-      ]
-    }
+        },
+      ],
+    };
 
     const order3 = await ordersService.createOrder(createOrderDom2, adminUser);
 
-    await ordersService.assignOrder(bakers[0].id, { orderId: order3.id, assignedDate: new Date() }, adminUser)
+    await ordersService.assignOrder(
+      bakers[0].id,
+      { orderId: order3.id, assignedDate: new Date() },
+      adminUser,
+    );
 
     console.log(`✅ Pedido DOMICILIO SIN FLORES: ${order3.orderCode}`);
     createdCount++;
@@ -233,7 +265,7 @@ export async function seedOrders(
         EventServiceType.DESSERT_TABLE,
         EventServiceType.CAKE,
         EventServiceType.CHEESE_TABLE,
-        EventServiceType.PLATED
+        EventServiceType.PLATED,
       ],
       guestCount: 200,
       advancePayment: 12500,
@@ -257,9 +289,10 @@ export async function seedOrders(
           city: 'Zapopan',
           postalCode: '45030',
         },
-        deliveryNotes: 'Estacionamiento por la parte trasera, montacargas disponible',
+        deliveryNotes:
+          'Estacionamiento por la parte trasera, montacargas disponible',
         receiverName: 'Coordinador del evento',
-        receiverPhone: '3311112222'
+        receiverPhone: '3311112222',
       },
       details: [
         {
@@ -304,18 +337,36 @@ export async function seedOrders(
           hasWriting: false,
           notes: 'Variedad de pan dulce tradicional',
           productId: products[11].id,
-        }
+        },
       ],
       flowers: [
-        { flowerId: flowers[0].id, colorId: colors[17].id, quantity: 30, notes: 'Decoración del pastel principal' },
-        { flowerId: flowers[4].id, colorId: colors[0].id, quantity: 20, notes: 'Para decoración adicional' },
-        { flowerId: flowers[3].id, quantity: 15, notes: 'Para decoración adicional' },
-      ]
-    }
+        {
+          flowerId: flowers[0].id,
+          colorId: colors[17].id,
+          quantity: 30,
+          notes: 'Decoración del pastel principal',
+        },
+        {
+          flowerId: flowers[4].id,
+          colorId: colors[0].id,
+          quantity: 20,
+          notes: 'Para decoración adicional',
+        },
+        {
+          flowerId: flowers[3].id,
+          quantity: 15,
+          notes: 'Para decoración adicional',
+        },
+      ],
+    };
 
     const order4 = await ordersService.createOrder(createOrderEvt1, adminUser);
 
-    await ordersService.assignOrder(bakers[4].id, { orderId: order4.id, assignedDate: new Date() }, adminUser);
+    await ordersService.assignOrder(
+      bakers[4].id,
+      { orderId: order4.id, assignedDate: new Date() },
+      adminUser,
+    );
 
     console.log(`✅ Pedido EVENTO COMPLETO: ${order4.orderCode}`);
     createdCount++;
@@ -341,10 +392,10 @@ export async function seedOrders(
           number: '2500',
           neighborhood: 'Arcos Vallarta',
           city: 'Guadalajara',
-          postalCode: '44130'
+          postalCode: '44130',
         },
         receiverName: 'Empresa XYZ - Recepción',
-        receiverPhone: '3344556677'
+        receiverPhone: '3344556677',
       },
       details: [
         {
@@ -362,14 +413,15 @@ export async function seedOrders(
           frostingId: frostings[4].id,
           styleId: styles[0].id,
           colorId: colors[8].id,
-        }
+        },
       ],
-      flowers: [
-        { flowerId: flowers[0].id, quantity: 3, }
-      ]
-    }
+      flowers: [{ flowerId: flowers[0].id, quantity: 3 }],
+    };
 
-    const order5 = await ordersService.createOrder(createCustomOrder1, adminUser);
+    const order5 = await ordersService.createOrder(
+      createCustomOrder1,
+      adminUser,
+    );
 
     // await ordersService.assignOrder(bakers[4].id, { orderId: order5.id, assignedDate: new Date() }, adminUser);
 

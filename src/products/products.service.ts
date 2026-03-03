@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -27,13 +25,15 @@ export class ProductsService {
     private readonly removeProductUseCase: RemoveProductUseCase,
     private readonly uploadPicturesForProductUseCase: UploadPicturesForProductUseCase,
     private readonly hideProductPictureUseCase: HideProductPictureUseCase,
-  ) { }
+  ) {}
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
     return await this.createProductUseCase.execute(dto, user);
   }
 
-  async findProducts(filters: ProductsFilterDto,): Promise<PaginationResponse<Product> | Product[]> {
+  async findProducts(
+    filters: ProductsFilterDto,
+  ): Promise<PaginationResponse<Product> | Product[]> {
     return await this.findAllProductsUseCase.execute(filters);
   }
 
@@ -49,7 +49,10 @@ export class ProductsService {
     return await this.updateProductUseCase.execute(dto, user);
   }
 
-  async updateProductFavoriteStatus(dto: UpdateProductDto, user: User,): Promise<Product> {
+  async updateProductFavoriteStatus(
+    dto: UpdateProductDto,
+    user: User,
+  ): Promise<Product> {
     return await this.updateFavoriteProductStatusUseCase.execute(dto, user);
   }
 
@@ -57,7 +60,11 @@ export class ProductsService {
     return await this.removeProductUseCase.execute(dto, user);
   }
 
-  async uploadProductPicture(files: Express.Multer.File[], dto: UpdateProductDto, user: User,): Promise<Product> {
+  async uploadProductPicture(
+    files: Express.Multer.File[],
+    dto: UpdateProductDto,
+    user: User,
+  ): Promise<Product> {
     return await this.uploadPicturesForProductUseCase.execute(files, dto, user);
   }
 

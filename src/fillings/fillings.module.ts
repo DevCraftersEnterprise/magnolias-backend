@@ -26,4 +26,4 @@ import { UpdateFillingUseCase } from './usecases/update-filling.usecase';
   imports: [TypeOrmModule.forFeature([Filling]), CommonModule, CustomJwtModule],
   exports: [TypeOrmModule, FillingsService],
 })
-export class FillingsModule { }
+export class FillingsModule {}

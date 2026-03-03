@@ -39,4 +39,4 @@ import { HideProductPictureUseCase } from './usecases/hide-product-picture.useca
   ],
   exports: [TypeOrmModule, ProductsService],
 })
-export class ProductsModule { }
+export class ProductsModule {}

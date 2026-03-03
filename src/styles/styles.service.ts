@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CreateStyleDto } from './dto/create-style.dto';
@@ -21,13 +19,15 @@ export class StylesService {
     private readonly findOneStyleUseCase: FindOneStyleUseCase,
     private readonly updateStyleUseCase: UpdateStyleUseCase,
     private readonly removeStyleUseCase: RemoveStyleUseCase,
-  ) { }
+  ) {}
 
   async create(dto: CreateStyleDto, user: User): Promise<Style> {
     return await this.createStyleUseCase.execute(dto, user);
   }
 
-  async findAll(stylesFilterDto: StylesFilterDto,): Promise<PaginationResponse<Style> | Style[]> {
+  async findAll(
+    stylesFilterDto: StylesFilterDto,
+  ): Promise<PaginationResponse<Style> | Style[]> {
     return await this.findAllStylesUseCase.execute(stylesFilterDto);
   }
 

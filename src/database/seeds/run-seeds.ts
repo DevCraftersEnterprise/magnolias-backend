@@ -4,7 +4,7 @@ import { AppDataSource } from '../data-source';
 // Services
 import { BranchesService } from '../../branches/branches.service';
 import { UsersService } from '../../users/users.service';
-import { CategoriesService } from '../../categories/categories.service'
+import { CategoriesService } from '../../categories/categories.service';
 import { ColorsService } from '../../colors/colors.service';
 import { FlavorsService } from '../../flavors/flavors.service';
 import { FillingsService } from '../../fillings/fillings.service';
@@ -45,7 +45,7 @@ import { FindAllUsersUseCase } from '../../users/usecases/find-all-users.usecase
 import { FindOneUserUseCase } from '../../users/usecases/find-one-user.usecase';
 import { UpdateUserUseCase } from '../../users/usecases/update-user.usecase';
 import { RemoveUserUseCase } from '../../users/usecases/remove-user.usecase';
-import { ResetPasswordForUserUseCase } from '../../users/usecases/reset-password-for-user.usecase'
+import { ResetPasswordForUserUseCase } from '../../users/usecases/reset-password-for-user.usecase';
 
 import { FindAllBranchesUseCase } from '../../branches/usecases/branch/find-all-branches.usecase';
 import { FindOneBranchUseCase } from '../../branches/usecases/branch/find-one-branch.usecase';
@@ -159,46 +159,84 @@ async function runSeeds() {
     await AppDataSource.initialize();
 
     const userRepository: Repository<User> = AppDataSource.getRepository(User);
-    const branchRepository: Repository<Branch> = AppDataSource.getRepository(Branch);
-    const phoneRepository: Repository<Phone> = AppDataSource.getRepository(Phone);
-    const categoryRepository: Repository<Category> = AppDataSource.getRepository(Category);
-    const colorRepository: Repository<Color> = AppDataSource.getRepository(Color);
-    const flavorRepository: Repository<Flavor> = AppDataSource.getRepository(Flavor);
-    const fillingRepository: Repository<Filling> = AppDataSource.getRepository(Filling);
-    const frostingRepository: Repository<Frosting> = AppDataSource.getRepository(Frosting);
-    const flowerRepository: Repository<Flower> = AppDataSource.getRepository(Flower);
-    const styleRepository: Repository<Style> = AppDataSource.getRepository(Style);
-    const breadTypeRepository: Repository<BreadType> = AppDataSource.getRepository(BreadType);
-    const customerRepository: Repository<Customer> = AppDataSource.getRepository(Customer);
-    const customerAddressRepository: Repository<CustomerAddress> = AppDataSource.getRepository(CustomerAddress);
-    const productRepository: Repository<Product> = AppDataSource.getRepository(Product);
-    const productPictureRepository: Repository<ProductPicture> = AppDataSource.getRepository(ProductPicture);
-    const commonAddressRepository: Repository<CommonAddress> = AppDataSource.getRepository(CommonAddress);
-    const orderRepository: Repository<Order> = AppDataSource.getRepository(Order);
-    const orderDeliveryAddressRepository: Repository<OrderDeliveryAddress> = AppDataSource.getRepository(OrderDeliveryAddress);
-    const orderDetailRepository: Repository<OrderDetail> = AppDataSource.getRepository(OrderDetail);
-    const orderFlowerRepository: Repository<OrderFlower> = AppDataSource.getRepository(OrderFlower);
-    const orderCancellationRepository: Repository<OrderCancellation> = AppDataSource.getRepository(OrderCancellation);
-    const orderAssignmentRepository: Repository<OrderAssignment> = AppDataSource.getRepository(OrderAssignment);
+    const branchRepository: Repository<Branch> =
+      AppDataSource.getRepository(Branch);
+    const phoneRepository: Repository<Phone> =
+      AppDataSource.getRepository(Phone);
+    const categoryRepository: Repository<Category> =
+      AppDataSource.getRepository(Category);
+    const colorRepository: Repository<Color> =
+      AppDataSource.getRepository(Color);
+    const flavorRepository: Repository<Flavor> =
+      AppDataSource.getRepository(Flavor);
+    const fillingRepository: Repository<Filling> =
+      AppDataSource.getRepository(Filling);
+    const frostingRepository: Repository<Frosting> =
+      AppDataSource.getRepository(Frosting);
+    const flowerRepository: Repository<Flower> =
+      AppDataSource.getRepository(Flower);
+    const styleRepository: Repository<Style> =
+      AppDataSource.getRepository(Style);
+    const breadTypeRepository: Repository<BreadType> =
+      AppDataSource.getRepository(BreadType);
+    const customerRepository: Repository<Customer> =
+      AppDataSource.getRepository(Customer);
+    const customerAddressRepository: Repository<CustomerAddress> =
+      AppDataSource.getRepository(CustomerAddress);
+    const productRepository: Repository<Product> =
+      AppDataSource.getRepository(Product);
+    const productPictureRepository: Repository<ProductPicture> =
+      AppDataSource.getRepository(ProductPicture);
+    const commonAddressRepository: Repository<CommonAddress> =
+      AppDataSource.getRepository(CommonAddress);
+    const orderRepository: Repository<Order> =
+      AppDataSource.getRepository(Order);
+    const orderDeliveryAddressRepository: Repository<OrderDeliveryAddress> =
+      AppDataSource.getRepository(OrderDeliveryAddress);
+    const orderDetailRepository: Repository<OrderDetail> =
+      AppDataSource.getRepository(OrderDetail);
+    const orderFlowerRepository: Repository<OrderFlower> =
+      AppDataSource.getRepository(OrderFlower);
+    const orderCancellationRepository: Repository<OrderCancellation> =
+      AppDataSource.getRepository(OrderCancellation);
+    const orderAssignmentRepository: Repository<OrderAssignment> =
+      AppDataSource.getRepository(OrderAssignment);
 
-    const registerUserUseCase = new RegisterUserUseCase(userRepository, branchRepository);
+    const registerUserUseCase = new RegisterUserUseCase(
+      userRepository,
+      branchRepository,
+    );
     const findAllUsersUseCase = new FindAllUsersUseCase(userRepository);
     const findOneUserUseCase = new FindOneUserUseCase(userRepository);
-    const updateUserUseCase = new UpdateUserUseCase(userRepository, branchRepository);
+    const updateUserUseCase = new UpdateUserUseCase(
+      userRepository,
+      branchRepository,
+    );
     const removeUserUseCase = new RemoveUserUseCase(userRepository);
-    const resetPasswordForUserUseCase = new ResetPasswordForUserUseCase(userRepository);
+    const resetPasswordForUserUseCase = new ResetPasswordForUserUseCase(
+      userRepository,
+    );
 
     const createBranchUseCase = new CreateBranchUseCase(branchRepository);
     const findAllBranchesUseCase = new FindAllBranchesUseCase(branchRepository);
     const findOneBranchUseCase = new FindOneBranchUseCase(branchRepository);
     const updateBranchUseCase = new UpdateBranchUseCase(branchRepository);
     const removeBranchUseCase = new RemoveBranchUseCase(branchRepository);
-    const createPhoneForBranchUseCase = new CreatePhoneForBranchUseCase(branchRepository, phoneRepository);
-    const updatePhoneForBranchUseCase = new UpdatePhoneForBranchUseCase(phoneRepository);
+    const createPhoneForBranchUseCase = new CreatePhoneForBranchUseCase(
+      branchRepository,
+      phoneRepository,
+    );
+    const updatePhoneForBranchUseCase = new UpdatePhoneForBranchUseCase(
+      phoneRepository,
+    );
 
     const createCategoryUseCase = new CreateCategoryUseCase(categoryRepository);
-    const findAllCategoriesUseCase = new FindAllCategoriesUseCase(categoryRepository);
-    const findOneCategoryUseCase = new FindOneCategoryUseCase(categoryRepository);
+    const findAllCategoriesUseCase = new FindAllCategoriesUseCase(
+      categoryRepository,
+    );
+    const findOneCategoryUseCase = new FindOneCategoryUseCase(
+      categoryRepository,
+    );
     const updateCategoryUseCase = new UpdateCategoryUseCase(categoryRepository);
     const removeCategoryUseCase = new RemoveCategoryUseCase(categoryRepository);
 
@@ -212,14 +250,20 @@ async function runSeeds() {
     const removeFlavorUseCase = new RemoveFlavorUseCase(flavorRepository);
 
     const createFillingUseCase = new CreateFillingUseCase(fillingRepository);
-    const findAllFillingsUseCase = new FindAllFillingsUseCase(fillingRepository);
+    const findAllFillingsUseCase = new FindAllFillingsUseCase(
+      fillingRepository,
+    );
     const findOneFillingUseCase = new FindOneFillingUseCase(fillingRepository);
     const updateFillingUseCase = new UpdateFillingUseCase(fillingRepository);
     const removeFillingUseCase = new RemoveFillingUseCase(fillingRepository);
 
     const createFrostingUseCase = new CreateFrostingUseCase(frostingRepository);
-    const findAllFrostingsUseCase = new FindAllFrostingsUseCase(frostingRepository);
-    const findOneFrostingUseCase = new FindOneFrostingUseCase(frostingRepository);
+    const findAllFrostingsUseCase = new FindAllFrostingsUseCase(
+      frostingRepository,
+    );
+    const findOneFrostingUseCase = new FindOneFrostingUseCase(
+      frostingRepository,
+    );
     const updateFrostingUseCase = new UpdateFrostingUseCase(frostingRepository);
     const removeFrostingUseCase = new RemoveFrostingUseCase(frostingRepository);
 
@@ -235,24 +279,58 @@ async function runSeeds() {
     const updateStyleUseCase = new UpdateStyleUseCase(styleRepository);
     const removeStyleUseCase = new RemoveStyleUseCase(styleRepository);
 
-    const createBreadTypeUseCase = new CreateBreadTypeUseCase(breadTypeRepository);
-    const findAllBreadTypesUseCase = new FindAllBreadTypesUseCase(breadTypeRepository);
-    const findOneBreadTypeUseCase = new FindOneBreadTypeUseCase(breadTypeRepository);
-    const updateBreadTypeUseCase = new UpdateBreadTypeUseCase(breadTypeRepository);
-    const removeBreadTypeUseCase = new RemoveBreadTypeUseCase(breadTypeRepository);
+    const createBreadTypeUseCase = new CreateBreadTypeUseCase(
+      breadTypeRepository,
+    );
+    const findAllBreadTypesUseCase = new FindAllBreadTypesUseCase(
+      breadTypeRepository,
+    );
+    const findOneBreadTypeUseCase = new FindOneBreadTypeUseCase(
+      breadTypeRepository,
+    );
+    const updateBreadTypeUseCase = new UpdateBreadTypeUseCase(
+      breadTypeRepository,
+    );
+    const removeBreadTypeUseCase = new RemoveBreadTypeUseCase(
+      breadTypeRepository,
+    );
 
-    const createCustomerUseCase = new CreateCustomerUseCase(customerRepository, customerAddressRepository);
-    const findAllCustomersUseCase = new FindAllCustomersUseCase(customerRepository);
-    const findOneCustomerUseCase = new FindOneCustomerUseCase(customerRepository);
-    const updateCustomerUseCase = new UpdateCustomerUseCase(customerRepository, customerAddressRepository);
+    const createCustomerUseCase = new CreateCustomerUseCase(
+      customerRepository,
+      customerAddressRepository,
+    );
+    const findAllCustomersUseCase = new FindAllCustomersUseCase(
+      customerRepository,
+    );
+    const findOneCustomerUseCase = new FindOneCustomerUseCase(
+      customerRepository,
+    );
+    const updateCustomerUseCase = new UpdateCustomerUseCase(
+      customerRepository,
+      customerAddressRepository,
+    );
     const removeCustomerUseCase = new RemoveCustomerUseCase(customerRepository);
 
-    const checkForDuplicateAddressUtil = new CheckForDuplicateAddressUtil(commonAddressRepository);
-    const createCommonAddressUseCase = new CreateCommonAddressUseCase(commonAddressRepository, checkForDuplicateAddressUtil);
-    const findAllCommonAddressesUseCase = new FindAllCommonAddressesUseCase(commonAddressRepository);
-    const findOneCommonAddressUseCase = new FindOneCommonAddressUseCase(commonAddressRepository);
-    const updateCommonAddressUseCase = new UpdateCommonAddressUseCase(commonAddressRepository, checkForDuplicateAddressUtil);
-    const removeCommonAddressUseCase = new RemoveCommonAddressUseCase(commonAddressRepository);
+    const checkForDuplicateAddressUtil = new CheckForDuplicateAddressUtil(
+      commonAddressRepository,
+    );
+    const createCommonAddressUseCase = new CreateCommonAddressUseCase(
+      commonAddressRepository,
+      checkForDuplicateAddressUtil,
+    );
+    const findAllCommonAddressesUseCase = new FindAllCommonAddressesUseCase(
+      commonAddressRepository,
+    );
+    const findOneCommonAddressUseCase = new FindOneCommonAddressUseCase(
+      commonAddressRepository,
+    );
+    const updateCommonAddressUseCase = new UpdateCommonAddressUseCase(
+      commonAddressRepository,
+      checkForDuplicateAddressUtil,
+    );
+    const removeCommonAddressUseCase = new RemoveCommonAddressUseCase(
+      commonAddressRepository,
+    );
 
     const addressesService = new AddressesService(
       commonAddressRepository,
@@ -270,7 +348,7 @@ async function runSeeds() {
       updateBranchUseCase,
       removeBranchUseCase,
       createPhoneForBranchUseCase,
-      updatePhoneForBranchUseCase
+      updatePhoneForBranchUseCase,
     );
 
     const usersService = new UsersService(
@@ -279,7 +357,7 @@ async function runSeeds() {
       findOneUserUseCase,
       updateUserUseCase,
       removeUserUseCase,
-      resetPasswordForUserUseCase
+      resetPasswordForUserUseCase,
     );
 
     const categoriesService = new CategoriesService(
@@ -287,12 +365,12 @@ async function runSeeds() {
       findAllCategoriesUseCase,
       findOneCategoryUseCase,
       updateCategoryUseCase,
-      removeCategoryUseCase
+      removeCategoryUseCase,
     );
 
     const colorsService = new ColorsService(
       createColorUseCase,
-      findAllColorsUseCase
+      findAllColorsUseCase,
     );
 
     const flavorsService = new FlavorsService(
@@ -351,14 +429,28 @@ async function runSeeds() {
       removeCustomerUseCase,
     );
 
-    const createProductUseCase = new CreateProductUseCase(productRepository, categoriesService);
-    const findAllProductsUseCase = new FindAllProductsUseCase(productRepository);
+    const createProductUseCase = new CreateProductUseCase(
+      productRepository,
+      categoriesService,
+    );
+    const findAllProductsUseCase = new FindAllProductsUseCase(
+      productRepository,
+    );
     const findOneProductUseCase = new FindOneProductUseCase(productRepository);
-    const updateProductUseCase = new UpdateProductUseCase(productRepository, categoriesService);
-    const updateFavoriteProductStatusUseCase = new UpdateFavoriteProductStatusUseCase(productRepository);
+    const updateProductUseCase = new UpdateProductUseCase(
+      productRepository,
+      categoriesService,
+    );
+    const updateFavoriteProductStatusUseCase =
+      new UpdateFavoriteProductStatusUseCase(productRepository);
     const removeProductUseCase = new RemoveProductUseCase(productRepository);
-    const uploadPicturesForProductUseCase = new UploadPicturesForProductUseCase(productRepository, productPictureRepository);
-    const hideProductPictureUseCase = new HideProductPictureUseCase(productPictureRepository);
+    const uploadPicturesForProductUseCase = new UploadPicturesForProductUseCase(
+      productRepository,
+      productPictureRepository,
+    );
+    const hideProductPictureUseCase = new HideProductPictureUseCase(
+      productPictureRepository,
+    );
 
     const productsService = new ProductsService(
       createProductUseCase,
@@ -371,15 +463,43 @@ async function runSeeds() {
       hideProductPictureUseCase,
     );
 
-    const createOrderUseCase = new CreateOrderUseCase(orderRepository, orderDeliveryAddressRepository, orderDetailRepository, orderFlowerRepository, customersService, branchesService, addressesService, productsService, flowersService);
+    const createOrderUseCase = new CreateOrderUseCase(
+      orderRepository,
+      orderDeliveryAddressRepository,
+      orderDetailRepository,
+      orderFlowerRepository,
+      customersService,
+      branchesService,
+      addressesService,
+      productsService,
+      flowersService,
+    );
     const setPickupPersonUseCase = new SetPickupPersonUseCase(orderRepository);
     const findAllOrdersUseCase = new FindAllOrdersUseCase(orderRepository);
     const findOneOrderUseCase = new FindOneOrderUseCase(orderRepository);
-    const updateOrderUseCase = new UpdateOrderUseCase(orderRepository, orderDeliveryAddressRepository, orderDetailRepository, orderFlowerRepository, addressesService, productsService, flowersService);
-    const changeOrderStatusUseCase = new ChangeOrderStatusUseCase(orderRepository, orderCancellationRepository);
+    const updateOrderUseCase = new UpdateOrderUseCase(
+      orderRepository,
+      orderDeliveryAddressRepository,
+      orderDetailRepository,
+      orderFlowerRepository,
+      addressesService,
+      productsService,
+      flowersService,
+    );
+    const changeOrderStatusUseCase = new ChangeOrderStatusUseCase(
+      orderRepository,
+      orderCancellationRepository,
+    );
     const getOrderStatsUseCase = new GetOrderStatsUseCase(orderRepository);
-    const assignOrderUseCase = new AssignOrderUseCase(userRepository, orderRepository, orderAssignmentRepository);
-    const getAssignmentsUseCase = new GetAssignmentsUseCase(userRepository, orderAssignmentRepository);
+    const assignOrderUseCase = new AssignOrderUseCase(
+      userRepository,
+      orderRepository,
+      orderAssignmentRepository,
+    );
+    const getAssignmentsUseCase = new GetAssignmentsUseCase(
+      userRepository,
+      orderAssignmentRepository,
+    );
 
     const ordersService = new OrdersService(
       createOrderUseCase,
@@ -425,16 +545,38 @@ async function runSeeds() {
     await seedFrostings(frostingsService, userRepository, frostingRepository);
     await seedFlowers(flowersService, userRepository, flowerRepository);
     await seedStyles(stylesService, userRepository, styleRepository);
-    await seedBreadTypes(breadTypesService, userRepository, breadTypeRepository);
+    await seedBreadTypes(
+      breadTypesService,
+      userRepository,
+      breadTypeRepository,
+    );
 
     // 8. Clientes (necesita usuarios)
     await seedCustomers(customersService, userRepository, customerRepository);
 
     // 9. Productos (necesita categorías y usuarios)
-    await seedProducts(productsService, userRepository, categoryRepository, productRepository);
+    await seedProducts(
+      productsService,
+      userRepository,
+      categoryRepository,
+      productRepository,
+    );
 
     // 10. Pedidos (necesita clientes, sucursales, productos y usuarios)
-    await seedOrders(ordersService, customerRepository, branchRepository, productRepository, userRepository, flavorRepository, fillingRepository, frostingRepository, styleRepository, colorRepository, breadTypeRepository, flowerRepository);
+    await seedOrders(
+      ordersService,
+      customerRepository,
+      branchRepository,
+      productRepository,
+      userRepository,
+      flavorRepository,
+      fillingRepository,
+      frostingRepository,
+      styleRepository,
+      colorRepository,
+      breadTypeRepository,
+      flowerRepository,
+    );
 
     console.log('════════════════════════════════════════════════════');
     console.log('    🎉 TODOS LOS SEEDS SE EJECUTARON CORRECTAMENTE');

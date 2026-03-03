@@ -25,4 +25,4 @@ import { UpdateStyleUseCase } from './usecases/update-style.usecase';
   imports: [TypeOrmModule.forFeature([Style]), CommonModule, CustomJwtModule],
   exports: [TypeOrmModule, StylesService],
 })
-export class StylesModule { }
+export class StylesModule {}

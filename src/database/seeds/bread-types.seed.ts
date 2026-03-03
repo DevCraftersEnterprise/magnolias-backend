@@ -24,7 +24,10 @@ export async function seedBreadTypes(
   }
 
   const breadTypes: CreateBreadTypeDto[] = [
-    { name: 'Vainilla', description: 'Pan de vainilla clásico, suave y esponjoso' },
+    {
+      name: 'Vainilla',
+      description: 'Pan de vainilla clásico, suave y esponjoso',
+    },
     { name: 'Chocolate', description: 'Pan de chocolate intenso' },
     { name: 'Fresa', description: 'Pan con sabor a fresa natural' },
     { name: 'Marmoleado', description: 'Combinación de vainilla y chocolate' },

@@ -19,13 +19,15 @@ export class FlowersService {
     private readonly findOneFlowerUseCase: FindOneFlowerUseCase,
     private readonly updateFlowerUseCase: UpdateFlowerUseCase,
     private readonly removeFlowerUseCase: RemoveFlowerUseCase,
-  ) { }
+  ) {}
 
   async create(createFlowerDto: CreateFlowerDto, user: User): Promise<Flower> {
     return await this.createFlowerUseCase.execute(createFlowerDto, user);
   }
 
-  async findAll(flowersFilterDto: FlowersFilterDto,): Promise<PaginationResponse<Flower> | Flower[]> {
+  async findAll(
+    flowersFilterDto: FlowersFilterDto,
+  ): Promise<PaginationResponse<Flower> | Flower[]> {
     return await this.findAllFlowersUseCase.execute(flowersFilterDto);
   }
 
@@ -33,7 +35,11 @@ export class FlowersService {
     return await this.findOneFlowerUseCase.execute(term);
   }
 
-  async update(id: string, updateFlowerDto: UpdateFlowerDto, user: User,): Promise<Flower> {
+  async update(
+    id: string,
+    updateFlowerDto: UpdateFlowerDto,
+    user: User,
+  ): Promise<Flower> {
     return await this.updateFlowerUseCase.execute(id, updateFlowerDto, user);
   }
 

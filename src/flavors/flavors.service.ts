@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
@@ -20,14 +18,16 @@ export class FlavorsService {
     private readonly findAllFlavorsUseCase: FindAllFlavorsUseCase,
     private readonly findOneFlavorUseCase: FindOneFlavorUseCase,
     private readonly updateFlavorUseCase: UpdateFlavorUseCase,
-    private readonly removeFlavorUseCase: RemoveFlavorUseCase
-  ) { }
+    private readonly removeFlavorUseCase: RemoveFlavorUseCase,
+  ) {}
 
   async create(dto: CreateFlavorDto, user: User): Promise<Flavor> {
     return await this.createFlavorUseCase.execute(dto, user);
   }
 
-  async findAll(paginationDto: PaginationDto,): Promise<PaginationResponse<Flavor> | Flavor[]> {
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<Flavor> | Flavor[]> {
     return await this.findAllFlavorsUseCase.execute(paginationDto);
   }
 

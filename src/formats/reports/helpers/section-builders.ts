@@ -44,7 +44,10 @@ const FONT_SIZE = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Celda de etiqueta con fondo gris */
-export const labelCell = (text: string, options: Partial<TextTableCell> = {},): TextTableCell => ({
+export const labelCell = (
+  text: string,
+  options: Partial<TextTableCell> = {},
+): TextTableCell => ({
   ...options,
   text,
   fontSize: options.fontSize ?? FONT_SIZE.BODY,
@@ -53,7 +56,10 @@ export const labelCell = (text: string, options: Partial<TextTableCell> = {},): 
 });
 
 /** Celda de valor sin fondo */
-export const valueCell = (text: string | number | undefined | null, options: Partial<TextTableCell> = {},): TextTableCell => ({
+export const valueCell = (
+  text: string | number | undefined | null,
+  options: Partial<TextTableCell> = {},
+): TextTableCell => ({
   ...options,
   text: text?.toString() ?? '',
   fontSize: options.fontSize ?? FONT_SIZE.BODY,
@@ -61,7 +67,10 @@ export const valueCell = (text: string | number | undefined | null, options: Par
 });
 
 /** Celda de título de sección */
-export const sectionTitleCell = (text: string, options: Partial<TextTableCell> = {},): TextTableCell => ({
+export const sectionTitleCell = (
+  text: string,
+  options: Partial<TextTableCell> = {},
+): TextTableCell => ({
   ...options,
   text,
   fontSize: options.fontSize ?? FONT_SIZE.HEADER,
@@ -93,7 +102,11 @@ export const formatYesNo = (value: boolean | undefined | null): string =>
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Encabezado para DOMICILIO */
-export const getDomicilioHeader = (order: Order, pageNumber: number, totalPages: number,): Content => ({
+export const getDomicilioHeader = (
+  order: Order,
+  pageNumber: number,
+  totalPages: number,
+): Content => ({
   table: {
     widths: ['15%', '15%', '45%', '25%'],
     body: [
@@ -154,7 +167,11 @@ export const getDomicilioHeader = (order: Order, pageNumber: number, totalPages:
 });
 
 /** Encabezado para VITRINA */
-export const getVitrinaHeader = (order: Order, pageNumber: number, totalPages: number,): Content => ({
+export const getVitrinaHeader = (
+  order: Order,
+  pageNumber: number,
+  totalPages: number,
+): Content => ({
   table: {
     widths: ['*'],
     body: [
@@ -182,7 +199,11 @@ export const getVitrinaHeader = (order: Order, pageNumber: number, totalPages: n
 });
 
 /** Encabezado para PERSONALIZADO */
-export const getPersonalizadoHeader = (order: Order, pageNumber: number, totalPages: number,): Content => ({
+export const getPersonalizadoHeader = (
+  order: Order,
+  pageNumber: number,
+  totalPages: number,
+): Content => ({
   table: {
     widths: ['15%', '15%', '45%', '25%'],
     body: [
@@ -241,7 +262,11 @@ export const getPersonalizadoHeader = (order: Order, pageNumber: number, totalPa
 });
 
 /** Encabezado para EVENTO */
-export const getEventoHeader = (order: Order, pageNumber: number, totalPages: number,): Content => ({
+export const getEventoHeader = (
+  order: Order,
+  pageNumber: number,
+  totalPages: number,
+): Content => ({
   table: {
     widths: ['15%', '15%', '45%', '25%'],
     body: [
@@ -323,7 +348,12 @@ export const getEventoHeader = (order: Order, pageNumber: number, totalPages: nu
 });
 
 /** Obtener encabezado según tipo de reporte */
-export const getHeader = (order: Order, reportType: ReportType, pageNumber: number, totalPages: number,): Content => {
+export const getHeader = (
+  order: Order,
+  reportType: ReportType,
+  pageNumber: number,
+  totalPages: number,
+): Content => {
   switch (reportType) {
     case 'DOMICILIO':
       return getDomicilioHeader(order, pageNumber, totalPages);
@@ -341,14 +371,18 @@ export const getHeader = (order: Order, reportType: ReportType, pageNumber: numb
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Datos del cliente para DOMICILIO */
-export const getDomicilioCustomerSection = (order: Order, detail: OrderDetail,): Content => ({
+export const getDomicilioCustomerSection = (
+  order: Order,
+  detail: OrderDetail,
+): Content => ({
   table: {
     widths: ['20%', '15%', '15%', '20%', '30%'],
     body: [
       [
         labelCell('FECHA DE SOLICITUD', { border: [true, true, true, true] }),
         valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt)), {
-          colSpan: 2, border: [true, true, true, true]
+          colSpan: 2,
+          border: [true, true, true, true],
         }),
         {},
         labelCell('HORA DE ENTREGA', { border: [true, true, true, true] }),
@@ -379,12 +413,12 @@ export const getDomicilioCustomerSection = (order: Order, detail: OrderDetail,):
         valueCell('', { border: [false, false, false, false] }),
         detail.referenceImageUrl
           ? {
-            qr: detail.referenceImageUrl,
-            rowSpan: 2,
-            fit: 60,
-            alignment: 'center',
-            border: [false, false, true, false],
-          }
+              qr: detail.referenceImageUrl,
+              rowSpan: 2,
+              fit: 60,
+              alignment: 'center',
+              border: [false, false, true, false],
+            }
           : { text: '', rowSpan: 2, border: [false, false, true, false] },
         labelCell('', { border: [false, false, true, false] }),
         valueCell('', { border: [false, false, true, false] }),
@@ -412,32 +446,44 @@ export const getDomicilioCustomerSection = (order: Order, detail: OrderDetail,):
 });
 
 /** Datos del cliente para VITRINA y PERSONALIZADO (sin dirección) */
-export const getSimpleCustomerSection = (order: Order, detail: OrderDetail, showReadyTime: boolean = false,): Content => ({
+export const getSimpleCustomerSection = (
+  order: Order,
+  detail: OrderDetail,
+  showReadyTime: boolean = false,
+): Content => ({
   table: {
     widths: ['20%', '30%', '20%', '30%'],
     body: [
       [
         labelCell('FECHA DE SOLICITUD', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt)), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt)), {
+          border: [true, true, true, true],
+        }),
         labelCell('HORA DE ENTREGA', { border: [true, true, true, true] }),
         valueCell(order.deliveryTime, { border: [true, true, true, true] }),
       ],
       [
         labelCell('CLIENTE', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(order.customer?.fullName), { border: [true, true, true, true] }),
-        labelCell(showReadyTime ? 'LISTO A LA HORA' : 'TELÉFONO', { border: [true, true, true, true] }),
-        valueCell(showReadyTime ? order.readyTime : order.customer?.phone, { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(order.customer?.fullName), {
+          border: [true, true, true, true],
+        }),
+        labelCell(showReadyTime ? 'LISTO A LA HORA' : 'TELÉFONO', {
+          border: [true, true, true, true],
+        }),
+        valueCell(showReadyTime ? order.readyTime : order.customer?.phone, {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('', { border: [true, true, true, false] }),
         detail.referenceImageUrl
           ? {
-            qr: detail.referenceImageUrl,
-            rowSpan: 2,
-            fit: 60,
-            alignment: 'right',
-            border: [false, false, true, false],
-          }
+              qr: detail.referenceImageUrl,
+              rowSpan: 2,
+              fit: 60,
+              alignment: 'right',
+              border: [false, false, true, false],
+            }
           : { text: '', border: [false, false, true, false], rowSpan: 2 },
         labelCell(showReadyTime ? 'TELÉFONO' : '', {
           border: [false, false, true, false],
@@ -479,13 +525,19 @@ export const getEventoCustomerSection = (order: Order): Content => ({
     body: [
       [
         labelCell('FECHA DE SOLICITUD', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt)), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(DateFormatter.getDDMMMMYYYY(order.createdAt)), {
+          border: [true, true, true, true],
+        }),
         labelCell('HORA DE SALIDA SUC', { border: [true, true, true, true] }),
-        valueCell(order.branchDepartureTime, { border: [true, true, true, true] }),
+        valueCell(order.branchDepartureTime, {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('CLIENTE', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(order.customer?.fullName), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(order.customer?.fullName), {
+          border: [true, true, true, true],
+        }),
         labelCell('TELÉFONO', { border: [true, true, true, true] }),
         valueCell(order.customer?.phone, { border: [true, true, true, true] }),
       ],
@@ -523,21 +575,33 @@ export const getAddressTable = (order: Order): Content => ({
     body: [
       [
         labelCell('CALLE', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(order.deliveryAddress?.street), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(order.deliveryAddress?.street), {
+          border: [true, true, true, true],
+        }),
         labelCell('NÚMERO', { border: [true, true, true, true] }),
-        valueCell(order.deliveryAddress?.number, { border: [true, true, true, true] }),
+        valueCell(order.deliveryAddress?.number, {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('COLONIA', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(order.deliveryAddress?.neighborhood), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(order.deliveryAddress?.neighborhood), {
+          border: [true, true, true, true],
+        }),
         labelCell('CLAVE INTERPHONE', { border: [true, true, true, true] }),
-        valueCell(order.deliveryAddress?.interphoneCode ?? 'NO APLICA', { border: [true, true, true, true] }),
+        valueCell(order.deliveryAddress?.interphoneCode ?? 'NO APLICA', {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('ENTRE', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(order.deliveryAddress?.betweenStreets), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(order.deliveryAddress?.betweenStreets), {
+          border: [true, true, true, true],
+        }),
         labelCell('REFERENCIA', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(order.deliveryAddress?.reference), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(order.deliveryAddress?.reference), {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('NOTA', { border: [true, true, true, false] }),
@@ -587,17 +651,26 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
           { border: [true, true, true, true] },
         ),
         labelCell('CUBIERTA SABOR', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(detail?.frosting?.name), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(detail?.frosting?.name), {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('SABOR DE PAN', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(detail?.flavor?.name ?? detail?.breadType?.name), { border: [true, true, true, true] }),
+        valueCell(
+          toUpperSafe(detail?.flavor?.name ?? detail?.breadType?.name),
+          { border: [true, true, true, true] },
+        ),
         labelCell('TIPO DE CUBIERTA', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(detail?.style?.name), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(detail?.style?.name), {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('RELLENO', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(detail?.filling?.name), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(detail?.filling?.name), {
+          border: [true, true, true, true],
+        }),
         labelCell('"ESCRITO"', { border: [true, true, true, true] }),
         valueCell(
           detail?.hasWriting
@@ -607,14 +680,23 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         ),
       ],
       [
-        labelCell('ESTILO Y COLOR DEL ESCRITO', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(`${detail?.style?.name ?? ''}\n ${detail?.color?.name ?? ''}`), { border: [true, true, true, true] }),
-        labelCell('UBICACIÓN DEL ESCRITO', { border: [true, true, true, true] }),
+        labelCell('ESTILO Y COLOR DEL ESCRITO', {
+          border: [true, true, true, true],
+        }),
+        valueCell(
+          toUpperSafe(
+            `${detail?.style?.name ?? ''}\n ${detail?.color?.name ?? ''}`,
+          ),
+          { border: [true, true, true, true] },
+        ),
+        labelCell('UBICACIÓN DEL ESCRITO', {
+          border: [true, true, true, true],
+        }),
         valueCell(
           detail?.writingLocation
             ? EnumTransformer.translateWritingLocation(
-              detail.writingLocation,
-            ).toUpperCase()
+                detail.writingLocation,
+              ).toUpperCase()
             : '',
           { border: [true, true, true, true] },
         ),
@@ -623,15 +705,20 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         labelCell('ESTILO Y COLOR DE POMPEADO', {
           border: [true, true, true, false],
         }),
-        valueCell(toUpperSafe(`${detail?.style?.name ?? ''}\n${detail?.color?.name ?? ''}`), {
-          border: [true, true, true, false],
-        }),
+        valueCell(
+          toUpperSafe(
+            `${detail?.style?.name ?? ''}\n${detail?.color?.name ?? ''}`,
+          ),
+          {
+            border: [true, true, true, false],
+          },
+        ),
         labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
         valueCell(
           detail?.pipingLocation
             ? EnumTransformer.translatePipingLocation(
-              detail.pipingLocation,
-            ).toUpperCase()
+                detail.pipingLocation,
+              ).toUpperCase()
             : '',
           {
             border: [true, true, true, false],
@@ -647,7 +734,11 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Sección de decoración con SVG del pastel */
-export const getDecorationSection = (detail: OrderDetail, useSingleTierCake: boolean = false, heights: [number, number] = [100, 50],): Content => ({
+export const getDecorationSection = (
+  detail: OrderDetail,
+  useSingleTierCake: boolean = false,
+  heights: [number, number] = [100, 50],
+): Content => ({
   table: {
     widths: ['30%', '20%', '30%', '20%'],
     heights,
@@ -779,7 +870,9 @@ export const getConditionsSection = (reportType: ReportType): Content => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Sección de firma del cliente */
-export const getSignatureSection = (includeDeliverySignature: boolean = true,): Content => {
+export const getSignatureSection = (
+  includeDeliverySignature: boolean = true,
+): Content => {
   const rows: TableCell[][] = [
     [
       {
@@ -831,19 +924,25 @@ export const getDomicilioTotalsSection = (order: Order): Content => ({
     body: [
       [
         labelCell('TOTAL', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.totalAmount), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.totalAmount), {
+          border: [true, true, true, true],
+        }),
         labelCell('DEBE', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.remainingBalance), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.remainingBalance), {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('ANTICIPO', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.advancePayment), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.advancePayment), {
+          border: [true, true, true, true],
+        }),
         labelCell('PAGARÁ CON', { border: [true, true, true, true] }),
         valueCell(
           order.paymentMethod
             ? EnumTransformer.translatePaymentMethod(
-              order.paymentMethod,
-            ).toUpperCase()
+                order.paymentMethod,
+              ).toUpperCase()
             : '',
           { border: [true, true, true, true] },
         ),
@@ -852,13 +951,17 @@ export const getDomicilioTotalsSection = (order: Order): Content => ({
         labelCell('# TICKET', { border: [true, true, true, true] }),
         valueCell(order.ticketNumber, { border: [true, true, true, true] }),
         labelCell('# TICKET LIQUIDACIÓN', { border: [true, true, true, true] }),
-        valueCell(order.settlementTicketNumber, { border: [true, true, true, true] }),
+        valueCell(order.settlementTicketNumber, {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('TRANSFERENCIA CUENTA', { border: [true, true, true, true] }),
         valueCell(order.transferAccount, { border: [true, true, true, true] }),
         labelCell('FACTURA', { border: [true, true, true, true] }),
-        valueCell(formatYesNo(order.requiresInvoice), { border: [true, true, true, true] }),
+        valueCell(formatYesNo(order.requiresInvoice), {
+          border: [true, true, true, true],
+        }),
       ],
     ],
   },
@@ -871,21 +974,37 @@ export const getVitrinaTotalsSection = (order: Order): Content => ({
     body: [
       [
         labelCell('COSTO', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.totalAmount), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.totalAmount), {
+          border: [true, true, true, true],
+        }),
         labelCell('DEBE', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.remainingBalance), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.remainingBalance), {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('ANTICIPO', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.advancePayment), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.advancePayment), {
+          border: [true, true, true, true],
+        }),
         labelCell('PAGADO', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.paidAmount), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.paidAmount), {
+          border: [true, true, true, true],
+        }),
       ],
       [
-        labelCell('# TICKET | TRANSFERENCIA', { border: [true, true, true, true] }),
-        valueCell(order.ticketNumber ?? order.transferAccount, { border: [true, true, true, true] }),
-        labelCell('# TICKET | TRANSFERENCIA', { border: [true, true, true, true] }),
-        valueCell(formatYesNo(order.requiresInvoice), { border: [true, true, true, true] }),
+        labelCell('# TICKET | TRANSFERENCIA', {
+          border: [true, true, true, true],
+        }),
+        valueCell(order.ticketNumber ?? order.transferAccount, {
+          border: [true, true, true, true],
+        }),
+        labelCell('# TICKET | TRANSFERENCIA', {
+          border: [true, true, true, true],
+        }),
+        valueCell(formatYesNo(order.requiresInvoice), {
+          border: [true, true, true, true],
+        }),
       ],
     ],
   },
@@ -899,19 +1018,31 @@ export const getEventoTotalsSection = (order: Order): Content[] => [
       body: [
         [
           labelCell('TOTAL POSTRES', { border: [true, true, true, true] }),
-          valueCell(formatCurrency(order.dessertsTotal), { border: [true, true, true, true] }),
+          valueCell(formatCurrency(order.dessertsTotal), {
+            border: [true, true, true, true],
+          }),
           labelCell('ANTICIPO', { border: [true, true, true, true] }),
-          valueCell(formatCurrency(order.advancePayment), { border: [true, true, true, true] }),
+          valueCell(formatCurrency(order.advancePayment), {
+            border: [true, true, true, true],
+          }),
         ],
         [
           labelCell('SERVICIO MONTAJE', { border: [true, true, true, true] }),
-          valueCell(formatCurrency(order.setupServiceCost), { border: [true, true, true, true] }),
-          labelCell('TICKET | TRANSFERENCIA', { border: [true, true, true, true] }),
-          valueCell(order.ticketNumber ?? order.transferAccount, { border: [true, true, true, true] }),
+          valueCell(formatCurrency(order.setupServiceCost), {
+            border: [true, true, true, true],
+          }),
+          labelCell('TICKET | TRANSFERENCIA', {
+            border: [true, true, true, true],
+          }),
+          valueCell(order.ticketNumber ?? order.transferAccount, {
+            border: [true, true, true, true],
+          }),
         ],
         [
           labelCell('TOTAL', { border: [true, true, true, true] }),
-          valueCell(formatCurrency(order.totalAmount), { border: [true, true, true, true] }),
+          valueCell(formatCurrency(order.totalAmount), {
+            border: [true, true, true, true],
+          }),
           labelCell('FECHA', { border: [true, true, true, true] }),
           valueCell(
             order.settlementDate
@@ -998,13 +1129,20 @@ export const getPersonalizadoTotalsSection = (order: Order): Content => ({
     body: [
       [
         labelCell('TOTAL', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.totalAmount), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.totalAmount), {
+          border: [true, true, true, true],
+        }),
         labelCell('DEBE', { rowSpan: 2, border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.remainingBalance), { rowSpan: 2, border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.remainingBalance), {
+          rowSpan: 2,
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('ANTICIPO', { border: [true, true, true, true] }),
-        valueCell(formatCurrency(order.advancePayment), { border: [true, true, true, true] }),
+        valueCell(formatCurrency(order.advancePayment), {
+          border: [true, true, true, true],
+        }),
         {},
         {},
       ],
@@ -1012,13 +1150,17 @@ export const getPersonalizadoTotalsSection = (order: Order): Content => ({
         labelCell('# TICKET ANTICIPO', { border: [true, true, true, true] }),
         valueCell(order.ticketNumber, { border: [true, true, true, true] }),
         labelCell('# TICKET LIQUIDACIÓN', { border: [true, true, true, true] }),
-        valueCell(order.settlementTicketNumber, { border: [true, true, true, true] }),
+        valueCell(order.settlementTicketNumber, {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('TRANSFERENCIA CUENTA', { border: [true, true, true, true] }),
         valueCell(order.transferAccount, { border: [true, true, true, true] }),
         labelCell('FACTURA', { border: [true, true, true, true] }),
-        valueCell(formatYesNo(order.requiresInvoice), { border: [true, true, true, true] }),
+        valueCell(formatYesNo(order.requiresInvoice), {
+          border: [true, true, true, true],
+        }),
       ],
     ],
   },
@@ -1105,7 +1247,9 @@ export const getEventoDataSection = (order: Order): Content => ({
         labelCell('HORA DEL EVENTO', { border: [true, true, true, true] }),
         valueCell(order.eventTime, { border: [true, true, true, true] }),
         labelCell('PERSONA DE MONTAJE', { border: [true, true, true, true] }),
-        valueCell(toUpperSafe(order.setupPersonName), { border: [true, true, true, true] }),
+        valueCell(toUpperSafe(order.setupPersonName), {
+          border: [true, true, true, true],
+        }),
       ],
       [
         labelCell('HORA DE MONTAJE', { border: [true, true, true, false] }),
@@ -1130,8 +1274,12 @@ export const getEventoDescriptionSection = (order: Order): Content[] => [
         [
           labelCell('TIPO DE MESA', { border: [true, true, true, true] }),
           valueCell(''), // Se llena manualmente
-          labelCell('CANTIDAD DE PERSONAS', { border: [true, true, true, true] }),
-          valueCell(order.guestCount?.toString(), { border: [true, true, true, true] }),
+          labelCell('CANTIDAD DE PERSONAS', {
+            border: [true, true, true, true],
+          }),
+          valueCell(order.guestCount?.toString(), {
+            border: [true, true, true, true],
+          }),
         ],
         [
           labelCell('DETALLES DEL PEDIDO', {
@@ -1162,12 +1310,12 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
           labelCell('', { border: [true, true, true, false] }),
           detail.referenceImageUrl
             ? {
-              qr: detail.referenceImageUrl,
-              rowSpan: 2,
-              fit: 60,
-              alignment: 'right',
-              border: [false, true, true, false],
-            }
+                qr: detail.referenceImageUrl,
+                rowSpan: 2,
+                fit: 60,
+                alignment: 'right',
+                border: [false, true, true, false],
+              }
             : { text: '', border: [false, true, true, false], rowSpan: 2 },
           labelCell('', { border: [false, true, true, false] }),
           valueCell('', { border: [false, true, true, false] }),
@@ -1236,7 +1384,9 @@ export const pageBreak = (): Content => ({
 });
 
 /** Verifica si hay múltiples detalles */
-export const hasMultipleDetails = (order: Order): boolean => (order.details?.length ?? 0) > 1;
+export const hasMultipleDetails = (order: Order): boolean =>
+  (order.details?.length ?? 0) > 1;
 
 /** Obtiene el primer detalle o uno vacío */
-export const getFirstDetail = (order: Order): OrderDetail => order.details?.[0] ?? ({} as OrderDetail);
+export const getFirstDetail = (order: Order): OrderDetail =>
+  order.details?.[0] ?? ({} as OrderDetail);

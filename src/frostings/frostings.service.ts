@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CreateFrostingDto } from './dto/create-frosting.dto';
@@ -21,13 +19,15 @@ export class FrostingsService {
     private readonly findOneFrostingUseCase: FindOneFrostingUseCase,
     private readonly updateFrostingUseCase: UpdateFrostingUseCase,
     private readonly removeFrostingUseCase: RemoveFrostingUseCase,
-  ) { }
+  ) {}
 
   async create(dto: CreateFrostingDto, user: User): Promise<Frosting> {
     return await this.createFrostingUseCase.execute(dto, user);
   }
 
-  async findAll(frostingsFilterDto: FrostingsFilterDto,): Promise<PaginationResponse<Frosting> | Frosting[]> {
+  async findAll(
+    frostingsFilterDto: FrostingsFilterDto,
+  ): Promise<PaginationResponse<Frosting> | Frosting[]> {
     return await this.findAllFrostingsUseCase.execute(frostingsFilterDto);
   }
 
@@ -35,7 +35,11 @@ export class FrostingsService {
     return await this.findOneFrostingUseCase.execute(term);
   }
 
-  async update(id: string, dto: UpdateFrostingDto, user: User,): Promise<Frosting> {
+  async update(
+    id: string,
+    dto: UpdateFrostingDto,
+    user: User,
+  ): Promise<Frosting> {
     return await this.updateFrostingUseCase.execute(id, dto, user);
   }
 

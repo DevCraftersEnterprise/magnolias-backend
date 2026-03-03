@@ -11,13 +11,15 @@ export class ColorsService {
   constructor(
     private readonly createColorUseCase: CreateColorUseCase,
     private readonly findAllColorsUseCase: FindAllColorsUseCase,
-  ) { }
+  ) {}
 
   async create(createColorDto: CreateColorDto): Promise<Color> {
     return this.createColorUseCase.execute(createColorDto);
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<PaginationResponse<Color> | Color[]> {
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<Color> | Color[]> {
     return this.findAllColorsUseCase.execute(paginationDto);
   }
 }

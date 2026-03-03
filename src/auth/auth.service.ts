@@ -8,17 +8,19 @@ import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-
   constructor(
     private readonly loginUseCase: LoginUseCase,
-    private readonly refreshTokenUseCase: RefreshTokenUseCase
-  ) { }
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
+  ) {}
 
   async login(dto: LoginUserDto, ip: string): Promise<LoginResponse> {
     return await this.loginUseCase.execute(dto, ip);
   }
 
-  async refreshToken(refreshToken: string, currentUser: User,): Promise<RefreshTokenResponse> {
+  async refreshToken(
+    refreshToken: string,
+    currentUser: User,
+  ): Promise<RefreshTokenResponse> {
     return await this.refreshTokenUseCase.execute(refreshToken, currentUser);
   }
 }

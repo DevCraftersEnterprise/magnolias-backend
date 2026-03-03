@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
@@ -20,14 +18,16 @@ export class FillingsService {
     private readonly findAllFillingsUseCase: FindAllFillingsUseCase,
     private readonly findOneFillingUseCase: FindOneFillingUseCase,
     private readonly updateFillingUseCase: UpdateFillingUseCase,
-    private readonly removeFillingUseCase: RemoveFillingUseCase
-  ) { }
+    private readonly removeFillingUseCase: RemoveFillingUseCase,
+  ) {}
 
   async create(dto: CreateFillingDto, user: User): Promise<Filling> {
     return await this.createFillingUseCase.execute(dto, user);
   }
 
-  async findAll(paginationDto: PaginationDto,): Promise<PaginationResponse<Filling> | Filling[]> {
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<Filling> | Filling[]> {
     return await this.findAllFillingsUseCase.execute(paginationDto);
   }
 
@@ -35,7 +35,11 @@ export class FillingsService {
     return await this.findOneFillingUseCase.execute(term);
   }
 
-  async update(id: string, dto: UpdateFillingDto, user: User,): Promise<Filling> {
+  async update(
+    id: string,
+    dto: UpdateFillingDto,
+    user: User,
+  ): Promise<Filling> {
     return await this.updateFillingUseCase.execute(id, dto, user);
   }
 

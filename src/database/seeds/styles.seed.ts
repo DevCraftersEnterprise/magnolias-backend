@@ -5,11 +5,10 @@ import { StylesService } from '../../styles/styles.service';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-
 export async function seedStyles(
   stylesService: StylesService,
   userRepository: Repository<User>,
-  styleRepository: Repository<Style>
+  styleRepository: Repository<Style>,
 ): Promise<void> {
   console.log('✨ Iniciando seed de estilos...');
 

@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
@@ -21,13 +19,18 @@ export class CategoriesService {
     private readonly findOneCategoryUseCase: FindOneCategoryUseCase,
     private readonly updateCategoryUseCase: UpdateCategoryUseCase,
     private readonly removeCategoryUseCase: RemoveCategoryUseCase,
-  ) { }
+  ) {}
 
-  async create(createCategoryDto: CreateCategoryDto, user: User,): Promise<Category> {
+  async create(
+    createCategoryDto: CreateCategoryDto,
+    user: User,
+  ): Promise<Category> {
     return await this.createCategoryUseCase.execute(createCategoryDto, user);
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<PaginationResponse<Category> | Category[]> {
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<Category> | Category[]> {
     return await this.findAllCategoriesUseCase.execute(paginationDto);
   }
 
@@ -35,8 +38,16 @@ export class CategoriesService {
     return await this.findOneCategoryUseCase.execute(term);
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto, user: User,): Promise<Category> {
-    return await this.updateCategoryUseCase.execute(id, updateCategoryDto, user);
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+    user: User,
+  ): Promise<Category> {
+    return await this.updateCategoryUseCase.execute(
+      id,
+      updateCategoryDto,
+      user,
+    );
   }
 
   async remove(id: string, user: User): Promise<void> {

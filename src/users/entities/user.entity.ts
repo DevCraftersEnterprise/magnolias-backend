@@ -88,7 +88,11 @@ export class User {
   })
   branches?: Branch[];
 
-  @ApiProperty({ description: 'Work area of the baker', enum: BakerArea, required: false })
+  @ApiProperty({
+    description: 'Work area of the baker',
+    enum: BakerArea,
+    required: false,
+  })
   @Column({ type: 'enum', enum: BakerArea, nullable: true })
   area?: BakerArea;
 

@@ -24,7 +24,7 @@ import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
     FindAllCommonAddressesUseCase,
     FindOneCommonAddressUseCase,
     UpdateCommonAddressUseCase,
-    RemoveCommonAddressUseCase
+    RemoveCommonAddressUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([CommonAddress]),
@@ -33,4 +33,4 @@ import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
   ],
   exports: [TypeOrmModule, AddressesService],
 })
-export class AddressesModule { }
+export class AddressesModule {}

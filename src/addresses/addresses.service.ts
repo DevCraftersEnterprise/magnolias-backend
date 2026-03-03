@@ -1,6 +1,4 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCommonAddressDto } from '../addresses/dto/create-common-address.dto';
@@ -21,11 +19,17 @@ export class AddressesService {
     private readonly findAllCommonAddressesUseCase: FindAllCommonAddressesUseCase,
     private readonly findOneCommonAddressUseCase: FindOneCommonAddressUseCase,
     private readonly updateCommonAddressUseCase: UpdateCommonAddressUseCase,
-    private readonly removeCommonAddressUseCase: RemoveCommonAddressUseCase
-  ) { }
+    private readonly removeCommonAddressUseCase: RemoveCommonAddressUseCase,
+  ) {}
 
-  async create(createAddressDto: CreateCommonAddressDto, user: User,): Promise<CommonAddress> {
-    return await this.createCommonAddressUseCase.execute(createAddressDto, user);
+  async create(
+    createAddressDto: CreateCommonAddressDto,
+    user: User,
+  ): Promise<CommonAddress> {
+    return await this.createCommonAddressUseCase.execute(
+      createAddressDto,
+      user,
+    );
   }
 
   async findAll(search?: string): Promise<CommonAddress[]> {
@@ -36,8 +40,16 @@ export class AddressesService {
     return await this.findOneCommonAddressUseCase.execute(id);
   }
 
-  async update(id: string, updateAddressDto: UpdateCommonAddressDto, user: User,): Promise<CommonAddress> {
-    return await this.updateCommonAddressUseCase.execute(id, updateAddressDto, user);
+  async update(
+    id: string,
+    updateAddressDto: UpdateCommonAddressDto,
+    user: User,
+  ): Promise<CommonAddress> {
+    return await this.updateCommonAddressUseCase.execute(
+      id,
+      updateAddressDto,
+      user,
+    );
   }
 
   async remove(id: string, user: User): Promise<void> {

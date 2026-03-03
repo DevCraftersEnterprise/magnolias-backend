@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ResetPasswordDto } from 'src/auth/dto/reset-password.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -16,21 +14,22 @@ import { UpdateUserUseCase } from './usecases/update-user.usecase';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly findAllUsersUseCase: FindAllUsersUseCase,
     private readonly findOneUserUseCase: FindOneUserUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly removeUserUseCase: RemoveUserUseCase,
-    private readonly resetPasswordForUserUseCase: ResetPasswordForUserUseCase
-  ) { }
+    private readonly resetPasswordForUserUseCase: ResetPasswordForUserUseCase,
+  ) {}
 
   async registerUser(dto: RegisterUserDto): Promise<Partial<User>> {
     return await this.registerUserUseCase.execute(dto);
   }
 
-  async findUsers(filters: UsersFilterDto): Promise<PaginationResponse<User> | User[]> {
+  async findUsers(
+    filters: UsersFilterDto,
+  ): Promise<PaginationResponse<User> | User[]> {
     return await this.findAllUsersUseCase.execute(filters);
   }
 
@@ -38,7 +37,10 @@ export class UsersService {
     return await this.findOneUserUseCase.execute(term);
   }
 
-  async updateUser(dto: UpdateUserDto, currentUser: User,): Promise<Partial<User>> {
+  async updateUser(
+    dto: UpdateUserDto,
+    currentUser: User,
+  ): Promise<Partial<User>> {
     return await this.updateUserUseCase.execute(dto, currentUser);
   }
 
@@ -46,7 +48,13 @@ export class UsersService {
     return await this.removeUserUseCase.execute(dto, currentUser);
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto, executor: User,): Promise<Partial<User>> {
-    return await this.resetPasswordForUserUseCase.execute(resetPasswordDto, executor);
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+    executor: User,
+  ): Promise<Partial<User>> {
+    return await this.resetPasswordForUserUseCase.execute(
+      resetPasswordDto,
+      executor,
+    );
   }
 }

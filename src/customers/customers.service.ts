@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -21,13 +19,15 @@ export class CustomersService {
     private readonly findOneCustomerUseCase: FindOneCustomerUseCase,
     private readonly updateCustomerUseCase: UpdateCustomerUseCase,
     private readonly removeCustomerUseCase: RemoveCustomerUseCase,
-  ) { }
+  ) {}
 
   async createCustomer(dto: CreateCustomerDto, user: User): Promise<Customer> {
     return await this.createCustomerUseCase.execute(dto, user);
   }
 
-  async findAll(filterDto: CustomersFilterDto,): Promise<PaginationResponse<Customer> | Customer[]> {
+  async findAll(
+    filterDto: CustomersFilterDto,
+  ): Promise<PaginationResponse<Customer> | Customer[]> {
     return await this.findAllCustomersUseCase.execute(filterDto);
   }
 
@@ -35,7 +35,11 @@ export class CustomersService {
     return await this.findOneCustomerUseCase.execute(term);
   }
 
-  async update(id: string, dto: UpdateCustomerDto, user: User,): Promise<Customer> {
+  async update(
+    id: string,
+    dto: UpdateCustomerDto,
+    user: User,
+  ): Promise<Customer> {
     return await this.updateCustomerUseCase.execute(id, dto, user);
   }
 

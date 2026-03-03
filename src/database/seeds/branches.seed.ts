@@ -9,7 +9,7 @@ import { UserRoles } from '../../users/enums/user-role';
 export async function seedBranches(
   branchesService: BranchesService,
   userRepository: Repository<User>,
-  branchRepository: Repository<Branch>
+  branchRepository: Repository<Branch>,
 ): Promise<void> {
   console.log('🏢 Iniciando seed de sucursales...');
 
@@ -48,8 +48,8 @@ export async function seedBranches(
     { phone1: '+52 55 1234 5678' },
     { phone1: '+52 55 2345 6789' },
     { phone1: '+52 55 3456 7890' },
-    { phone1: '+52 55 4567 8901', },
-  ]
+    { phone1: '+52 55 4567 8901' },
+  ];
 
   let createdCount = 0;
 
@@ -67,10 +67,14 @@ export async function seedBranches(
       }
 
       // Primero crear la sucursal sin el teléfono
-      const branch = await branchesService.create(branchData, adminUser)
+      const branch = await branchesService.create(branchData, adminUser);
 
       // Luego crear el teléfono con la referencia a la sucursal
-      await branchesService.addBranchPhoneNumbers(phones[createdCount], adminUser, branch.id);
+      await branchesService.addBranchPhoneNumbers(
+        phones[createdCount],
+        adminUser,
+        branch.id,
+      );
 
       console.log(`   ✅ Sucursal creada: ${branchData.name}`);
       createdCount++;
