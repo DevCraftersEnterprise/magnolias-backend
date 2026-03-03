@@ -3,8 +3,10 @@ import { ColorsService } from '../../colors/colors.service';
 import { CreateColorDto } from '../../colors/dto/create-color.dto';
 import { Color } from '../../colors/entities/color.entity';
 
-
-export async function seedColors(colorsService: ColorsService, colorRepository: Repository<Color>): Promise<void> {
+export async function seedColors(
+  colorsService: ColorsService,
+  colorRepository: Repository<Color>,
+): Promise<void> {
   console.log('🎨 Iniciando seed de colores...');
 
   const colors: CreateColorDto[] = [

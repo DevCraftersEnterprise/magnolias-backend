@@ -35,4 +35,4 @@ import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
   ],
   exports: [TypeOrmModule, BranchesService],
 })
-export class BranchesModule { }
+export class BranchesModule {}

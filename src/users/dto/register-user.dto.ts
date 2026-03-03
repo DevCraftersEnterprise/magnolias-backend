@@ -65,7 +65,10 @@ export class RegisterUserDto {
 
   @ApiProperty({
     description: 'UUIDs of branches to assign (only for BAKER role)',
-    example: ['123e4567-e89b-12d3-a456-426614174000', '987e6543-e21b-12d3-a456-426614174999'],
+    example: [
+      '123e4567-e89b-12d3-a456-426614174000',
+      '987e6543-e21b-12d3-a456-426614174999',
+    ],
     required: false,
     type: [String],
   })
@@ -79,7 +82,6 @@ export class RegisterUserDto {
     example: BakerArea.PE,
     enum: BakerArea,
   })
-
   @IsOptional({ message: 'Area is required only for BAKER role' })
   @IsEnum(BakerArea, { message: 'Invalid area' })
   area?: BakerArea;

@@ -41,7 +41,7 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
     ChangeOrderStatusUseCase,
     GetOrderStatsUseCase,
     AssignOrderUseCase,
-    GetAssignmentsUseCase
+    GetAssignmentsUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -50,7 +50,7 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
       OrderCancellation,
       OrderDeliveryAddress,
       OrderAssignment,
-      OrderFlower
+      OrderFlower,
     ]),
     CommonModule,
     CustomJwtModule,
@@ -60,8 +60,8 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
     FlowersModule,
     CustomersModule,
     ProductsModule,
-    UsersModule
+    UsersModule,
   ],
   exports: [TypeOrmModule, OrdersService],
 })
-export class OrdersModule { }
+export class OrdersModule {}

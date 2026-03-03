@@ -34,7 +34,7 @@ import { FlowersFilterDto } from './dto/flowers-filter.dto';
 @ApiTags('Flowers')
 @Controller('flowers')
 export class FlowersController {
-  constructor(private readonly flowersService: FlowersService) { }
+  constructor(private readonly flowersService: FlowersService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

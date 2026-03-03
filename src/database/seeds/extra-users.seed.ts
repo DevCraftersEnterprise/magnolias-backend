@@ -9,7 +9,8 @@ import { UsersService } from '../../users/users.service';
 export async function seedExtraUsers(
   usersService: UsersService,
   userRepository: Repository<User>,
-  branchRepository: Repository<Branch>): Promise<void> {
+  branchRepository: Repository<Branch>,
+): Promise<void> {
   console.log('👥 Iniciando seed de usuarios adicionales...');
 
   const branches = await branchRepository.find();
@@ -82,7 +83,7 @@ export async function seedExtraUsers(
       userkey: '334455',
       role: UserRoles.BAKER,
       area: BakerArea.CK,
-      branchIds: [...branches.map(b => b.id)],
+      branchIds: [...branches.map((b) => b.id)],
       specialty: 'Especialista en decoración con manga',
     },
     {

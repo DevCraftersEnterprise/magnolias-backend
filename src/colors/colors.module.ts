@@ -20,4 +20,4 @@ import { FindAllColorsUseCase } from './usecases/find-all-colors.usecase';
   ],
   exports: [TypeOrmModule, ColorsService],
 })
-export class ColorsModule { }
+export class ColorsModule {}

@@ -5,11 +5,11 @@ import { FlavorsService } from '../../flavors/flavors.service';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-
 export async function seedFlavors(
   flavorsService: FlavorsService,
   userRepository: Repository<User>,
-  flavorRepository: Repository<Flavor>): Promise<void> {
+  flavorRepository: Repository<Flavor>,
+): Promise<void> {
   console.log('🍰 Iniciando seed de sabores...');
 
   const adminUser = await userRepository.findOne({

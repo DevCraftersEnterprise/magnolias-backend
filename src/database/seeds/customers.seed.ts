@@ -8,7 +8,8 @@ import { UserRoles } from '../../users/enums/user-role';
 export async function seedCustomers(
   customersService: CustomersService,
   userRepository: Repository<User>,
-  customerRepository: Repository<Customer>): Promise<void> {
+  customerRepository: Repository<Customer>,
+): Promise<void> {
   console.log('👤 Iniciando seed de clientes...');
 
   const adminUser = await userRepository.findOne({
@@ -161,7 +162,6 @@ export async function seedCustomers(
 
   let createdCount = 0;
 
-
   for (const customerData of customers) {
     try {
       const existing = await customerRepository.findOne({
@@ -175,8 +175,7 @@ export async function seedCustomers(
         continue;
       }
 
-      await customersService.createCustomer(customerData, adminUser)
-
+      await customersService.createCustomer(customerData, adminUser);
 
       console.log(`   ✅ Cliente creado: ${customerData.fullName}`);
       createdCount++;

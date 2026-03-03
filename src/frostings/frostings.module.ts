@@ -30,4 +30,4 @@ import { UpdateFrostingUseCase } from './usecases/update-frosting.usecase';
   ],
   exports: [TypeOrmModule, FrostingsService],
 })
-export class FrostingsModule { }
+export class FrostingsModule {}

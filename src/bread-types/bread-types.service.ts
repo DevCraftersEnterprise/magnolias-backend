@@ -1,6 +1,4 @@
-import {
-  Injectable
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
@@ -21,13 +19,15 @@ export class BreadTypesService {
     private readonly findOneBreadTypeUseCase: FindOneBreadTypeUseCase,
     private readonly updateBreadTypeUseCase: UpdateBreadTypeUseCase,
     private readonly removeBreadTypeUseCase: RemoveBreadTypeUseCase,
-  ) { }
+  ) {}
 
   async create(dto: CreateBreadTypeDto, user: User): Promise<BreadType> {
     return await this.createBreadTypeUseCase.execute(dto, user);
   }
 
-  async findAll(paginationDto: PaginationDto,): Promise<PaginationResponse<BreadType> | BreadType[]> {
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<BreadType> | BreadType[]> {
     return await this.findAllBreadTypesUseCase.execute(paginationDto);
   }
 
@@ -35,7 +35,11 @@ export class BreadTypesService {
     return await this.findOneBreadTypeUseCase.execute(term);
   }
 
-  async update(id: string, dto: UpdateBreadTypeDto, user: User,): Promise<BreadType> {
+  async update(
+    id: string,
+    dto: UpdateBreadTypeDto,
+    user: User,
+  ): Promise<BreadType> {
     return await this.updateBreadTypeUseCase.execute(id, dto, user);
   }
 

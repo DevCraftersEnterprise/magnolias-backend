@@ -19,7 +19,7 @@ import { Color } from './entities/color.entity';
 @ApiTags('Colors')
 @Controller('colors')
 export class ColorsController {
-  constructor(private readonly colorsService: ColorsService) { }
+  constructor(private readonly colorsService: ColorsService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
@@ -85,7 +85,9 @@ export class ColorsController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto): Promise<PaginationResponse<Color> | Color[]> {
+  findAll(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<Color> | Color[]> {
     return this.colorsService.findAll(paginationDto);
   }
 
