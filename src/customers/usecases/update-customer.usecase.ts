@@ -21,7 +21,7 @@ export class UpdateCustomerUseCase {
     private readonly customerRepository: Repository<Customer>,
     @InjectRepository(CustomerAddress)
     private readonly customerAddressRepository: Repository<CustomerAddress>,
-  ) { }
+  ) {}
 
   async execute(
     id: string,

@@ -12,19 +12,70 @@ export class FindAllCustomersUseCase {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-  ) {}
+  ) { }
 
   async execute(
     customersFilterDto: CustomersFilterDto,
   ): Promise<PaginationResponse<Customer> | Customer[]> {
     const { name, phone, isActive, limit, offset } = customersFilterDto;
 
+    const whereConditions = this.buildWhereConditions(name, isActive);
+
+    let customers: Customer[];
+    let total: number;
+
+    if (phone) {
+      ({ customers, total } = await this.searchByPhone(phone, whereConditions));
+    } else {
+      ({ customers, total } = await this.searchWithoutPhone(
+        whereConditions,
+        limit,
+        offset,
+      ));
+    }
+
+    return this.buildResponse(customers, total, limit, offset);
+  }
+
+  private buildWhereConditions(
+    name?: string,
+    isActive?: boolean,
+  ): FindOptionsWhere<Customer> {
     const whereConditions: FindOptionsWhere<Customer> = {};
 
     if (name) whereConditions.fullName = ILike(`%${name}%`);
-    if (phone) whereConditions.phone = ILike(`%${phone}%`);
     if (isActive !== undefined) whereConditions.isActive = isActive;
 
+    return whereConditions;
+  }
+
+  private async searchByPhone(
+    phone: string,
+    whereConditions: FindOptionsWhere<Customer>,
+  ): Promise<{ customers: Customer[]; total: number }> {
+    this.logger.debug(`Searching customers by phone: ${phone}`);
+
+    const allCustomers = await this.customerRepository.find({
+      where: whereConditions,
+      relations: { address: true },
+      order: { fullName: 'DESC' },
+    });
+
+    const filteredCustomers = allCustomers.filter(
+      (customer) => customer.phone && customer.phone.startsWith(phone),
+    );
+
+    return {
+      customers: filteredCustomers,
+      total: filteredCustomers.length,
+    };
+  }
+
+  private async searchWithoutPhone(
+    whereConditions: FindOptionsWhere<Customer>,
+    limit?: number,
+    offset?: number,
+  ): Promise<{ customers: Customer[]; total: number }> {
     const [customers, total] = await this.customerRepository.findAndCount({
       where: whereConditions,
       relations: { address: true },
@@ -54,10 +105,25 @@ export class FindAllCustomersUseCase {
       order: { fullName: 'DESC' },
     });
 
+    return { customers, total };
+  }
+
+  private buildResponse(
+    customers: Customer[],
+    total: number,
+    limit?: number,
+    offset?: number,
+  ): PaginationResponse<Customer> | Customer[] {
+    // Aplicar paginación manual si es necesario
+    const paginatedCustomers =
+      limit !== undefined && offset !== undefined
+        ? customers.slice(offset, offset + limit)
+        : customers;
+
     if (limit !== undefined && offset !== undefined) {
       this.logger.log(`Found ${total} customers matching filters.`);
       return {
-        items: customers,
+        items: paginatedCustomers,
         total,
         pagination: {
           limit,
@@ -69,7 +135,6 @@ export class FindAllCustomersUseCase {
     }
 
     this.logger.log(`Found ${customers.length} customers matching filters.`);
-
-    return customers;
+    return paginatedCustomers;
   }
 }
