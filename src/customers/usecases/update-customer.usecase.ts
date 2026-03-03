@@ -21,7 +21,7 @@ export class UpdateCustomerUseCase {
     private readonly customerRepository: Repository<Customer>,
     @InjectRepository(CustomerAddress)
     private readonly customerAddressRepository: Repository<CustomerAddress>,
-  ) {}
+  ) { }
 
   async execute(
     id: string,
@@ -39,7 +39,7 @@ export class UpdateCustomerUseCase {
       throw new NotFoundException(`Customer with ID ${id} not found`);
     }
 
-    if (customer && customer.phone !== customerDto.phone) {
+    if (customer && customerDto.phone && customer.phone !== customerDto.phone) {
       const duplicatedCustomer = await this.customerRepository.findOne({
         where: { phone: customerDto.phone },
       });
