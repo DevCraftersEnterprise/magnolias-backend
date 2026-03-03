@@ -33,17 +33,32 @@ export class OrdersService {
     private readonly getOrderStatsUseCase: GetOrderStatsUseCase,
     private readonly assignOrderUseCase: AssignOrderUseCase,
     private readonly getAssignmentsUseCase: GetAssignmentsUseCase,
-  ) { }
+  ) {}
 
-  async createOrder(dto: CreateOrderDto, user: User, referenceImages?: Express.Multer.File[]): Promise<Order> {
+  async createOrder(
+    dto: CreateOrderDto,
+    user: User,
+    referenceImages?: Express.Multer.File[],
+  ): Promise<Order> {
     return await this.createOrderUseCase.execute(dto, user, referenceImages);
   }
 
-  async setPickupPerson(orderId: string, setPickupPersonDto: SetPickupPersonDto, user: User,): Promise<Order> {
-    return await this.setPickupPersonUseCase.execute(orderId, setPickupPersonDto, user);
+  async setPickupPerson(
+    orderId: string,
+    setPickupPersonDto: SetPickupPersonDto,
+    user: User,
+  ): Promise<Order> {
+    return await this.setPickupPersonUseCase.execute(
+      orderId,
+      setPickupPersonDto,
+      user,
+    );
   }
 
-  async getOrders(filter: OrdersFilterDto, branchId: string,): Promise<PaginationResponse<Order> | Order[]> {
+  async getOrders(
+    filter: OrdersFilterDto,
+    branchId: string,
+  ): Promise<PaginationResponse<Order> | Order[]> {
     return await this.findAllOrdersUseCase.execute(filter, branchId);
   }
 
@@ -56,31 +71,51 @@ export class OrdersService {
   }
 
   async markOrderAsInProcess(dto: UpdateOrderDto, user: User): Promise<Order> {
-    return await this.changeOrderStatusUseCase.execute(dto, OrderStatus.IN_PROCESS, user);
+    return await this.changeOrderStatusUseCase.execute(
+      dto,
+      OrderStatus.IN_PROCESS,
+      user,
+    );
   }
 
   async markOrderAsDone(dto: UpdateOrderDto, user: User): Promise<Order> {
-    return await this.changeOrderStatusUseCase.execute(dto, OrderStatus.DONE, user);
+    return await this.changeOrderStatusUseCase.execute(
+      dto,
+      OrderStatus.DONE,
+      user,
+    );
   }
 
   async markOrderAsDelivered(dto: UpdateOrderDto, user: User): Promise<Order> {
-    return await this.changeOrderStatusUseCase.execute(dto, OrderStatus.DELIVERED, user);
+    return await this.changeOrderStatusUseCase.execute(
+      dto,
+      OrderStatus.DELIVERED,
+      user,
+    );
   }
 
   async markOrderAsCancel(dto: CancelOrderDto, user: User): Promise<Order> {
-    return await this.changeOrderStatusUseCase.execute(dto, OrderStatus.CANCELED, user, dto);
+    return await this.changeOrderStatusUseCase.execute(
+      dto,
+      OrderStatus.CANCELED,
+      user,
+      dto,
+    );
   }
 
   async getStats(user: User, branchId?: string): Promise<OrderStatsResponse> {
     return await this.getOrderStatsUseCase.execute(user, branchId);
   }
 
-  async assignOrder(bakerId: string, assignOrderDto: AssignOrderDto, user: User,): Promise<OrderAssignment> {
+  async assignOrder(
+    bakerId: string,
+    assignOrderDto: AssignOrderDto,
+    user: User,
+  ): Promise<OrderAssignment> {
     return await this.assignOrderUseCase.execute(bakerId, assignOrderDto, user);
   }
 
   async getAssignments(bakerId: string): Promise<OrderAssignment[]> {
     return await this.getAssignmentsUseCase.execute(bakerId);
   }
-
 }

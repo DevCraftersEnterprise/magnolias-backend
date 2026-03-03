@@ -31,4 +31,4 @@ import { RemoveCustomerUseCase } from './usecases/remove-customer.usecase';
   ],
   exports: [TypeOrmModule, CustomersService],
 })
-export class CustomersModule { }
+export class CustomersModule {}

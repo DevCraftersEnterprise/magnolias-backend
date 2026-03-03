@@ -11,7 +11,6 @@ import { FindOneCategoryUseCase } from './usecases/find-one-category.usecase';
 import { UpdateCategoryUseCase } from './usecases/update-category.usecase';
 import { RemoveCategoryUseCase } from './usecases/remove-category.usecase';
 
-
 @Module({
   controllers: [CategoriesController],
   providers: [
@@ -31,4 +30,4 @@ import { RemoveCategoryUseCase } from './usecases/remove-category.usecase';
   ],
   exports: [TypeOrmModule, CategoriesService],
 })
-export class CategoriesModule { }
+export class CategoriesModule {}

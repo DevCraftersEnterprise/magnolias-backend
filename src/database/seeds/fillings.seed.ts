@@ -8,9 +8,9 @@ import { CreateFillingDto } from '../../fillings/dto/create-filling.dto';
 export async function seedFillings(
   fillingsService: FillingsService,
   userRepository: Repository<User>,
-  fillingRepository: Repository<Filling>): Promise<void> {
+  fillingRepository: Repository<Filling>,
+): Promise<void> {
   console.log('🥧 Iniciando seed de rellenos...');
-
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },

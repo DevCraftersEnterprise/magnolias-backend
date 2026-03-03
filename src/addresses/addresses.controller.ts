@@ -30,7 +30,7 @@ import { UserRoles } from '../users/enums/user-role';
 @ApiBearerAuth('access-token')
 @Controller('addresses')
 export class AddressesController {
-  constructor(private readonly addressesService: AddressesService) { }
+  constructor(private readonly addressesService: AddressesService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])

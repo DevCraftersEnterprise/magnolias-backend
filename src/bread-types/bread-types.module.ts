@@ -30,4 +30,4 @@ import { UpdateBreadTypeUseCase } from './usecases/update-bread-type.usecase';
   ],
   exports: [TypeOrmModule, BreadTypesService],
 })
-export class BreadTypesModule { }
+export class BreadTypesModule {}

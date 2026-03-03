@@ -40,7 +40,7 @@ import { UserRoles } from '../users/enums/user-role';
 @ApiTags('Branches')
 @Controller('branches')
 export class BranchesController {
-  constructor(private readonly branchesService: BranchesService) { }
+  constructor(private readonly branchesService: BranchesService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

@@ -1,68 +1,76 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from "@nestjs/typeorm";
+import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
-import { Repository } from "typeorm";
-import { LoginUserDto } from "../../auth/dto/login-user.dto";
+import { Repository } from 'typeorm';
+import { LoginUserDto } from '../../auth/dto/login-user.dto';
 import { LoginResponse } from '../../auth/responses/login.response';
-import { User } from "../../users/entities/user.entity";
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class LoginUseCase {
-    private readonly logger = new Logger(LoginUseCase.name);
+  private readonly logger = new Logger(LoginUseCase.name);
 
-    constructor(
-        @InjectRepository(User)
-        private readonly userRepository: Repository<User>,
-        private readonly jwtService: JwtService,
-        private readonly configService: ConfigService,
-    ) { }
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
-    async execute(loginUserDto: LoginUserDto, ip: string): Promise<LoginResponse> {
-        const { username, userkey } = loginUserDto;
+  async execute(
+    loginUserDto: LoginUserDto,
+    ip: string,
+  ): Promise<LoginResponse> {
+    const { username, userkey } = loginUserDto;
 
-        const loginStart = Date.now();
+    const loginStart = Date.now();
 
-        this.logger.log(`Login attempt for user: ${username} from IP: ${ip}`);
+    this.logger.log(`Login attempt for user: ${username} from IP: ${ip}`);
 
-        const user = await this.userRepository.findOne({ where: { username } });
+    const user = await this.userRepository.findOne({ where: { username } });
 
-        if (!user) this.throwLoginAttempt(loginStart, ip, 'User not found');
-        if (!user!.isActive) this.throwLoginAttempt(loginStart, ip, 'User is not active');
+    if (!user) this.throwLoginAttempt(loginStart, ip, 'User not found');
+    if (!user!.isActive)
+      this.throwLoginAttempt(loginStart, ip, 'User is not active');
 
-        const isValidUserkey = await argon2.verify(user!.userkey, userkey);
+    const isValidUserkey = await argon2.verify(user!.userkey, userkey);
 
-        if (!isValidUserkey) this.throwLoginAttempt(loginStart, ip, 'User credentials are invalid');
+    if (!isValidUserkey)
+      this.throwLoginAttempt(loginStart, ip, 'User credentials are invalid');
 
-        const loginTime = Date.now() - loginStart;
+    const loginTime = Date.now() - loginStart;
 
-        this.logger.log(`Successful login for user: ${username} (${user!.role}) from IP: ${ip} (${loginTime}ms)`);
+    this.logger.log(
+      `Successful login for user: ${username} (${user!.role}) from IP: ${ip} (${loginTime}ms)`,
+    );
 
-        const accessPayload = { id: user!.id, type: 'access' };
-        const refreshPayload = { id: user!.id, type: 'refresh' };
+    const accessPayload = { id: user!.id, type: 'access' };
+    const refreshPayload = { id: user!.id, type: 'refresh' };
 
-        const refreshTokenExpiry = this.configService.get('JWT_REFRESH_EXPIRY');
+    const refreshTokenExpiry = this.configService.get('JWT_REFRESH_EXPIRY');
 
-        const accessToken = this.jwtService.sign(accessPayload);
-        const refreshToken = this.jwtService.sign(refreshPayload, { expiresIn: refreshTokenExpiry });
+    const accessToken = this.jwtService.sign(accessPayload);
+    const refreshToken = this.jwtService.sign(refreshPayload, {
+      expiresIn: refreshTokenExpiry,
+    });
 
-        return {
-            message: `Bienvenido ${user!.name} ${user!.lastname}`,
-            accessToken,
-            refreshToken,
-        }
+    return {
+      message: `Bienvenido ${user!.name} ${user!.lastname}`,
+      accessToken,
+      refreshToken,
+    };
+  }
 
-    }
+  private throwLoginAttempt(
+    loginStart: number,
+    ip: string,
+    exceptionMessage: string,
+  ) {
+    const loginTime = Date.now() - loginStart;
 
-    private throwLoginAttempt(
-        loginStart: number,
-        ip: string,
-        exceptionMessage: string,
-    ) {
-        const loginTime = Date.now() - loginStart;
-
-        this.logger.warn(`Failed login attempt - From IP: ${ip} (${loginTime}ms)`);
-        throw new BadRequestException(exceptionMessage);
-    }
+    this.logger.warn(`Failed login attempt - From IP: ${ip} (${loginTime}ms)`);
+    throw new BadRequestException(exceptionMessage);
+  }
 }

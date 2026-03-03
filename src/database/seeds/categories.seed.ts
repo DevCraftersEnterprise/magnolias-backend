@@ -4,10 +4,11 @@ import { CreateCategoryDto } from '../../categories/dto/create-category.dto';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
 
-export async function seedCategories(categoryService: CategoriesService, userRepository: Repository<User>): Promise<void> {
+export async function seedCategories(
+  categoryService: CategoriesService,
+  userRepository: Repository<User>,
+): Promise<void> {
   console.log('📁 Iniciando seed de categorías...');
-
-
 
   const adminUser = await userRepository.findOne({
     where: { role: UserRoles.ADMIN },
@@ -51,7 +52,7 @@ export async function seedCategories(categoryService: CategoriesService, userRep
 
   for (const categoryData of categories) {
     try {
-      await categoryService.create(categoryData, adminUser)
+      await categoryService.create(categoryData, adminUser);
 
       console.log(`   ✅ Categoría creada: ${categoryData.name}`);
       createdCount++;

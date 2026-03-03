@@ -16,7 +16,7 @@ import { UsersModule } from '../users/users.module';
   providers: [
     // Services
     AuthService,
-    // Strategies 
+    // Strategies
     JwtStrategy,
     // Guards
     LoginThrottleGuard,
@@ -33,4 +33,4 @@ import { UsersModule } from '../users/users.module';
   ],
   exports: [JwtStrategy, CustomPassportModule],
 })
-export class AuthModule { }
+export class AuthModule {}

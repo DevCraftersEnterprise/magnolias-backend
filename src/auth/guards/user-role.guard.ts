@@ -13,7 +13,7 @@ import { META_ROLE } from '../../auth/decorators/role-protected.decorator';
 
 @Injectable()
 export class UserRoleGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) { }
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(
     context: ExecutionContext,

@@ -8,7 +8,7 @@ import { UserRoles } from '../../users/enums/user-role';
 export async function seedFlowers(
   flowersService: FlowersService,
   userRepository: Repository<User>,
-  flowerRepository: Repository<Flower>
+  flowerRepository: Repository<Flower>,
 ): Promise<void> {
   console.log('🌸 Iniciando seed de flores...');
 

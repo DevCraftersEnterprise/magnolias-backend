@@ -18,7 +18,6 @@ import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class BranchesService {
-
   constructor(
     private readonly createBranchUseCase: CreateBranchUseCase,
     private readonly findAllBranchesUseCase: FindAllBranchesUseCase,
@@ -27,13 +26,15 @@ export class BranchesService {
     private readonly removeBranchUseCase: RemoveBranchUseCase,
     private readonly createPhoneForBranchUseCase: CreatePhoneForBranchUseCase,
     private readonly updatePhoneForBranchUseCase: UpdatePhoneForBranchUseCase,
-  ) { }
+  ) {}
 
   async create(dto: CreateBranchDto, user: User): Promise<Branch> {
     return await this.createBranchUseCase.execute(dto, user);
   }
 
-  async findAll(filters: BranchesFilterDto,): Promise<PaginationResponse<Branch> | Branch[]> {
+  async findAll(
+    filters: BranchesFilterDto,
+  ): Promise<PaginationResponse<Branch> | Branch[]> {
     return await this.findAllBranchesUseCase.execute(filters);
   }
 
@@ -49,11 +50,18 @@ export class BranchesService {
     return await this.removeBranchUseCase.execute(dto, user);
   }
 
-  async addBranchPhoneNumbers(dto: CreatePhonesDto, user: User, branchId: string,): Promise<Phone> {
+  async addBranchPhoneNumbers(
+    dto: CreatePhonesDto,
+    user: User,
+    branchId: string,
+  ): Promise<Phone> {
     return await this.createPhoneForBranchUseCase.execute(dto, user, branchId);
   }
 
-  async updateBranchPhoneNumbers(dto: UpdatePhonesDto, user: User,): Promise<Phone> {
+  async updateBranchPhoneNumbers(
+    dto: UpdatePhonesDto,
+    user: User,
+  ): Promise<Phone> {
     return await this.updatePhoneForBranchUseCase.execute(dto, user);
   }
 }

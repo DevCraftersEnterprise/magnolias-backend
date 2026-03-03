@@ -25,4 +25,4 @@ import { UpdateFlavorUseCase } from './usecases/update-flavor.usecase';
   imports: [TypeOrmModule.forFeature([Flavor]), CommonModule, CustomJwtModule],
   exports: [TypeOrmModule, FlavorsService],
 })
-export class FlavorsModule { }
+export class FlavorsModule {}

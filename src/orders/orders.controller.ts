@@ -44,7 +44,7 @@ import { OrderStatsResponse } from './responses/order-stats.response';
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) { }
+  constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -92,7 +92,8 @@ export class OrdersController {
     name: 'branchId',
     required: false,
     type: String,
-    description: 'UUID of the branch to filter orders by (only for Admins and Super users)',
+    description:
+      'UUID of the branch to filter orders by (only for Admins and Super users)',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @ApiOkResponse({
@@ -100,14 +101,15 @@ export class OrdersController {
     type: OrderStatsResponse,
   })
   @ApiBadRequestResponse({
-    description: 'Invalid request. For example, if the user does not have an associated branch.',
+    description:
+      'Invalid request. For example, if the user does not have an associated branch.',
   })
   @ApiUnauthorizedResponse({
     description: 'Unauthorized access.',
   })
   getOrderStats(
     @CurrentUser() user: User,
-    @Query('branchId') branchId?: string
+    @Query('branchId') branchId?: string,
   ): Promise<OrderStatsResponse> {
     return this.ordersService.getStats(user, branchId);
   }

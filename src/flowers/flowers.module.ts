@@ -23,11 +23,7 @@ import { UpdateFlowerUseCase } from './usecases/update-flower.usecase';
     RemoveFlowerUseCase,
     UpdateFlowerUseCase,
   ],
-  imports: [
-    TypeOrmModule.forFeature([Flower]),
-    CommonModule,
-    CustomJwtModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Flower]), CommonModule, CustomJwtModule],
   exports: [TypeOrmModule, FlowersService],
 })
-export class FlowersModule { }
+export class FlowersModule {}
