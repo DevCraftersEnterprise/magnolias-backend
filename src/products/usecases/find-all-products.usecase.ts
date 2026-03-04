@@ -12,7 +12,7 @@ export class FindAllProductsUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
   async execute(
     productsFiltersDto: ProductsFilterDto,
@@ -27,7 +27,6 @@ export class FindAllProductsUseCase {
     const [products, total] = await this.productRepository.findAndCount({
       where: {
         ...whereConditions,
-        pictures: { isActive: true },
       },
       relations: {
         category: true,
