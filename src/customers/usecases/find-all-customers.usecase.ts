@@ -23,9 +23,11 @@ export class FindAllCustomersUseCase {
 
     let customers: Customer[];
     let total: number;
+    let applyManualPagination = false;
 
     if (phone) {
       ({ customers, total } = await this.searchByPhone(phone, whereConditions));
+      applyManualPagination = true;
     } else {
       ({ customers, total } = await this.searchWithoutPhone(
         whereConditions,
@@ -34,7 +36,7 @@ export class FindAllCustomersUseCase {
       ));
     }
 
-    return this.buildResponse(customers, total, limit, offset);
+    return this.buildResponse(customers, total, limit, offset, applyManualPagination);
   }
 
   private buildWhereConditions(
@@ -113,10 +115,11 @@ export class FindAllCustomersUseCase {
     total: number,
     limit?: number,
     offset?: number,
+    applyManualPagination: boolean = false,
   ): PaginationResponse<Customer> | Customer[] {
     // Aplicar paginación manual si es necesario
     const paginatedCustomers =
-      limit !== undefined && offset !== undefined
+      limit !== undefined && offset !== undefined && applyManualPagination
         ? customers.slice(offset, offset + limit)
         : customers;
 
