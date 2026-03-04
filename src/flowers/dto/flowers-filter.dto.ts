@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
-import { Type } from 'class-transformer';
+import { TransformBoolean } from '../../common/decorators/transform-boolean.decorator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export class FlowersFilterDto extends PaginationDto {
   @ApiProperty({
@@ -21,6 +21,6 @@ export class FlowersFilterDto extends PaginationDto {
   })
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
+  @TransformBoolean()
   isActive?: boolean;
 }
