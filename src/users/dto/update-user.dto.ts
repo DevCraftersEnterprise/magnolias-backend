@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
+import { TransformBoolean } from '../../common/decorators/transform-boolean.decorator';
 import { RegisterUserDto } from './register-user.dto';
 
 export class UpdateUserDto extends PartialType(RegisterUserDto) {
@@ -18,6 +18,6 @@ export class UpdateUserDto extends PartialType(RegisterUserDto) {
   })
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
+  @TransformBoolean()
   isActive?: boolean;
 }

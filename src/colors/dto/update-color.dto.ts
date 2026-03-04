@@ -1,7 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { CreateColorDto } from './create-color.dto';
 import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
+import { TransformBoolean } from '../../common/decorators/transform-boolean.decorator';
+import { CreateColorDto } from './create-color.dto';
 
 export class UpdateColorDto extends PartialType(CreateColorDto) {
   @ApiProperty({
@@ -18,6 +18,6 @@ export class UpdateColorDto extends PartialType(CreateColorDto) {
   })
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
+  @TransformBoolean()
   isActive?: boolean;
 }

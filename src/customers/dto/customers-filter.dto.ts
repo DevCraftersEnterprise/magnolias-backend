@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import { TransformBoolean } from '../../common/decorators/transform-boolean.decorator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export class CustomersFilterDto extends PaginationDto {
   @ApiProperty({
@@ -28,7 +28,7 @@ export class CustomersFilterDto extends PaginationDto {
     required: false,
   })
   @IsOptional()
-  @Type(() => Boolean)
+  @TransformBoolean()
   @IsBoolean({ message: 'isActive must be a boolean value' })
   isActive?: boolean;
 }
