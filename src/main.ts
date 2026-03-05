@@ -2,40 +2,63 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as bodyParser from 'body-parser';
+import helmet from 'helmet';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const logger = new Logger('MainLogger');
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.set('trust proxy', 1);
+  app.disable('x-powered-by');
+
+  app.use(helmet());
+
+  app.use(bodyParser.json({ limit: '1mb' }));
 
   app.setGlobalPrefix('api');
-  app.enableCors();
+
+  app.enableCors({
+    origin: [
+      'https://pasteleriamagnolias.mx',
+      'https://www.pasteleriamagnolias.mx',
+      'http://localhost:3000',
+    ],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      forbidUnknownValues: true,
     }),
   );
 
-  const config = new DocumentBuilder()
-    .setTitle('Magnolias API')
-    .setDescription('API documentation for the Magnolias application')
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'Authorization',
-        in: 'header',
-      },
-      'access-token',
-    )
-    .build();
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Magnolias API')
+      .setDescription('API documentation for the Magnolias application')
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'Authorization',
+          in: 'header',
+        },
+        'access-token',
+      )
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  }
 
   const PORT = process.env.PORT ?? 3000;
 
