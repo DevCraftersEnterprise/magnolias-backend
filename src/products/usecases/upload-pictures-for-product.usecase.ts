@@ -27,8 +27,8 @@ export class UploadPicturesForProductUseCase {
 
     const folder =
       process.env.NODE_ENV === 'production'
-        ? `product/pictures/${id}`
-        : `dev/product/pictures/${id}`;
+        ? `magnolias/product/pictures/${id}`
+        : `dev/magnolias/product/pictures/${id}`;
 
     const product = await this.productRepository.findOne({
       where: { id },
