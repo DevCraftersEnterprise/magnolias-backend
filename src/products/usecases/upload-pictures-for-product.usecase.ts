@@ -16,7 +16,7 @@ export class UploadPicturesForProductUseCase {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
-  ) {}
+  ) { }
 
   async execute(
     files: Express.Multer.File[],
@@ -26,9 +26,9 @@ export class UploadPicturesForProductUseCase {
     const { id } = updateProductDto;
 
     const folder =
-      process.env.NODE_ENV === 'development'
-        ? `dev/product/pictures/${id}`
-        : `product/pictures/${id}`;
+      process.env.NODE_ENV === 'production'
+        ? `product/pictures/${id}`
+        : `dev/product/pictures/${id}`;
 
     const product = await this.productRepository.findOne({
       where: { id },
