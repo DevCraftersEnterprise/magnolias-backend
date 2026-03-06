@@ -5,6 +5,8 @@ import { Product } from '../../products/entities/product.entity';
 import { ProductsService } from '../../products/products.service';
 import { User } from '../../users/entities/user.entity';
 import { UserRoles } from '../../users/enums/user-role';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export async function seedProducts(
   productsService: ProductsService,
@@ -135,7 +137,6 @@ export async function seedProducts(
       description: 'Suaves galletas danesas de mantequilla',
       categoryId: galletas!.id,
     },
-
     // Postres
     {
       name: 'Pay de Queso',
@@ -157,7 +158,6 @@ export async function seedProducts(
       description: 'Clásico postre italiano de café',
       categoryId: postres!.id,
     },
-
     // Bocadillos
     {
       name: 'Mini Sándwiches',
@@ -178,7 +178,9 @@ export async function seedProducts(
 
   let createdCount = 0;
 
-  for (const productData of products) {
+  for (let i = 0; i < products.length; i++) {
+    const productData = products[i];
+
     try {
       const existing = await productRepository.findOne({
         where: { name: productData.name },
@@ -191,16 +193,44 @@ export async function seedProducts(
         continue;
       }
 
-      await productsService.createProduct(productData, adminUser);
-      console.log(`   ✅ Producto creado: ${productData.name}`);
+      const product = await productsService.createProduct(productData, adminUser);
+
+      const imageFileName = `${String(i + 1).padStart(2, '0')}.png`;
+      const imagePath = path.join(__dirname, '../../../assets/seed-images', imageFileName);
+
+      let files: Express.Multer.File[] = [];
+
+      if (fs.existsSync(imagePath)) {
+        const buffer = fs.readFileSync(imagePath);
+
+        files = [{
+          fieldname: 'file',
+          originalname: imageFileName,
+          encoding: '7bit',
+          mimetype: 'image/png',
+          buffer,
+          size: buffer.length,
+          destination: '',
+          filename: imageFileName,
+          path: imagePath,
+          stream: null as any
+        }];
+      } else {
+        console.warn(`⚠️ Imagen no encontrada para '${productData.name}': ${imageFileName}, omitiendo imagen.`);
+        createdCount++;
+        continue;
+      }
+
+      await productsService.uploadProductPicture(files, { id: product.id }, adminUser);
+
+      console.log(`✅ Producto creado: ${productData.name}`);
+
       createdCount++;
+
     } catch (error) {
-      console.error(
-        `   ❌ Error al crear producto '${productData.name}':`,
-        error,
-      );
+      console.error(`❌ Error al crear producto '${productData.name}':`, error,);
     }
   }
 
-  console.log(`   📊 Total creados: ${createdCount}\n`);
+  console.log(`📊 Total creados: ${createdCount}\n`);
 }
