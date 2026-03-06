@@ -21,9 +21,7 @@ export async function seedProducts(
   });
 
   if (!adminUser) {
-    console.log(
-      '   ⚠️  No se encontró usuario administrador, omitiendo seed de productos',
-    );
+    console.log('⚠️ No se encontró usuario administrador, omitiendo seed de productos',);
     return;
   }
 

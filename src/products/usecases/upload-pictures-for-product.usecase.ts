@@ -4,7 +4,7 @@ import { UpdateProductDto } from '../dto/update-product.dto';
 import { User } from '../../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { uploadPictureToCloudinary } from '../../common/utils/upload-to-cloudinary';
+import { uploadMultiplePicturesToCloudinary } from '../../common/utils/upload-to-cloudinary';
 import { ProductPicture } from '../entities/product-picture.entity';
 
 @Injectable()
@@ -56,12 +56,15 @@ export class UploadPicturesForProductUseCase {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
 
-    const picturesPromises = files.map((file) => {
-      const filename = `${Date.now()}-${id}`;
-      return uploadPictureToCloudinary(file.buffer, folder, filename);
-    });
+    // Preparar archivos para subida en lotes
+    const filesToUpload = files.map((file, index) => ({
+      buffer: file.buffer,
+      folder,
+      fileName: `${Date.now()}-${index}-${id}`,
+    }));
 
-    const imageUrls = await Promise.all(picturesPromises);
+    // Subir imágenes en lotes de 3 para evitar timeouts
+    const imageUrls = await uploadMultiplePicturesToCloudinary(filesToUpload, 3);
 
     const pictures = imageUrls.map((url) =>
       this.productPictureRepository.create({
