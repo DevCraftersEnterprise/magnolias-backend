@@ -25,7 +25,7 @@ export class ProductsService {
     private readonly removeProductUseCase: RemoveProductUseCase,
     private readonly uploadPicturesForProductUseCase: UploadPicturesForProductUseCase,
     private readonly hideProductPictureUseCase: HideProductPictureUseCase,
-  ) {}
+  ) { }
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
     return await this.createProductUseCase.execute(dto, user);
@@ -45,27 +45,20 @@ export class ProductsService {
     return await this.findOneProductUseCase.favorite();
   }
 
-  async updateProduct(dto: UpdateProductDto, user: User): Promise<Product> {
-    return await this.updateProductUseCase.execute(dto, user);
+  async updateProduct(id: string, dto: UpdateProductDto, user: User): Promise<Product> {
+    return await this.updateProductUseCase.execute(id, dto, user);
   }
 
-  async updateProductFavoriteStatus(
-    dto: UpdateProductDto,
-    user: User,
-  ): Promise<Product> {
-    return await this.updateFavoriteProductStatusUseCase.execute(dto, user);
+  async updateProductFavoriteStatus(id: string, user: User,): Promise<Product> {
+    return await this.updateFavoriteProductStatusUseCase.execute(id, user);
   }
 
-  async deleteProduct(dto: UpdateProductDto, user: User): Promise<void> {
-    return await this.removeProductUseCase.execute(dto, user);
+  async deleteProduct(id: string, user: User): Promise<void> {
+    return await this.removeProductUseCase.execute(id, user);
   }
 
-  async uploadProductPicture(
-    files: Express.Multer.File[],
-    dto: UpdateProductDto,
-    user: User,
-  ): Promise<Product> {
-    return await this.uploadPicturesForProductUseCase.execute(files, dto, user);
+  async uploadProductPicture(files: Express.Multer.File[], id: string, user: User,): Promise<Product> {
+    return await this.uploadPicturesForProductUseCase.execute(files, id, user);
   }
 
   async hideProductPicture(id: string, user: User): Promise<void> {

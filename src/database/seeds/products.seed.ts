@@ -219,7 +219,7 @@ export async function seedProducts(
         continue;
       }
 
-      await productsService.uploadProductPicture(files, { id: product.id }, adminUser);
+      await productsService.uploadProductPicture(files, product.id, adminUser);
 
       console.log(`✅ Producto creado: ${productData.name}`);
 

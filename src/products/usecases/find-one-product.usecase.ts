@@ -11,7 +11,7 @@ export class FindOneProductUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
   async execute(term: string): Promise<Product> {
     const whereConditions: FindOptionsWhere<Product> = {};
@@ -21,19 +21,6 @@ export class FindOneProductUseCase {
 
     const product = await this.productRepository.findOne({
       where: whereConditions,
-    });
-
-    if (!product) {
-      this.logger.warn(`Product with term ${term} not found`);
-      throw new NotFoundException(`Product with term ${term} not found`);
-    }
-
-    return product;
-  }
-
-  async favorite(): Promise<Product> {
-    const product = await this.productRepository.findOne({
-      where: { isFavorite: true, pictures: { isActive: true } },
       relations: { pictures: true, category: true },
       select: {
         id: true,
@@ -48,7 +35,41 @@ export class FindOneProductUseCase {
           name: true,
         },
         pictures: {
+          id: true,
           imageUrl: true,
+          isActive: true
+        },
+      },
+    });
+
+    if (!product) {
+      this.logger.warn(`Product with term ${term} not found`);
+      throw new NotFoundException(`Product with term ${term} not found`);
+    }
+
+    return product;
+  }
+
+  async favorite(): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { isFavorite: true },
+      relations: { pictures: true, category: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isActive: true,
+        isFavorite: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          id: true,
+          name: true,
+        },
+        pictures: {
+          id: true,
+          imageUrl: true,
+          isActive: true
         },
       },
     });

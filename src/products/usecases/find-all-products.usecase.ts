@@ -45,7 +45,9 @@ export class FindAllProductsUseCase {
           name: true,
         },
         pictures: {
+          id: true,
           imageUrl: true,
+          isActive: true
         },
       },
       order: { createdAt: 'DESC' },
