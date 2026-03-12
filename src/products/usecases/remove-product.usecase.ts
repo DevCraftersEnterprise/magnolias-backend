@@ -7,7 +7,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { UpdateProductDto } from '../dto/update-product.dto';
 import { Product } from '../entities/product.entity';
 
 @Injectable()
@@ -17,11 +16,9 @@ export class RemoveProductUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
-  async execute(updateProductDto: UpdateProductDto, user: User): Promise<void> {
-    const { id } = updateProductDto;
-
+  async execute(id: string, user: User): Promise<void> {
     const product = await this.productRepository.findOne({ where: { id } });
 
     if (!product) {

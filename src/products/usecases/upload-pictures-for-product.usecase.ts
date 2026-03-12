@@ -1,11 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Product } from '../entities/product.entity';
-import { UpdateProductDto } from '../dto/update-product.dto';
-import { User } from '../../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { uploadMultiplePicturesToCloudinary } from '../../common/utils/upload-to-cloudinary';
+import { User } from '../../users/entities/user.entity';
 import { ProductPicture } from '../entities/product-picture.entity';
+import { Product } from '../entities/product.entity';
 
 @Injectable()
 export class UploadPicturesForProductUseCase {
@@ -18,13 +17,7 @@ export class UploadPicturesForProductUseCase {
     private readonly productPictureRepository: Repository<ProductPicture>,
   ) { }
 
-  async execute(
-    files: Express.Multer.File[],
-    updateProductDto: UpdateProductDto,
-    user: User,
-  ): Promise<Product> {
-    const { id } = updateProductDto;
-
+  async execute(files: Express.Multer.File[], id: string, user: User,): Promise<Product> {
     const folder =
       process.env.NODE_ENV === 'production'
         ? `magnolias/product/pictures/${id}`
