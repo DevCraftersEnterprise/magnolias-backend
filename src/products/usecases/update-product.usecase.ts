@@ -19,13 +19,14 @@ export class UpdateProductUseCase {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private readonly categoriesService: CategoriesService,
-  ) {}
+  ) { }
 
   async execute(
+    id: string,
     updateProductDto: UpdateProductDto,
     user: User,
   ): Promise<Product> {
-    const { id, name, categoryId } = updateProductDto;
+    const { name, categoryId } = updateProductDto;
 
     const product = await this.productRepository.findOne({ where: { id } });
 

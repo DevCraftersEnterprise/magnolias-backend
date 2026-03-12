@@ -39,7 +39,7 @@ import { ProductsService } from './products.service';
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   // Products
   @Post()
@@ -166,7 +166,7 @@ export class ProductsController {
     return this.productsService.findProductByTerm(term);
   }
 
-  @Patch()
+  @Patch(':id')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
@@ -181,13 +181,14 @@ export class ProductsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   @ApiNotFoundResponse({ description: 'Product not found.' })
   updateProduct(
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
     @CurrentUser() user: User,
   ): Promise<Product> {
-    return this.productsService.updateProduct(updateProductDto, user);
+    return this.productsService.updateProduct(id, updateProductDto, user);
   }
 
-  @Patch('favorite')
+  @Patch('favorite/:id')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
@@ -202,16 +203,16 @@ export class ProductsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   @ApiNotFoundResponse({ description: 'Product not found.' })
   updateProductFavoriteStatus(
-    @Body() updateProductDto: UpdateProductDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
   ): Promise<Product> {
     return this.productsService.updateProductFavoriteStatus(
-      updateProductDto,
+      id,
       user,
     );
   }
 
-  @Delete()
+  @Delete(':id')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
@@ -225,14 +226,14 @@ export class ProductsController {
     description: 'Product not found or already inactive.',
   })
   deleteProduct(
-    @Body() updateProductDto: UpdateProductDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
   ): Promise<void> {
-    return this.productsService.deleteProduct(updateProductDto, user);
+    return this.productsService.deleteProduct(id, user);
   }
 
   // Product Pictures
-  @Post('picture')
+  @Post('picture/:id')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.ASSISTANT])
   @UseInterceptors(FilesInterceptor('files'))
   @ApiBearerAuth('access-token')
@@ -249,13 +250,13 @@ export class ProductsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   @ApiNotFoundResponse({ description: 'Product not found.' })
   uploadProductPicture(
-    @Body() updateProductDto: UpdateProductDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     return this.productsService.uploadProductPicture(
       files,
-      updateProductDto,
+      id,
       user,
     );
   }

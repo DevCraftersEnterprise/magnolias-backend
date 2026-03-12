@@ -2,7 +2,6 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { UpdateProductDto } from '../dto/update-product.dto';
 import { Product } from '../entities/product.entity';
 
 @Injectable()
@@ -12,14 +11,9 @@ export class UpdateFavoriteProductStatusUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
-  async execute(
-    updateProductDto: UpdateProductDto,
-    user: User,
-  ): Promise<Product> {
-    const { id } = updateProductDto;
-
+  async execute(id: string, user: User,): Promise<Product> {
     const favorite = await this.productRepository.findOne({
       where: { isFavorite: true },
     });
