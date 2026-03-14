@@ -22,14 +22,19 @@ export class UpdateFavoriteProductStatusUseCase {
       where: { id },
     });
 
-    if (favorite) {
-      Object.assign(favorite, { isFavorite: false, updatedBy: user });
-      await this.productRepository.save(favorite);
-    }
-
     if (!product) {
       this.logger.warn(`Product with ID ${id} not found`);
       throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    if (!product.isActive) {
+      this.logger.warn(`Product with ID ${id} is not active`);
+      throw new NotFoundException(`Product with ID ${id} is not active`);
+    }
+
+    if (favorite) {
+      Object.assign(favorite, { isFavorite: false, updatedBy: user });
+      await this.productRepository.save(favorite);
     }
 
     this.logger.log(`Updating favorite product with ID: ${id}`);
