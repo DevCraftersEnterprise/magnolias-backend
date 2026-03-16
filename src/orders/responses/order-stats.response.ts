@@ -6,5 +6,11 @@ export class OrderStatsResponse {
     done: number;
     delivered: number;
     cancelled: number;
+    order_type_counts: {
+      personalizado: number;
+      vitrina: number;
+      evento: number;
+      domicilio: number;
+    }
   };
 }
