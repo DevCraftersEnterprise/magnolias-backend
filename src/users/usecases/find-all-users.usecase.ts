@@ -37,6 +37,8 @@ export class FindAllUsersUseCase {
         username: true,
         role: true,
         area: true,
+        phone: true,
+        specialty: true,
         isActive: true,
         branch: {
           id: true,
