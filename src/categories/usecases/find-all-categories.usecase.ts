@@ -12,7 +12,7 @@ export class FindAllCategoriesUseCase {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   async execute(
     paginationDto: PaginationDto,
@@ -20,11 +20,32 @@ export class FindAllCategoriesUseCase {
     const { limit, offset } = paginationDto;
 
     const [categories, total] = await this.categoryRepository.findAndCount({
+      relations: {
+        products: {
+          category: true,
+          pictures: true,
+        }
+      },
       select: {
         id: true,
         name: true,
         description: true,
         isActive: true,
+        products: {
+          id: true,
+          name: true,
+          description: true,
+          isActive: true,
+          isFavorite: true,
+          category: {
+            id: true,
+          },
+          pictures: {
+            id: true,
+            imageUrl: true,
+            isActive: true
+          }
+        }
       },
       take: limit,
       skip: offset,
