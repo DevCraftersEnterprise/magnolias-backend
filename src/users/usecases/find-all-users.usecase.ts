@@ -12,7 +12,7 @@ export class FindAllUsersUseCase {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async execute(
     usersFilterDto: UsersFilterDto,
@@ -37,6 +37,7 @@ export class FindAllUsersUseCase {
         username: true,
         role: true,
         area: true,
+        isActive: true,
         branch: {
           id: true,
           name: true,
