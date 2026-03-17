@@ -22,6 +22,7 @@ export class FindAllCategoriesUseCase {
     const [categories, total] = await this.categoryRepository.findAndCount({
       relations: {
         products: {
+          category: true,
           pictures: true,
         }
       },
@@ -36,6 +37,9 @@ export class FindAllCategoriesUseCase {
           description: true,
           isActive: true,
           isFavorite: true,
+          category: {
+            id: true,
+          },
           pictures: {
             id: true,
             imageUrl: true,
