@@ -16,6 +16,7 @@ import { CustomersService } from '../../customers/customers.service';
 import { ProductsService } from '../../products/products.service';
 import { OrdersService } from '../../orders/orders.service';
 import { AddressesService } from '../../addresses/addresses.service';
+import { GeocodingService } from '../../common/services/geocoding.service'
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
@@ -148,6 +149,7 @@ import { seedBreadTypes } from './bread-types.seed';
 import { seedCustomers } from './customers.seed';
 import { seedProducts } from './products.seed';
 import { seedOrders } from './orders.seed';
+import { ConfigService } from '@nestjs/config';
 
 // Cargar variables de entorno
 config();
@@ -217,10 +219,13 @@ async function runSeeds() {
       userRepository,
     );
 
-    const createBranchUseCase = new CreateBranchUseCase(branchRepository);
+    const configService = new ConfigService();
+    const geocodingService = new GeocodingService(configService);
+
+    const createBranchUseCase = new CreateBranchUseCase(branchRepository, geocodingService);
     const findAllBranchesUseCase = new FindAllBranchesUseCase(branchRepository);
     const findOneBranchUseCase = new FindOneBranchUseCase(branchRepository);
-    const updateBranchUseCase = new UpdateBranchUseCase(branchRepository);
+    const updateBranchUseCase = new UpdateBranchUseCase(branchRepository, geocodingService);
     const removeBranchUseCase = new RemoveBranchUseCase(branchRepository);
     const createPhoneForBranchUseCase = new CreatePhoneForBranchUseCase(
       branchRepository,

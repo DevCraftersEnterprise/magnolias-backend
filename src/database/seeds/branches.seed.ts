@@ -27,20 +27,20 @@ export async function seedBranches(
 
   const branches: CreateBranchDto[] = [
     {
-      name: 'Magnolias Centro',
-      address: 'Av. Juárez 123, Centro Histórico, CDMX',
+      name: 'Navarrete',
+      address: 'Blvd Juan Navarrete 261, Hermosillo, Sonora',
     },
     {
-      name: 'Magnolias Polanco',
-      address: 'Calle Presidente Masaryk 456, Polanco, CDMX',
+      name: 'Morelos',
+      address: 'Av. Morelos 314, Ciudad Obregón, Sonora',
     },
     {
-      name: 'Magnolias Coyoacán',
-      address: 'Av. Miguel Ángel de Quevedo 789, Coyoacán, CDMX',
+      name: 'Cantabria',
+      address: 'Blvd. Luis Donaldo Colosio Murrieta 80312, Hermosillo, Sonora',
     },
     {
-      name: 'Magnolias Santa Fe',
-      address: 'Vasco de Quiroga 3800, Santa Fe, CDMX',
+      name: 'Pitic',
+      address: 'Av. León Guzmán 20, Hermosillo, Sonora',
     },
   ];
 
