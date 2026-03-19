@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { And, Equal, ILike, Not, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UsersFilterDto } from '../dto/users-filter.dto';
 import { PaginationResponse } from '../../common/responses/pagination.response';
+import { UserRoles } from '../enums/user-role';
 
 @Injectable()
 export class FindAllUsersUseCase {
@@ -12,19 +13,24 @@ export class FindAllUsersUseCase {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async execute(
-    usersFilterDto: UsersFilterDto,
+    usersFilterDto: UsersFilterDto, user: User
   ): Promise<PaginationResponse<User> | User[]> {
     const { name, lastname, username, role, limit, offset } = usersFilterDto;
 
     const [users, total] = await this.userRepository.findAndCount({
       where: {
+        id: Not(user.id),
         name: name ? ILike(`%${name}%`) : undefined,
         lastname: lastname ? ILike(`%${lastname}%`) : undefined,
         username: username ? ILike(`%${username}%`) : undefined,
-        role: role || undefined,
+        role: user.role === UserRoles.SUPER
+          ? role ?? undefined
+          : role
+            ? And(Not(UserRoles.SUPER), Equal(role))
+            : Not(UserRoles.SUPER)
       },
       relations: {
         branch: true,

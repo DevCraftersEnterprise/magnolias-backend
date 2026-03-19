@@ -12,7 +12,7 @@ export class FindAllCustomersUseCase {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-  ) {}
+  ) { }
 
   async execute(
     customersFilterDto: CustomersFilterDto,
@@ -66,7 +66,7 @@ export class FindAllCustomersUseCase {
     const allCustomers = await this.customerRepository.find({
       where: whereConditions,
       relations: { address: true },
-      order: { fullName: 'DESC' },
+      order: { updatedAt: 'DESC', createdAt: 'DESC', fullName: 'ASC' },
     });
 
     const filteredCustomers = allCustomers.filter(
@@ -110,7 +110,7 @@ export class FindAllCustomersUseCase {
       },
       take: limit,
       skip: offset,
-      order: { fullName: 'DESC' },
+      order: { updatedAt: 'DESC', createdAt: 'DESC', fullName: 'ASC' },
     });
 
     return { customers, total };

@@ -21,16 +21,16 @@ export class UsersService {
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly removeUserUseCase: RemoveUserUseCase,
     private readonly resetPasswordForUserUseCase: ResetPasswordForUserUseCase,
-  ) {}
+  ) { }
 
   async registerUser(dto: RegisterUserDto): Promise<Partial<User>> {
     return await this.registerUserUseCase.execute(dto);
   }
 
   async findUsers(
-    filters: UsersFilterDto,
+    filters: UsersFilterDto, user: User
   ): Promise<PaginationResponse<User> | User[]> {
-    return await this.findAllUsersUseCase.execute(filters);
+    return await this.findAllUsersUseCase.execute(filters, user);
   }
 
   async findUserByTerm(term: string): Promise<User> {
