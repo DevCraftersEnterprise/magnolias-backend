@@ -19,7 +19,7 @@ export class UpdateProductUseCase {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private readonly categoriesService: CategoriesService,
-  ) { }
+  ) {}
 
   async execute(
     id: string,
@@ -30,7 +30,7 @@ export class UpdateProductUseCase {
 
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: { category: true }
+      relations: { category: true },
     });
 
     if (!product) {

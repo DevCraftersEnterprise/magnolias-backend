@@ -12,7 +12,7 @@ export class FindAllProductsUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   async execute(
     productsFiltersDto: ProductsFilterDto,
@@ -47,7 +47,7 @@ export class FindAllProductsUseCase {
         pictures: {
           id: true,
           imageUrl: true,
-          isActive: true
+          isActive: true,
         },
       },
       order: { createdAt: 'DESC' },

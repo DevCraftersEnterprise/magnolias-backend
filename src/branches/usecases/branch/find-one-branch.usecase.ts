@@ -11,7 +11,7 @@ export class FindOneBranchUseCase {
   constructor(
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-  ) { }
+  ) {}
 
   async execute(term: string): Promise<Branch> {
     const whereConditions: FindOptionsWhere<Branch>[] = [];

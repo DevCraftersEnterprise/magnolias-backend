@@ -14,11 +14,10 @@ export class CreateBranchUseCase {
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
     private readonly geocodingService: GeocodingService,
-  ) { }
+  ) {}
 
   async execute(createBranchDto: CreateBranchDto, user: User): Promise<Branch> {
     this.logger.log(`Creating branch by user: ${user.id}`);
-
 
     const newBranch = this.branchRepository.create({
       ...createBranchDto,
@@ -26,7 +25,9 @@ export class CreateBranchUseCase {
       updatedBy: user,
     });
 
-    const result = await this.geocodingService.geocodeAddress(createBranchDto.address);
+    const result = await this.geocodingService.geocodeAddress(
+      createBranchDto.address,
+    );
 
     if (result) {
       newBranch.latitude = result.latitude;

@@ -39,7 +39,7 @@ import { ProductsService } from './products.service';
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) {}
 
   // Products
   @Post()
@@ -206,10 +206,7 @@ export class ProductsController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
   ): Promise<Product> {
-    return this.productsService.updateProductFavoriteStatus(
-      id,
-      user,
-    );
+    return this.productsService.updateProductFavoriteStatus(id, user);
   }
 
   @Delete(':id')
@@ -254,11 +251,7 @@ export class ProductsController {
     @CurrentUser() user: User,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.productsService.uploadProductPicture(
-      files,
-      id,
-      user,
-    );
+    return this.productsService.uploadProductPicture(files, id, user);
   }
 
   @Delete('picture/:id')

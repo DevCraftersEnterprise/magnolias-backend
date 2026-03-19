@@ -16,7 +16,7 @@ export class RemoveProductUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   async execute(id: string, user: User): Promise<void> {
     const product = await this.productRepository.findOne({ where: { id } });

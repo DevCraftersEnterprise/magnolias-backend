@@ -16,7 +16,7 @@ import { CustomersService } from '../../customers/customers.service';
 import { ProductsService } from '../../products/products.service';
 import { OrdersService } from '../../orders/orders.service';
 import { AddressesService } from '../../addresses/addresses.service';
-import { GeocodingService } from '../../common/services/geocoding.service'
+import { GeocodingService } from '../../common/services/geocoding.service';
 // Entities
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
@@ -222,10 +222,16 @@ async function runSeeds() {
     const configService = new ConfigService();
     const geocodingService = new GeocodingService(configService);
 
-    const createBranchUseCase = new CreateBranchUseCase(branchRepository, geocodingService);
+    const createBranchUseCase = new CreateBranchUseCase(
+      branchRepository,
+      geocodingService,
+    );
     const findAllBranchesUseCase = new FindAllBranchesUseCase(branchRepository);
     const findOneBranchUseCase = new FindOneBranchUseCase(branchRepository);
-    const updateBranchUseCase = new UpdateBranchUseCase(branchRepository, geocodingService);
+    const updateBranchUseCase = new UpdateBranchUseCase(
+      branchRepository,
+      geocodingService,
+    );
     const removeBranchUseCase = new RemoveBranchUseCase(branchRepository);
     const createPhoneForBranchUseCase = new CreatePhoneForBranchUseCase(
       branchRepository,

@@ -25,7 +25,7 @@ export class ProductsService {
     private readonly removeProductUseCase: RemoveProductUseCase,
     private readonly uploadPicturesForProductUseCase: UploadPicturesForProductUseCase,
     private readonly hideProductPictureUseCase: HideProductPictureUseCase,
-  ) { }
+  ) {}
 
   async createProduct(dto: CreateProductDto, user: User): Promise<Product> {
     return await this.createProductUseCase.execute(dto, user);
@@ -45,11 +45,15 @@ export class ProductsService {
     return await this.findOneProductUseCase.favorite();
   }
 
-  async updateProduct(id: string, dto: UpdateProductDto, user: User): Promise<Product> {
+  async updateProduct(
+    id: string,
+    dto: UpdateProductDto,
+    user: User,
+  ): Promise<Product> {
     return await this.updateProductUseCase.execute(id, dto, user);
   }
 
-  async updateProductFavoriteStatus(id: string, user: User,): Promise<Product> {
+  async updateProductFavoriteStatus(id: string, user: User): Promise<Product> {
     return await this.updateFavoriteProductStatusUseCase.execute(id, user);
   }
 
@@ -57,7 +61,11 @@ export class ProductsService {
     return await this.removeProductUseCase.execute(id, user);
   }
 
-  async uploadProductPicture(files: Express.Multer.File[], id: string, user: User,): Promise<Product> {
+  async uploadProductPicture(
+    files: Express.Multer.File[],
+    id: string,
+    user: User,
+  ): Promise<Product> {
     return await this.uploadPicturesForProductUseCase.execute(files, id, user);
   }
 
