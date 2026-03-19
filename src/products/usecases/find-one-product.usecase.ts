@@ -11,7 +11,7 @@ export class FindOneProductUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   async execute(term: string): Promise<Product> {
     const whereConditions: FindOptionsWhere<Product> = {};
@@ -37,7 +37,7 @@ export class FindOneProductUseCase {
         pictures: {
           id: true,
           imageUrl: true,
-          isActive: true
+          isActive: true,
         },
       },
     });
@@ -69,7 +69,7 @@ export class FindOneProductUseCase {
         pictures: {
           id: true,
           imageUrl: true,
-          isActive: true
+          isActive: true,
         },
       },
     });

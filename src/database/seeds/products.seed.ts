@@ -21,7 +21,9 @@ export async function seedProducts(
   });
 
   if (!adminUser) {
-    console.log('⚠️ No se encontró usuario administrador, omitiendo seed de productos',);
+    console.log(
+      '⚠️ No se encontró usuario administrador, omitiendo seed de productos',
+    );
     return;
   }
 
@@ -191,30 +193,41 @@ export async function seedProducts(
         continue;
       }
 
-      const product = await productsService.createProduct(productData, adminUser);
+      const product = await productsService.createProduct(
+        productData,
+        adminUser,
+      );
 
       const imageFileName = `${String(i + 1).padStart(2, '0')}.png`;
-      const imagePath = path.join(__dirname, '../../../assets/seed-images', imageFileName);
+      const imagePath = path.join(
+        __dirname,
+        '../../../assets/seed-images',
+        imageFileName,
+      );
 
       let files: Express.Multer.File[] = [];
 
       if (fs.existsSync(imagePath)) {
         const buffer = fs.readFileSync(imagePath);
 
-        files = [{
-          fieldname: 'file',
-          originalname: imageFileName,
-          encoding: '7bit',
-          mimetype: 'image/png',
-          buffer,
-          size: buffer.length,
-          destination: '',
-          filename: imageFileName,
-          path: imagePath,
-          stream: null as any
-        }];
+        files = [
+          {
+            fieldname: 'file',
+            originalname: imageFileName,
+            encoding: '7bit',
+            mimetype: 'image/png',
+            buffer,
+            size: buffer.length,
+            destination: '',
+            filename: imageFileName,
+            path: imagePath,
+            stream: null as any,
+          },
+        ];
       } else {
-        console.warn(`⚠️ Imagen no encontrada para '${productData.name}': ${imageFileName}, omitiendo imagen.`);
+        console.warn(
+          `⚠️ Imagen no encontrada para '${productData.name}': ${imageFileName}, omitiendo imagen.`,
+        );
         createdCount++;
         continue;
       }
@@ -224,9 +237,8 @@ export async function seedProducts(
       console.log(`✅ Producto creado: ${productData.name}`);
 
       createdCount++;
-
     } catch (error) {
-      console.error(`❌ Error al crear producto '${productData.name}':`, error,);
+      console.error(`❌ Error al crear producto '${productData.name}':`, error);
     }
   }
 

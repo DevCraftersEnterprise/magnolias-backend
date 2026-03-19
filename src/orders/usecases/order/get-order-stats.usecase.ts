@@ -15,7 +15,7 @@ export class GetOrderStatsUseCase {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) { }
+  ) {}
 
   async execute(user: User, branchId?: string): Promise<OrderStatsResponse> {
     this.logger.log(
@@ -48,17 +48,32 @@ export class GetOrderStatsUseCase {
     const stats: OrderStatsResponse = {
       total,
       data: {
-        created: orders.filter((order) => order.status === OrderStatus.CREATED).length,
-        in_process: orders.filter((order) => order.status === OrderStatus.IN_PROCESS).length,
-        done: orders.filter((order) => order.status === OrderStatus.DONE).length,
-        delivered: orders.filter((order) => order.status === OrderStatus.DELIVERED).length,
-        cancelled: orders.filter((order) => order.status === OrderStatus.CANCELED,).length,
+        created: orders.filter((order) => order.status === OrderStatus.CREATED)
+          .length,
+        in_process: orders.filter(
+          (order) => order.status === OrderStatus.IN_PROCESS,
+        ).length,
+        done: orders.filter((order) => order.status === OrderStatus.DONE)
+          .length,
+        delivered: orders.filter(
+          (order) => order.status === OrderStatus.DELIVERED,
+        ).length,
+        cancelled: orders.filter(
+          (order) => order.status === OrderStatus.CANCELED,
+        ).length,
         order_type_counts: {
-          domicilio: orders.filter(order => order.orderType === OrderType.DOMICILIO).length,
-          evento: orders.filter(order => order.orderType === OrderType.EVENTO).length,
-          personalizado: orders.filter(order => order.orderType === OrderType.PERSONALIZADO).length,
-          vitrina: orders.filter(order => order.orderType === OrderType.VITRINA).length,
-        }
+          domicilio: orders.filter(
+            (order) => order.orderType === OrderType.DOMICILIO,
+          ).length,
+          evento: orders.filter((order) => order.orderType === OrderType.EVENTO)
+            .length,
+          personalizado: orders.filter(
+            (order) => order.orderType === OrderType.PERSONALIZADO,
+          ).length,
+          vitrina: orders.filter(
+            (order) => order.orderType === OrderType.VITRINA,
+          ).length,
+        },
       },
     };
 

@@ -12,7 +12,7 @@ export class FindAllCategoriesUseCase {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) { }
+  ) {}
 
   async execute(
     paginationDto: PaginationDto,
@@ -24,7 +24,7 @@ export class FindAllCategoriesUseCase {
         products: {
           category: true,
           pictures: true,
-        }
+        },
       },
       select: {
         id: true,
@@ -43,9 +43,9 @@ export class FindAllCategoriesUseCase {
           pictures: {
             id: true,
             imageUrl: true,
-            isActive: true
-          }
-        }
+            isActive: true,
+          },
+        },
       },
       take: limit,
       skip: offset,

@@ -14,7 +14,7 @@ export class UpdateBranchUseCase {
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
     private readonly geocodingService: GeocodingService,
-  ) { }
+  ) {}
 
   async execute(updateBranchDto: UpdateBranchDto, user: User): Promise<Branch> {
     const { id } = updateBranchDto;
@@ -23,14 +23,15 @@ export class UpdateBranchUseCase {
 
     const branch = await this.branchRepository.findOne({ where: { id } });
 
-
     if (!branch) {
       this.logger.warn(`Branch with ID ${id} not found for update`);
       throw new NotFoundException(`Branch with ID ${id} not found`);
     }
 
     if (updateBranchDto.address) {
-      const result = await this.geocodingService.geocodeAddress(updateBranchDto.address);
+      const result = await this.geocodingService.geocodeAddress(
+        updateBranchDto.address,
+      );
       if (result) {
         branch.latitude = result?.latitude;
         branch.longitude = result?.longitude;

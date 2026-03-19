@@ -11,6 +11,6 @@ export class OrderStatsResponse {
       vitrina: number;
       evento: number;
       domicilio: number;
-    }
+    };
   };
 }

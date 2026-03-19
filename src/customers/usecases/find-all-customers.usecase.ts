@@ -12,7 +12,7 @@ export class FindAllCustomersUseCase {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
-  ) { }
+  ) {}
 
   async execute(
     customersFilterDto: CustomersFilterDto,
@@ -36,7 +36,13 @@ export class FindAllCustomersUseCase {
       ));
     }
 
-    return this.buildResponse(customers, total, limit, offset, applyManualPagination);
+    return this.buildResponse(
+      customers,
+      total,
+      limit,
+      offset,
+      applyManualPagination,
+    );
   }
 
   private buildWhereConditions(

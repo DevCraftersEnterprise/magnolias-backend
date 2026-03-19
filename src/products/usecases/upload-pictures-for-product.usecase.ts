@@ -15,9 +15,13 @@ export class UploadPicturesForProductUseCase {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
-  ) { }
+  ) {}
 
-  async execute(files: Express.Multer.File[], id: string, user: User,): Promise<Product> {
+  async execute(
+    files: Express.Multer.File[],
+    id: string,
+    user: User,
+  ): Promise<Product> {
     const folder =
       process.env.NODE_ENV === 'production'
         ? `magnolias/product/pictures/${id}`
@@ -57,7 +61,10 @@ export class UploadPicturesForProductUseCase {
     }));
 
     // Subir imágenes en lotes de 3 para evitar timeouts
-    const imageUrls = await uploadMultiplePicturesToCloudinary(filesToUpload, 3);
+    const imageUrls = await uploadMultiplePicturesToCloudinary(
+      filesToUpload,
+      3,
+    );
 
     const pictures = imageUrls.map((url) =>
       this.productPictureRepository.create({

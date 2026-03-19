@@ -12,4 +12,4 @@ import { GeocodingService } from './services/geocoding.service';
   providers: [GeocodingService],
   exports: [GeocodingService],
 })
-export class CommonModule { }
+export class CommonModule {}

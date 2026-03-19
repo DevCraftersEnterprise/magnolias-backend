@@ -67,8 +67,14 @@ export const uploadPictureToCloudinary = (
           },
           (error, result) => {
             if (error) {
-              if (attemptsLeft > 0 && (error.message.includes('timeout') || error.message.includes('ESOCKETTIMEDOUT'))) {
-                console.log(`Upload failed, retrying... (${attemptsLeft} attempts left)`);
+              if (
+                attemptsLeft > 0 &&
+                (error.message.includes('timeout') ||
+                  error.message.includes('ESOCKETTIMEDOUT'))
+              ) {
+                console.log(
+                  `Upload failed, retrying... (${attemptsLeft} attempts left)`,
+                );
                 setTimeout(() => attemptUpload(attemptsLeft - 1), 1000);
               } else {
                 return reject(new Error(error.message || 'Upload failed'));

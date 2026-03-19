@@ -24,4 +24,4 @@ import { ThrottlerModule } from '@nestjs/throttler';
   ],
   exports: [ThrottlerModule],
 })
-export class CustomThrottlerModule { }
+export class CustomThrottlerModule {}
