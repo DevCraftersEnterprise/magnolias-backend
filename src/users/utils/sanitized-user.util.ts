@@ -7,6 +7,8 @@ export const sanitizeUser = (user: Partial<User>): Partial<User> => {
     lastname: user.lastname,
     username: user.username,
     isActive: user.isActive,
+    branch: user.branch,
+    branches: user.branches,
     role: user.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
