@@ -37,6 +37,22 @@ export class Branch {
   address: string;
 
   @ApiProperty({
+    description: 'Latitude coordinate of the branch location',
+    example: 21.8853,
+    required: false,
+  })
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude: number;
+
+  @ApiProperty({
+    description: 'Longitude coordinate of the branch location',
+    example: -102.2916,
+    required: false,
+  })
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude: number;
+
+  @ApiProperty({
     description: 'Indicates whether the branch is active',
     example: true,
     default: true,
