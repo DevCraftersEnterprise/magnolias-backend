@@ -12,7 +12,7 @@ export class FindAllCategoriesUseCase {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   async execute(
     paginationDto: PaginationDto,
@@ -49,7 +49,7 @@ export class FindAllCategoriesUseCase {
       },
       take: limit,
       skip: offset,
-      order: { name: 'ASC' },
+      order: { name: 'ASC', products: { isFavorite: 'DESC', name: 'ASC' } },
     });
 
     if (limit !== undefined && offset !== undefined) {
