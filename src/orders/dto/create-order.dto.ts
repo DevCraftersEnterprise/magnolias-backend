@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type, plainToInstance } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -131,6 +131,12 @@ export class CreateOrderDto {
     isArray: true,
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try { return JSON.parse(value); } catch { return value; }
+    }
+    return value;
+  })
   @IsArray({ message: 'Event services must be an array' })
   @IsEnum(EventServiceType, {
     each: true,
@@ -164,6 +170,11 @@ export class CreateOrderDto {
     default: false,
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   @IsBoolean({ message: 'hasPhotoReference must be a boolean' })
   hasPhotoReference?: boolean;
 
@@ -203,6 +214,11 @@ export class CreateOrderDto {
     default: false,
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   @IsBoolean({ message: 'requiresInvoice must be a boolean' })
   requiresInvoice?: boolean;
 
@@ -212,6 +228,11 @@ export class CreateOrderDto {
     default: false,
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   @IsBoolean({ message: 'isCustomerPickup must be a boolean' })
   isCustomerPickup?: boolean;
 
@@ -233,6 +254,17 @@ export class CreateOrderDto {
       o.orderType,
     ),
   )
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null
+          ? plainToInstance(CreateOrderDeliveryAddressDto, parsed)
+          : value;
+      } catch { return value; }
+    }
+    return value;
+  })
   @ValidateNested()
   @Type(() => CreateOrderDeliveryAddressDto)
   @IsOptional()
@@ -241,6 +273,17 @@ export class CreateOrderDto {
   @ApiProperty({
     description: 'Details of the order',
     type: [CreateOrderDetailDto],
+  })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed)
+          ? parsed.map(item => plainToInstance(CreateOrderDetailDto, item))
+          : value;
+      } catch { return value; }
+    }
+    return value;
   })
   @IsArray({ message: 'Details must be an array' })
   @ValidateNested({ each: true })
@@ -253,6 +296,17 @@ export class CreateOrderDto {
     type: [AddFlowerToOrderDto],
   })
   @ValidateIf((o) => o.orderType === OrderType.FLOR)
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed)
+          ? parsed.map(item => plainToInstance(AddFlowerToOrderDto, item))
+          : value;
+      } catch { return value; }
+    }
+    return value;
+  })
   @IsArray({ message: 'Flowers must be an array' })
   @ValidateNested({ each: true })
   @Type(() => AddFlowerToOrderDto)
