@@ -42,7 +42,7 @@ export class CreateOrderUseCase {
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
-  ) {}
+  ) { }
 
   async execute(
     createOrderDto: CreateOrderDto,
@@ -56,6 +56,7 @@ export class CreateOrderUseCase {
       details,
       deliveryAddress,
       flowers,
+      isCustomerPickup,
       ...orderDto
     } = createOrderDto;
 
@@ -69,6 +70,7 @@ export class CreateOrderUseCase {
       ...orderDto,
       orderType,
       orderCode,
+      isCustomerPickup,
       customer,
       branch,
       createdBy: user,
@@ -78,6 +80,7 @@ export class CreateOrderUseCase {
     const savedOrder = await this.orderRepository.save(order);
 
     if (
+      !isCustomerPickup &&
       deliveryAddress &&
       (orderType === OrderType.DOMICILIO ||
         orderType === OrderType.FLOR ||
