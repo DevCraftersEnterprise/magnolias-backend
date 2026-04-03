@@ -232,6 +232,14 @@ export class Order {
   requiresInvoice: boolean;
 
   @ApiProperty({
+    description: 'Indicates if the order is going to be collected by the customer',
+    example: false,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  isCustomerPickup: boolean;
+
+  @ApiProperty({
     description: 'Date of settlement/final payment',
     example: '2026-02-20T00:00:00Z',
     required: false,

@@ -206,6 +206,15 @@ export class CreateOrderDto {
   @IsBoolean({ message: 'requiresInvoice must be a boolean' })
   requiresInvoice?: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Indicates if the order is going to be collected by the customer',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'isCustomerPickup must be a boolean' })
+  isCustomerPickup?: boolean;
+
   @ApiProperty({
     description: 'Identifier of the branch where the order is placed',
     example: 'a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6',
