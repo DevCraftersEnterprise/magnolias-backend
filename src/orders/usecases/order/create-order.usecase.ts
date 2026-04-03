@@ -128,8 +128,8 @@ export class CreateOrderUseCase {
 
     if (lastOrder?.orderCode) {
       const parts = lastOrder.orderCode.split('-');
-      if (parts.length === 3) {
-        const lastSequence = parseInt(parts[2], 10);
+      if (parts.length === 4) {
+        const lastSequence = parseInt(parts[3], 10);
         if (!Number.isNaN(lastSequence)) sequence = lastSequence + 1;
       }
     }
