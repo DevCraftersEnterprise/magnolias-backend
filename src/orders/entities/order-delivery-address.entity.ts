@@ -1,4 +1,3 @@
-// src/orders/entities/order-delivery-address.entity.ts
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,

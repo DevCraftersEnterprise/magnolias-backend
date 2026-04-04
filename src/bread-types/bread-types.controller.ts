@@ -22,7 +22,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { UserRoles } from 'src/users/enums/user-role';
+import { UserRoles } from '../users/enums/user-role';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/curret-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -36,7 +36,7 @@ import { BreadType } from './entities/bread-type.entity';
 @ApiTags('Bread Types')
 @Controller('bread-types')
 export class BreadTypesController {
-  constructor(private readonly breadTypesService: BreadTypesService) {}
+  constructor(private readonly breadTypesService: BreadTypesService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
