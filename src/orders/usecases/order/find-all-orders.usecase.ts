@@ -12,7 +12,7 @@ export class FindAllOrdersUseCase {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) {}
+  ) { }
 
   async execute(
     ordersFilterDto: OrdersFilterDto,
@@ -43,6 +43,7 @@ export class FindAllOrdersUseCase {
         id: true,
         orderCode: true,
         deliveryDate: true,
+        deliveryTime: true,
         status: true,
         totalAmount: true,
         advancePayment: true,
