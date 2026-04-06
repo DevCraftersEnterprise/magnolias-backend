@@ -23,7 +23,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
@@ -36,7 +36,7 @@ import { Category } from './entities/category.entity';
 @ApiTags('Categories')
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(private readonly categoriesService: CategoriesService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

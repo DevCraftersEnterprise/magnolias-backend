@@ -21,7 +21,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';

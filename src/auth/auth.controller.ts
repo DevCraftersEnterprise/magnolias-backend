@@ -11,7 +11,7 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from '../auth/auth.service';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginUserDto } from '../auth/dto/login-user.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,7 +27,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly loginThrottleGuard: LoginThrottleGuard,
-  ) {}
+  ) { }
 
   @Post('login')
   @UseGuards(LoginThrottleGuard)

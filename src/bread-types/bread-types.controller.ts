@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRoles } from '../users/enums/user-role';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
