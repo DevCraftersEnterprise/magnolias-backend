@@ -23,7 +23,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
@@ -36,7 +36,7 @@ import { FrostingsFilterDto } from './dto/frostings-filter.dto';
 @ApiTags('Frostings')
 @Controller('frostings')
 export class FrostingsController {
-  constructor(private readonly frostingsService: FrostingsService) {}
+  constructor(private readonly frostingsService: FrostingsService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

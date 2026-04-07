@@ -42,7 +42,7 @@ export class UpdateOrderUseCase {
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
-  ) {}
+  ) { }
 
   async execute(updateOrderDto: UpdateOrderDto, user: User): Promise<Order> {
     const {
@@ -343,7 +343,14 @@ export class UpdateOrderUseCase {
       if (existingDetail) {
         existingDetail.quantity = detailDto.quantity;
         existingDetail.price = detailDto.price;
+        existingDetail.breadType = { id: detailDto.breadTypeId } as any;
+        existingDetail.filling = { id: detailDto.fillingId } as any;
+        existingDetail.flavor = { id: detailDto.flavorId } as any;
+        existingDetail.frosting = { id: detailDto.frostingId } as any;
+        existingDetail.style = { id: detailDto.styleId } as any;
+        existingDetail.color = { id: detailDto.colorId } as any;
         existingDetail.updatedBy = user;
+
         detailsToUpdate.push(existingDetail);
       } else {
         const newDetail = this.orderDetailRepository.create({

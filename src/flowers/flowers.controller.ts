@@ -26,7 +26,7 @@ import {
 import { Auth } from '../auth/decorators/auth.decorator';
 import { UserRoles } from '../users/enums/user-role';
 import { Flower } from './entities/flower.entity';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { FlowersFilterDto } from './dto/flowers-filter.dto';
@@ -34,7 +34,7 @@ import { FlowersFilterDto } from './dto/flowers-filter.dto';
 @ApiTags('Flowers')
 @Controller('flowers')
 export class FlowersController {
-  constructor(private readonly flowersService: FlowersService) {}
+  constructor(private readonly flowersService: FlowersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

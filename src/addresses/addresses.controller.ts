@@ -22,7 +22,7 @@ import { CreateCommonAddressDto } from '../addresses/dto/create-common-address.d
 import { UpdateCommonAddressDto } from '../addresses/dto/update-common-address.dto';
 import { CommonAddress } from '../addresses/entities/common-address.entity';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
 
@@ -30,7 +30,7 @@ import { UserRoles } from '../users/enums/user-role';
 @ApiBearerAuth('access-token')
 @Controller('addresses')
 export class AddressesController {
-  constructor(private readonly addressesService: AddressesService) {}
+  constructor(private readonly addressesService: AddressesService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])

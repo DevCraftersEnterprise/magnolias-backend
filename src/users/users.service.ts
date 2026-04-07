@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ResetPasswordDto } from 'src/auth/dto/reset-password.dto';
+import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BranchesModule } from 'src/branches/branches.module';
+import { BranchesModule } from '../branches/branches.module';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { CommonModule } from '../common/common.module';
 import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
@@ -37,4 +37,4 @@ import { ResetPasswordForUserUseCase } from './usecases/reset-password-for-user.
   ],
   exports: [UsersService, TypeOrmModule],
 })
-export class UsersModule {}
+export class UsersModule { }
