@@ -52,7 +52,8 @@ export class UpdateOrderUseCase {
       deliveryAddress,
       details,
       flowers,
-      payment = 0,
+      payment,
+      setupServiceCost,
     } = updateOrderDto;
 
     this.logger.log(`Starting update process for order with ID: ${id}`);
@@ -106,14 +107,21 @@ export class UpdateOrderUseCase {
       await this.handleOrderFlowers(flowers, order, user);
     }
 
+    if (setupServiceCost) {
+      order.setupServiceCost = setupServiceCost;
+    }
+
     order.dessertsTotal = totalAmount;
-    order.paidAmount = parseCurrency(order.paidAmount) + payment;
     order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
     order.remainingBalance = parseCurrency(order.totalAmount) - parseCurrency(order.paidAmount);
 
+    if (payment) {
+      order.paidAmount = parseCurrency(order.paidAmount) + payment;
+    }
+
     if (order.remainingBalance === 0) {
       order.settlementDate = new Date();
-      order.settlementTotal = payment;
+      order.settlementTotal = payment!;
     }
 
     order.updatedBy = user;
