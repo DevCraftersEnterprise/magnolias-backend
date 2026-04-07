@@ -2,6 +2,7 @@ import { ConflictException, Injectable, Logger } from "@nestjs/common";
 import { BaseCatalogEntity } from "../entities/base-catalog.entity";
 import { Repository } from "typeorm";
 import { User } from "../../users/entities/user.entity";
+import { BaseCreateCatalogDto } from "../dto/base-create-catalog.dto";
 
 @Injectable()
 export abstract class BaseCreateCatalogUseEntity<T extends BaseCatalogEntity> {
@@ -10,7 +11,7 @@ export abstract class BaseCreateCatalogUseEntity<T extends BaseCatalogEntity> {
 
     constructor(protected readonly repository: Repository<T>) { }
 
-    async execute(dto: { name: string; description?: string }, user: User): Promise<T> {
+    async execute(dto: BaseCreateCatalogDto, user: User): Promise<T> {
         const { name } = dto;
 
         const duplicate = await this.repository.findOne({
