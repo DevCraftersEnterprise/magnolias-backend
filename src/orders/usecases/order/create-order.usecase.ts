@@ -344,18 +344,15 @@ export class CreateOrderUseCase {
 
     await this.orderDetailRepository.save(orderDatails);
 
-    if (order.orderType !== OrderType.VITRINA) {
-      if (order.dessertsTotal)
-        totalAmount += parseCurrency(order.dessertsTotal);
-      if (order.setupServiceCost)
-        totalAmount += parseCurrency(order.setupServiceCost);
+    order.dessertsTotal = totalAmount;
+
+    if (order.orderType !== OrderType.VITRINA && order.setupServiceCost) {
+      totalAmount += parseCurrency(order.setupServiceCost);
     }
 
     const remainingBalance = totalAmount - parseCurrency(order.advancePayment);
 
-    if (order.orderType === OrderType.VITRINA) {
-      order.paidAmount = remainingBalance;
-    }
+    order.paidAmount = remainingBalance;
 
     Object.assign(order, { totalAmount, remainingBalance, updatedBy: user });
 
