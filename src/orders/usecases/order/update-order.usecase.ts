@@ -106,12 +106,19 @@ export class UpdateOrderUseCase {
       await this.handleOrderFlowers(flowers, order, user);
     }
 
-    const remainingBalance = totalAmount - order.advancePayment - payment;
-    order.totalAmount = totalAmount;
-    order.remainingBalance = remainingBalance;
+    order.dessertsTotal = totalAmount;
+    order.remainingBalance = totalAmount - order.advancePayment - payment;
+    order.advancePayment += payment;
+    order.totalAmount = totalAmount + order.setupServiceCost;
 
-    if (order.orderType === OrderType.VITRINA)
-      order.paidAmount = remainingBalance;
+    if (order.remainingBalance === 0) {
+      order.settlementDate = new Date();
+      order.settlementTotal = payment;
+    }
+
+    if (order.orderType === OrderType.VITRINA) {
+      order.paidAmount = order.remainingBalance;
+    }
 
     order.updatedBy = user;
 
@@ -343,12 +350,12 @@ export class UpdateOrderUseCase {
       if (existingDetail) {
         existingDetail.quantity = detailDto.quantity;
         existingDetail.price = detailDto.price;
-        existingDetail.breadType = { id: detailDto.breadTypeId } as any;
-        existingDetail.filling = { id: detailDto.fillingId } as any;
-        existingDetail.flavor = { id: detailDto.flavorId } as any;
-        existingDetail.frosting = { id: detailDto.frostingId } as any;
-        existingDetail.style = { id: detailDto.styleId } as any;
-        existingDetail.color = { id: detailDto.colorId } as any;
+        existingDetail.breadType = { id: detailDto.breadTypeId ?? existingDetail.breadType?.id } as any;
+        existingDetail.filling = { id: detailDto.fillingId ?? existingDetail.filling?.id } as any;
+        existingDetail.flavor = { id: detailDto.flavorId ?? existingDetail.flavor?.id } as any;
+        existingDetail.frosting = { id: detailDto.frostingId ?? existingDetail.frosting?.id } as any;
+        existingDetail.style = { id: detailDto.styleId ?? existingDetail.style?.id } as any;
+        existingDetail.color = { id: detailDto.colorId ?? existingDetail.color?.id } as any;
         existingDetail.updatedBy = user;
 
         detailsToUpdate.push(existingDetail);
@@ -443,10 +450,8 @@ export class UpdateOrderUseCase {
       );
     }
 
-    if (order.orderType === OrderType.EVENTO) {
-      total +=
-        parseCurrency(order.dessertsTotal) +
-        parseCurrency(order.setupServiceCost);
+    if (order.orderType !== OrderType.VITRINA && order.setupServiceCost) {
+      total += parseCurrency(order.setupServiceCost);
     }
 
     return total;
