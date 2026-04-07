@@ -107,7 +107,7 @@ export class UpdateOrderUseCase {
     }
 
     order.dessertsTotal = totalAmount;
-    order.remainingBalance = totalAmount - parseCurrency(order.advancePayment) - payment;
+    order.remainingBalance = (totalAmount + parseCurrency(order.setupServiceCost)) - parseCurrency(order.advancePayment) - payment;
     order.advancePayment += payment;
     order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
 
