@@ -22,6 +22,7 @@ import { EventServiceType } from '../../common/enums/event-service-type.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { OrderDeliveryAddress } from './order-delivery-address.entity';
 import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
+import { OrderPayment } from './order-payment.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -309,4 +310,8 @@ export class Order {
   @ApiHideProperty()
   @OneToMany(() => OrderFlower, (orderFlower) => orderFlower.order)
   orderFlowers: OrderFlower[];
+
+  @ApiHideProperty()
+  @OneToMany(() => OrderPayment, (payment) => payment.order)
+  payments: OrderPayment[];
 }

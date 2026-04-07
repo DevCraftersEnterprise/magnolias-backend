@@ -26,6 +26,7 @@ import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
 import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
+import { OrderPayment } from './entities/order-payment.entity';
 
 @Module({
   controllers: [OrdersController],
@@ -51,6 +52,7 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
       OrderDeliveryAddress,
       OrderAssignment,
       OrderFlower,
+      OrderPayment
     ]),
     CommonModule,
     CustomJwtModule,
@@ -64,4 +66,4 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
   ],
   exports: [TypeOrmModule, OrdersService],
 })
-export class OrdersModule {}
+export class OrdersModule { }

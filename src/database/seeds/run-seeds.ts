@@ -40,6 +40,7 @@ import { OrderDetail } from '../../orders/entities/order-detail.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { OrderCancellation } from '../../orders/entities/order-cancellation.entity';
 import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
+import { OrderPayment } from '../../orders/entities/order-payment.entity';
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
 import { FindAllUsersUseCase } from '../../users/usecases/find-all-users.usecase';
@@ -203,6 +204,8 @@ async function runSeeds() {
       AppDataSource.getRepository(OrderCancellation);
     const orderAssignmentRepository: Repository<OrderAssignment> =
       AppDataSource.getRepository(OrderAssignment);
+    const orderPaymentsRepository: Repository<OrderPayment> =
+      AppDataSource.getRepository(OrderPayment);
 
     const registerUserUseCase = new RegisterUserUseCase(
       userRepository,
@@ -479,6 +482,7 @@ async function runSeeds() {
       orderDeliveryAddressRepository,
       orderDetailRepository,
       orderFlowerRepository,
+      orderPaymentsRepository,
       customersService,
       branchesService,
       addressesService,
@@ -493,6 +497,7 @@ async function runSeeds() {
       orderDeliveryAddressRepository,
       orderDetailRepository,
       orderFlowerRepository,
+      orderPaymentsRepository,
       addressesService,
       productsService,
       flowersService,
