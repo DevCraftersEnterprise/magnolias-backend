@@ -352,7 +352,7 @@ export class CreateOrderUseCase {
 
     const remainingBalance = totalAmount - parseCurrency(order.advancePayment);
 
-    order.paidAmount = remainingBalance;
+    order.paidAmount = parseCurrency(order.advancePayment);
 
     Object.assign(order, { totalAmount, remainingBalance, updatedBy: user });
 
