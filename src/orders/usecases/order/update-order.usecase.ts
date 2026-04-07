@@ -98,7 +98,7 @@ export class UpdateOrderUseCase {
 
     if (details && details.length > 0) {
       this.logger.log(`Updating order details for order ${id}`);
-      totalAmount += await this.handleOrderDetails(details, order, user);
+      totalAmount = await this.handleOrderDetails(details, order, user);
     }
 
     if (flowers && flowers.length > 0 && order.orderType === OrderType.FLOR) {
@@ -107,9 +107,9 @@ export class UpdateOrderUseCase {
     }
 
     order.dessertsTotal = totalAmount;
-    order.remainingBalance = totalAmount - order.advancePayment - payment;
+    order.remainingBalance = totalAmount - parseCurrency(order.advancePayment) - payment;
     order.advancePayment += payment;
-    order.totalAmount = totalAmount + order.setupServiceCost;
+    order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
 
     if (order.remainingBalance === 0) {
       order.settlementDate = new Date();
@@ -445,7 +445,7 @@ export class UpdateOrderUseCase {
 
     if (order.details) {
       total += order.details.reduce(
-        (sum, detail) => sum + detail.price * detail.quantity,
+        (sum, detail) => sum + parseCurrency(detail.price) * detail.quantity,
         0,
       );
     }
