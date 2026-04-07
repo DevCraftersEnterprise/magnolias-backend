@@ -9,9 +9,6 @@ import { User } from '../../users/entities/user.entity';
 import { BaseCatalogEntity } from '../entities/base-catalog.entity';
 import { BaseUpdateCatalogDto } from '../dto/base-update-catalog.dto';
 
-/**
- * Base use case for updating catalog items
- */
 @Injectable()
 export abstract class BaseUpdateCatalogUseCase<T extends BaseCatalogEntity> {
     protected abstract readonly logger: Logger;
