@@ -52,7 +52,8 @@ export class UpdateOrderUseCase {
       deliveryAddress,
       details,
       flowers,
-      payment = 0,
+      payment,
+      setupServiceCost,
     } = updateOrderDto;
 
     this.logger.log(`Starting update process for order with ID: ${id}`);
@@ -72,7 +73,7 @@ export class UpdateOrderUseCase {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    if (order.status !== OrderStatus.CREATED) {
+    if (order.status !== OrderStatus.CREATED && details && details.length > 0) {
       this.logger.error(
         `Cannot update order with ID ${id} because it is not in CREATED status`,
       );
@@ -106,18 +107,23 @@ export class UpdateOrderUseCase {
       await this.handleOrderFlowers(flowers, order, user);
     }
 
+    if (setupServiceCost) {
+      order.setupServiceCost = setupServiceCost;
+    }
+
     order.dessertsTotal = totalAmount;
-    order.remainingBalance = (totalAmount + parseCurrency(order.setupServiceCost)) - parseCurrency(order.advancePayment) - payment;
-    order.advancePayment += payment;
     order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
+
+    if (payment) {
+      order.paidAmount = parseCurrency(order.paidAmount) + payment;
+    }
+
+    order.remainingBalance = parseCurrency(order.totalAmount) - parseCurrency(order.paidAmount);
+
 
     if (order.remainingBalance === 0) {
       order.settlementDate = new Date();
-      order.settlementTotal = payment;
-    }
-
-    if (order.orderType === OrderType.VITRINA) {
-      order.paidAmount = order.remainingBalance;
+      order.settlementTotal = payment!;
     }
 
     order.updatedBy = user;
@@ -448,10 +454,6 @@ export class UpdateOrderUseCase {
         (sum, detail) => sum + parseCurrency(detail.price) * detail.quantity,
         0,
       );
-    }
-
-    if (order.orderType !== OrderType.VITRINA && order.setupServiceCost) {
-      total += parseCurrency(order.setupServiceCost);
     }
 
     return total;
