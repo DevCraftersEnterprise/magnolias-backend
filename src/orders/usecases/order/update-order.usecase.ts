@@ -113,11 +113,13 @@ export class UpdateOrderUseCase {
 
     order.dessertsTotal = totalAmount;
     order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
-    order.remainingBalance = parseCurrency(order.totalAmount) - parseCurrency(order.paidAmount);
 
     if (payment) {
       order.paidAmount = parseCurrency(order.paidAmount) + payment;
     }
+
+    order.remainingBalance = parseCurrency(order.totalAmount) - parseCurrency(order.paidAmount);
+
 
     if (order.remainingBalance === 0) {
       order.settlementDate = new Date();
