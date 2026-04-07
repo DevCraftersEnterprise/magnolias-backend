@@ -23,6 +23,7 @@ import { OrderDetail } from '../../entities/order-detail.entity';
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { Order } from '../../entities/order.entity';
 import { parseCurrency } from '../../utils/parse-currency.util';
+import { OrderPayment } from '../../entities/order-payment.entity';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -37,6 +38,8 @@ export class CreateOrderUseCase {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     @InjectRepository(OrderFlower)
     private readonly orderFlowerRepository: Repository<OrderFlower>,
+    @InjectRepository(OrderPayment)
+    private readonly orderPaymentRepository: Repository<OrderPayment>,
     private readonly customerService: CustomersService,
     private readonly branchesService: BranchesService,
     private readonly addressesService: AddressesService,
@@ -357,6 +360,13 @@ export class CreateOrderUseCase {
     Object.assign(order, { totalAmount, remainingBalance, updatedBy: user });
 
     await this.orderRepository.save(order);
+
+    const orderPayment = this.orderPaymentRepository.create({
+      order,
+      paidAmount: order.paidAmount,
+    });
+
+    await this.orderPaymentRepository.save(orderPayment);
   }
 
   private buildDeliveryAddressDto(source: any): NewAddressDataDto {
