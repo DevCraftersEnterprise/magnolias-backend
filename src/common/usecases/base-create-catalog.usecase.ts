@@ -5,7 +5,7 @@ import { User } from "../../users/entities/user.entity";
 import { BaseCreateCatalogDto } from "../dto/base-create-catalog.dto";
 
 @Injectable()
-export abstract class BaseCreateCatalogUseEntity<T extends BaseCatalogEntity> {
+export abstract class BaseCreateCatalogUseCase<T extends BaseCatalogEntity> {
     protected abstract readonly logger: Logger;
     protected abstract readonly entityName: string;
 
