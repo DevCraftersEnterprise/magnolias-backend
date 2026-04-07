@@ -28,7 +28,7 @@ import {
 import { Auth } from '../auth/decorators/auth.decorator';
 import { UserRoles } from '../users/enums/user-role';
 import { Filling } from './entities/filling.entity';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
@@ -36,7 +36,7 @@ import { PaginationResponse } from '../common/responses/pagination.response';
 @ApiTags('Fillings')
 @Controller('fillings')
 export class FillingsController {
-  constructor(private readonly fillingsService: FillingsService) {}
+  constructor(private readonly fillingsService: FillingsService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

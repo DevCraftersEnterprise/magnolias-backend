@@ -24,7 +24,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { BranchesService } from '../branches/branches.service';
 import { BranchesFilterDto } from '../branches/dto/branches-filter.dto';
 import { CreateBranchDto } from '../branches/dto/create-branch.dto';
@@ -40,7 +40,7 @@ import { UserRoles } from '../users/enums/user-role';
 @ApiTags('Branches')
 @Controller('branches')
 export class BranchesController {
-  constructor(private readonly branchesService: BranchesService) {}
+  constructor(private readonly branchesService: BranchesService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
