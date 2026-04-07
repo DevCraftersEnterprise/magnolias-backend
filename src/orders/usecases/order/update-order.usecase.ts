@@ -25,6 +25,7 @@ import { AddFlowerToOrderDto } from '../../../flowers/dto/add-flower-to-order.dt
 import { FlowersService } from '../../../flowers/flowers.service';
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { parseCurrency } from '../../utils/parse-currency.util';
+import { OrderPayment } from '../../entities/order-payment.entity';
 
 @Injectable()
 export class UpdateOrderUseCase {
@@ -39,6 +40,8 @@ export class UpdateOrderUseCase {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     @InjectRepository(OrderFlower)
     private readonly orderFlowerRepository: Repository<OrderFlower>,
+    @InjectRepository(OrderPayment)
+    private readonly orderPaymentRepository: Repository<OrderPayment>,
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
@@ -115,6 +118,13 @@ export class UpdateOrderUseCase {
     order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
 
     if (payment) {
+      const orderPayment = this.orderPaymentRepository.create({
+        order,
+        paidAmount: payment,
+      });
+
+      await this.orderPaymentRepository.save(orderPayment);
+
       order.paidAmount = parseCurrency(order.paidAmount) + payment;
     }
 

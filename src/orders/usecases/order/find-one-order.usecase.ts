@@ -10,7 +10,7 @@ export class FindOneOrderUseCase {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) {}
+  ) { }
 
   async execute(term: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
@@ -31,9 +31,15 @@ export class FindOneOrderUseCase {
         orderFlowers: {
           flower: true,
         },
+        payments: true,
         createdBy: true,
         updatedBy: true,
       },
+      order: {
+        payments: {
+          createdAt: 'DESC',
+        }
+      }
     });
 
     if (!order) {
