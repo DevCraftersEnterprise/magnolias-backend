@@ -1,31 +1,34 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from '../../entities/order.entity';
-import { Repository } from 'typeorm';
-import { UpdateOrderDto } from '../../dto/update-order.dto';
-import { User } from '../../../users/entities/user.entity';
-import { OrderStatus } from '../../enums/order-status.enum';
+import { Between, Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
-import { OrderDeliveryAddress } from '../../entities/order-delivery-address.entity';
-import {
-  NewAddressDataDto,
-  CreateOrderDeliveryAddressDto,
-} from '../../dto/create-order-delivery-address.dto';
-import { Customer } from '../../../customers/entities/customer.entity';
-import { CreateOrderDetailDto } from '../../dto/create-order-detail.dto';
-import { ProductsService } from '../../../products/products.service';
-import { OrderDetail } from '../../entities/order-detail.entity';
 import { OrderType } from '../../../common/enums/order-type.enum';
+import { CustomersService } from '../../../customers/customers.service';
+import { Customer } from '../../../customers/entities/customer.entity';
 import { AddFlowerToOrderDto } from '../../../flowers/dto/add-flower-to-order.dto';
 import { FlowersService } from '../../../flowers/flowers.service';
+import { ProductsService } from '../../../products/products.service';
+import { User } from '../../../users/entities/user.entity';
+import {
+  CreateOrderDeliveryAddressDto,
+  NewAddressDataDto,
+} from '../../dto/create-order-delivery-address.dto';
+import { CreateOrderDetailDto } from '../../dto/create-order-detail.dto';
+import { UpdateOrderDto } from '../../dto/update-order.dto';
+import { OrderDeliveryAddress } from '../../entities/order-delivery-address.entity';
+import { OrderDetail } from '../../entities/order-detail.entity';
 import { OrderFlower } from '../../entities/order-flower.entity';
-import { parseCurrency } from '../../utils/parse-currency.util';
 import { OrderPayment } from '../../entities/order-payment.entity';
+import { Order } from '../../entities/order.entity';
+import { OrderStatus } from '../../enums/order-status.enum';
+import { parseCurrency } from '../../utils/parse-currency.util';
+import { BranchesService } from '../../../branches/branches.service';
+import { Branch } from '../../../branches/entities/branch.entity';
 
 @Injectable()
 export class UpdateOrderUseCase {
@@ -45,18 +48,22 @@ export class UpdateOrderUseCase {
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
+    private readonly customersService: CustomersService,
+    private readonly branchesService: BranchesService,
   ) { }
 
   async execute(updateOrderDto: UpdateOrderDto, user: User): Promise<Order> {
     const {
       id,
-      deliveryDate,
-      deliveryTime,
       deliveryAddress,
       details,
       flowers,
       payment,
       setupServiceCost,
+      advancePayment,
+      customerId,
+      branchId,
+      ...dto
     } = updateOrderDto;
 
     this.logger.log(`Starting update process for order with ID: ${id}`);
@@ -64,6 +71,7 @@ export class UpdateOrderUseCase {
     const order = await this.orderRepository.findOne({
       where: { id },
       relations: {
+        branch: true,
         deliveryAddress: { commonAddress: true },
         customer: { address: true },
         details: { product: true },
@@ -85,10 +93,26 @@ export class UpdateOrderUseCase {
       );
     }
 
-    if (deliveryDate) order.deliveryDate = deliveryDate;
-    if (deliveryTime) order.deliveryTime = deliveryTime;
 
     let totalAmount = this.calculateExistingTotal(order);
+
+    if (branchId && order.branch.id !== branchId) {
+      this.logger.log(`Updating branch for order with ID: ${id}`);
+
+      const newBranch = await this.branchesService.findBranchByTerm(branchId);
+
+      order.branch = newBranch;
+
+      order.orderCode = await this.generateOrderCode(order.orderType, newBranch);
+    }
+
+    if (customerId && order.customer.id !== customerId) {
+      this.logger.log(`Updating customer for order with ID: ${id}`);
+
+      const newCustomer = await this.customersService.findOne(customerId);
+
+      order.customer = newCustomer;
+    }
 
     if (deliveryAddress) {
       this.logger.log(`Updating delivery address for order with ID: ${id}`);
@@ -117,6 +141,18 @@ export class UpdateOrderUseCase {
     order.dessertsTotal = totalAmount;
     order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
 
+    if (advancePayment) {
+      order.advancePayment = advancePayment;
+      const orderPayment = this.orderPaymentRepository.create({
+        order,
+        paidAmount: advancePayment,
+      });
+
+      await this.orderPaymentRepository.save(orderPayment);
+
+      order.paidAmount = advancePayment;
+    }
+
     if (payment) {
       const orderPayment = this.orderPaymentRepository.create({
         order,
@@ -130,13 +166,16 @@ export class UpdateOrderUseCase {
 
     order.remainingBalance = parseCurrency(order.totalAmount) - parseCurrency(order.paidAmount);
 
-
     if (order.remainingBalance === 0) {
       order.settlementDate = new Date();
-      order.settlementTotal = payment!;
+
+      if (payment) order.settlementTotal = payment;
+      else if (advancePayment) order.settlementTotal = advancePayment;
     }
 
     order.updatedBy = user;
+
+    Object.assign(order, { ...dto })
 
     const updatedOrder = await this.orderRepository.save(order);
     this.logger.log(`Order with ID ${id} updated successfully`);
@@ -479,5 +518,42 @@ export class UpdateOrderUseCase {
       number: source.number,
       postalCode: source.postalCode,
     };
+  }
+
+  private async generateOrderCode(
+    orderType: OrderType,
+    branch: Branch,
+  ): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = orderType;
+
+    const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
+    const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+
+    const lastOrder = await this.orderRepository.findOne({
+      where: {
+        orderType,
+        branch: { id: branch.id },
+        createdAt: Between(startOfYear, endOfYear),
+      },
+      order: { createdAt: 'DESC' },
+      select: {
+        id: true,
+        orderCode: true,
+        createdAt: true,
+      },
+    });
+
+    let sequence = 1;
+
+    if (lastOrder?.orderCode) {
+      const parts = lastOrder.orderCode.split('-');
+      if (parts.length === 4) {
+        const lastSequence = parseInt(parts[3], 10);
+        if (!Number.isNaN(lastSequence)) sequence = lastSequence + 1;
+      }
+    }
+
+    return `${prefix.slice(0, 3)}-${branch.name.toUpperCase().replace(' ', '-')}-${year}-${sequence.toString().padStart(4, '0')}`;
   }
 }
