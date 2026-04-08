@@ -501,6 +501,8 @@ async function runSeeds() {
       addressesService,
       productsService,
       flowersService,
+      customersService,
+      branchesService,
     );
     const changeOrderStatusUseCase = new ChangeOrderStatusUseCase(
       orderRepository,
