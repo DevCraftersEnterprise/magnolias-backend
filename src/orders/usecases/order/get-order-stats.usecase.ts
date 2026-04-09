@@ -15,7 +15,7 @@ export class GetOrderStatsUseCase {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) {}
+  ) { }
 
   async execute(user: User, branchId?: string): Promise<OrderStatsResponse> {
     this.logger.log(
@@ -68,7 +68,7 @@ export class GetOrderStatsUseCase {
           evento: orders.filter((order) => order.orderType === OrderType.EVENTO)
             .length,
           personalizado: orders.filter(
-            (order) => order.orderType === OrderType.PERSONALIZADO,
+            (order) => order.orderType === OrderType.FLOR,
           ).length,
           vitrina: orders.filter(
             (order) => order.orderType === OrderType.VITRINA,
