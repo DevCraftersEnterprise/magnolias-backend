@@ -63,6 +63,7 @@ export class UpdateOrderUseCase {
       advancePayment,
       customerId,
       branchId,
+      isCustomerPickup,
       ...dto
     } = updateOrderDto;
 
@@ -76,6 +77,7 @@ export class UpdateOrderUseCase {
         customer: { address: true },
         details: { product: true },
         orderFlowers: { flower: true },
+        payments: true,
       },
     });
 
@@ -114,7 +116,7 @@ export class UpdateOrderUseCase {
       order.customer = newCustomer;
     }
 
-    if (deliveryAddress) {
+    if (deliveryAddress && isCustomerPickup === undefined) {
       this.logger.log(`Updating delivery address for order with ID: ${id}`);
       await this.handleDeliveryAddress(
         deliveryAddress,
@@ -155,12 +157,15 @@ export class UpdateOrderUseCase {
 
     if (payment) {
       const orderPayment = this.orderPaymentRepository.create({
-        order,
+        order: {
+          id: order.id
+        },
         paidAmount: payment,
       });
 
       await this.orderPaymentRepository.save(orderPayment);
 
+      order.payments.push(orderPayment);
       order.paidAmount = parseCurrency(order.paidAmount) + payment;
     }
 
