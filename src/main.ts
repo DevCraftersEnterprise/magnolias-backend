@@ -51,13 +51,11 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: [
-      'https://pasteleriamagnolias.mx',
-      'https://www.pasteleriamagnolias.mx',
-      'http://localhost:3000',
-    ],
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    origin: process.env.CORS_ORIGIN?.split(','),
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
+    maxAge: 3600
   });
 
   app.useGlobalPipes(
