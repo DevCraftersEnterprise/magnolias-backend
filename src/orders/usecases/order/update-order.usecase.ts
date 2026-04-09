@@ -141,7 +141,7 @@ export class UpdateOrderUseCase {
     order.dessertsTotal = totalAmount;
     order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
 
-    if (advancePayment) {
+    if (order.payments.length === 0 && advancePayment) {
       order.advancePayment = advancePayment;
       const orderPayment = this.orderPaymentRepository.create({
         order,
