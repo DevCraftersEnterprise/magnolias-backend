@@ -13,8 +13,40 @@ async function bootstrap() {
 
   app.set('trust proxy', 1);
 
+  app.disable('x-powered-by');
+
+  // CORS debe ir ANTES de helmet y otros middlewares
+  const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map(origin => origin.trim()) || [];
+
+  app.enableCors({
+    origin: (origin, callback) => {
+      // Permitir peticiones sin origin (como Postman, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      // Verificar si el origin está en la lista permitida
+      if (allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+        callback(null, true);
+      } else {
+        logger.warn(`CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'X-Request-Id'],
+    credentials: true,
+    maxAge: 86400, // 24 horas en segundos
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  });
+
+  // Redirección HTTPS solo después de CORS
   if (process.env.NODE_ENV === 'production') {
     app.use((req, res, next) => {
+      // No redirigir peticiones OPTIONS (preflight)
+      if (req.method === 'OPTIONS') {
+        return next();
+      }
       if (req.header('x-forwarded-proto') !== 'https') {
         res.redirect(`https://${req.header('host')}${req.url}`);
       } else {
@@ -23,18 +55,11 @@ async function bootstrap() {
     });
   }
 
-  app.disable('x-powered-by');
-
   app.use(
     helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", 'data:', 'https:'],
-        },
-      },
+      contentSecurityPolicy: false, // Desactivar CSP ya que puede interferir
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: false,
       hsts: {
         maxAge: 31536000,
         includeSubDomains: true,
@@ -42,21 +67,12 @@ async function bootstrap() {
       },
       frameguard: { action: 'deny' },
       noSniff: true,
-      xssFilter: true,
     }),
   );
 
   app.use(bodyParser.json({ limit: '1mb' }));
 
   app.setGlobalPrefix('api');
-
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(','),
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    maxAge: 3600
-  });
 
   app.useGlobalPipes(
     new ValidationPipe({
