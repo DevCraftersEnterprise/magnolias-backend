@@ -30,6 +30,7 @@ export class FindOneOrderUseCase {
         },
         orderFlowers: {
           flower: true,
+          color: true,
         },
         payments: true,
         createdBy: true,
