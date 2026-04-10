@@ -133,7 +133,11 @@ export class CreateOrderDto {
   @IsOptional()
   @Transform(({ value }) => {
     if (typeof value === 'string') {
-      try { return JSON.parse(value); } catch { return value; }
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
     }
     return value;
   })
@@ -223,7 +227,8 @@ export class CreateOrderDto {
   requiresInvoice?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Indicates if the order is going to be collected by the customer',
+    description:
+      'Indicates if the order is going to be collected by the customer',
     example: false,
     default: false,
   })
@@ -261,7 +266,9 @@ export class CreateOrderDto {
         return typeof parsed === 'object' && parsed !== null
           ? plainToInstance(CreateOrderDeliveryAddressDto, parsed)
           : value;
-      } catch { return value; }
+      } catch {
+        return value;
+      }
     }
     return value;
   })
@@ -279,9 +286,11 @@ export class CreateOrderDto {
       try {
         const parsed = JSON.parse(value);
         return Array.isArray(parsed)
-          ? parsed.map(item => plainToInstance(CreateOrderDetailDto, item))
+          ? parsed.map((item) => plainToInstance(CreateOrderDetailDto, item))
           : value;
-      } catch { return value; }
+      } catch {
+        return value;
+      }
     }
     return value;
   })
@@ -301,9 +310,11 @@ export class CreateOrderDto {
       try {
         const parsed = JSON.parse(value);
         return Array.isArray(parsed)
-          ? parsed.map(item => plainToInstance(AddFlowerToOrderDto, item))
+          ? parsed.map((item) => plainToInstance(AddFlowerToOrderDto, item))
           : value;
-      } catch { return value; }
+      } catch {
+        return value;
+      }
     }
     return value;
   })

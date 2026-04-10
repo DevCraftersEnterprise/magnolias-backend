@@ -233,7 +233,8 @@ export class Order {
   requiresInvoice: boolean;
 
   @ApiProperty({
-    description: 'Indicates if the order is going to be collected by the customer',
+    description:
+      'Indicates if the order is going to be collected by the customer',
     example: false,
     default: false,
   })

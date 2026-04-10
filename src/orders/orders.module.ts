@@ -52,7 +52,7 @@ import { OrderPayment } from './entities/order-payment.entity';
       OrderDeliveryAddress,
       OrderAssignment,
       OrderFlower,
-      OrderPayment
+      OrderPayment,
     ]),
     CommonModule,
     CustomJwtModule,
@@ -66,4 +66,4 @@ import { OrderPayment } from './entities/order-payment.entity';
   ],
   exports: [TypeOrmModule, OrdersService],
 })
-export class OrdersModule { }
+export class OrdersModule {}

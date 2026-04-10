@@ -45,7 +45,7 @@ export class CreateOrderUseCase {
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
-  ) { }
+  ) {}
 
   async execute(
     createOrderDto: CreateOrderDto,

@@ -36,7 +36,7 @@ import { BreadType } from './entities/bread-type.entity';
 @ApiTags('Bread Types')
 @Controller('bread-types')
 export class BreadTypesController {
-  constructor(private readonly breadTypesService: BreadTypesService) { }
+  constructor(private readonly breadTypesService: BreadTypesService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

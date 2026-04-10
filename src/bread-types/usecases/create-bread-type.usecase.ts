@@ -15,6 +15,4 @@ export class CreateBreadTypeUseCase extends BaseCreateCatalogUseCase<BreadType> 
   ) {
     super(repository);
   }
-
-
 }

@@ -11,4 +11,4 @@ import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
   providers: [FormatsService],
   imports: [PrinterModule, OrdersModule, CommonModule, CustomJwtModule],
 })
-export class FormatsModule { }
+export class FormatsModule {}
