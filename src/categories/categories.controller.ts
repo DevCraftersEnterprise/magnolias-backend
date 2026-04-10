@@ -36,7 +36,7 @@ import { Category } from './entities/category.entity';
 @ApiTags('Categories')
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) { }
+  constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

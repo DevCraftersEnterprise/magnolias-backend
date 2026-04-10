@@ -27,7 +27,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly loginThrottleGuard: LoginThrottleGuard,
-  ) { }
+  ) {}
 
   @Post('login')
   @UseGuards(LoginThrottleGuard)

@@ -36,7 +36,7 @@ import { StylesFilterDto } from './dto/styles-filter.dto';
 @ApiTags('Styles')
 @Controller('styles')
 export class StylesController {
-  constructor(private readonly stylesService: StylesService) { }
+  constructor(private readonly stylesService: StylesService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

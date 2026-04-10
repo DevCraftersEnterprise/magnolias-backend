@@ -11,7 +11,7 @@ export class UpdateFavoriteProductStatusUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   async execute(id: string, user: User): Promise<Product> {
     const favorite = await this.productRepository.findOne({
@@ -40,7 +40,9 @@ export class UpdateFavoriteProductStatusUseCase {
     this.logger.log(`Updating favorite product with ID: ${id}`);
 
     if (favorite?.id === product.id) {
-      this.logger.log(`Product with ID ${id} is already the favorite, unsetting it`);
+      this.logger.log(
+        `Product with ID ${id} is already the favorite, unsetting it`,
+      );
       return favorite;
     }
 

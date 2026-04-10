@@ -37,4 +37,4 @@ import { ResetPasswordForUserUseCase } from './usecases/reset-password-for-user.
   ],
   exports: [UsersService, TypeOrmModule],
 })
-export class UsersModule { }
+export class UsersModule {}

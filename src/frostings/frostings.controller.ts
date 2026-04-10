@@ -36,7 +36,7 @@ import { FrostingsFilterDto } from './dto/frostings-filter.dto';
 @ApiTags('Frostings')
 @Controller('frostings')
 export class FrostingsController {
-  constructor(private readonly frostingsService: FrostingsService) { }
+  constructor(private readonly frostingsService: FrostingsService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

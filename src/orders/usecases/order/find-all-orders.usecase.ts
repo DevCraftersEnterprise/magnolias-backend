@@ -12,7 +12,7 @@ export class FindAllOrdersUseCase {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) { }
+  ) {}
 
   async execute(
     ordersFilterDto: OrdersFilterDto,

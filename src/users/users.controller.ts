@@ -37,7 +37,7 @@ import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 @Auth([UserRoles.SUPER, UserRoles.ADMIN])
 @ApiBearerAuth('access-token')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({

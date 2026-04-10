@@ -36,7 +36,7 @@ import { PaginationResponse } from '../common/responses/pagination.response';
 @ApiTags('Fillings')
 @Controller('fillings')
 export class FillingsController {
-  constructor(private readonly fillingsService: FillingsService) { }
+  constructor(private readonly fillingsService: FillingsService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
