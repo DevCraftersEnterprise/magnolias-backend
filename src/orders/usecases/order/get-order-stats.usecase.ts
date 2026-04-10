@@ -15,7 +15,7 @@ export class GetOrderStatsUseCase {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) { }
+  ) {}
 
   async execute(user: User, branchId?: string): Promise<OrderStatsResponse> {
     this.logger.log(

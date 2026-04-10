@@ -36,7 +36,7 @@ import { FlavorsService } from './flavors.service';
 @ApiTags('Flavors')
 @Controller('flavors')
 export class FlavorsController {
-  constructor(private readonly flavorsService: FlavorsService) { }
+  constructor(private readonly flavorsService: FlavorsService) {}
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])

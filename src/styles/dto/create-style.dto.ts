@@ -1,3 +1,3 @@
 import { BaseCreateCatalogDto } from '../../common/dto/base-create-catalog.dto';
 
-export class CreateStyleDto extends BaseCreateCatalogDto { }
+export class CreateStyleDto extends BaseCreateCatalogDto {}

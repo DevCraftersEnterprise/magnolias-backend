@@ -50,7 +50,7 @@ export class UpdateOrderUseCase {
     private readonly flowersService: FlowersService,
     private readonly customersService: CustomersService,
     private readonly branchesService: BranchesService,
-  ) { }
+  ) {}
 
   async execute(updateOrderDto: UpdateOrderDto, user: User): Promise<Order> {
     const {
@@ -95,7 +95,6 @@ export class UpdateOrderUseCase {
       );
     }
 
-
     let totalAmount = this.calculateExistingTotal(order);
 
     if (branchId && order.branch.id !== branchId) {
@@ -105,7 +104,10 @@ export class UpdateOrderUseCase {
 
       order.branch = newBranch;
 
-      order.orderCode = await this.generateOrderCode(order.orderType, newBranch);
+      order.orderCode = await this.generateOrderCode(
+        order.orderType,
+        newBranch,
+      );
     }
 
     if (customerId && order.customer.id !== customerId) {
@@ -158,7 +160,7 @@ export class UpdateOrderUseCase {
     if (payment) {
       const orderPayment = this.orderPaymentRepository.create({
         order: {
-          id: order.id
+          id: order.id,
         },
         paidAmount: payment,
       });
@@ -169,7 +171,8 @@ export class UpdateOrderUseCase {
       order.paidAmount = parseCurrency(order.paidAmount) + payment;
     }
 
-    order.remainingBalance = parseCurrency(order.totalAmount) - parseCurrency(order.paidAmount);
+    order.remainingBalance =
+      parseCurrency(order.totalAmount) - parseCurrency(order.paidAmount);
 
     if (order.remainingBalance === 0) {
       order.settlementDate = new Date();
@@ -180,7 +183,7 @@ export class UpdateOrderUseCase {
 
     order.updatedBy = user;
 
-    Object.assign(order, { ...dto })
+    Object.assign(order, { ...dto });
 
     const updatedOrder = await this.orderRepository.save(order);
     this.logger.log(`Order with ID ${id} updated successfully`);
@@ -410,12 +413,24 @@ export class UpdateOrderUseCase {
       if (existingDetail) {
         existingDetail.quantity = detailDto.quantity;
         existingDetail.price = detailDto.price;
-        existingDetail.breadType = { id: detailDto.breadTypeId ?? existingDetail.breadType?.id } as any;
-        existingDetail.filling = { id: detailDto.fillingId ?? existingDetail.filling?.id } as any;
-        existingDetail.flavor = { id: detailDto.flavorId ?? existingDetail.flavor?.id } as any;
-        existingDetail.frosting = { id: detailDto.frostingId ?? existingDetail.frosting?.id } as any;
-        existingDetail.style = { id: detailDto.styleId ?? existingDetail.style?.id } as any;
-        existingDetail.color = { id: detailDto.colorId ?? existingDetail.color?.id } as any;
+        existingDetail.breadType = {
+          id: detailDto.breadTypeId ?? existingDetail.breadType?.id,
+        } as any;
+        existingDetail.filling = {
+          id: detailDto.fillingId ?? existingDetail.filling?.id,
+        } as any;
+        existingDetail.flavor = {
+          id: detailDto.flavorId ?? existingDetail.flavor?.id,
+        } as any;
+        existingDetail.frosting = {
+          id: detailDto.frostingId ?? existingDetail.frosting?.id,
+        } as any;
+        existingDetail.style = {
+          id: detailDto.styleId ?? existingDetail.style?.id,
+        } as any;
+        existingDetail.color = {
+          id: detailDto.colorId ?? existingDetail.color?.id,
+        } as any;
         existingDetail.updatedBy = user;
 
         detailsToUpdate.push(existingDetail);

@@ -13,10 +13,11 @@ export class FindAllUsersUseCase {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async execute(
-    usersFilterDto: UsersFilterDto, user: User
+    usersFilterDto: UsersFilterDto,
+    user: User,
   ): Promise<PaginationResponse<User> | User[]> {
     const { name, lastname, username, role, limit, offset } = usersFilterDto;
 
@@ -26,11 +27,12 @@ export class FindAllUsersUseCase {
         name: name ? ILike(`%${name}%`) : undefined,
         lastname: lastname ? ILike(`%${lastname}%`) : undefined,
         username: username ? ILike(`%${username}%`) : undefined,
-        role: user.role === UserRoles.SUPER
-          ? role ?? undefined
-          : role
-            ? And(Not(UserRoles.SUPER), Equal(role))
-            : Not(UserRoles.SUPER)
+        role:
+          user.role === UserRoles.SUPER
+            ? (role ?? undefined)
+            : role
+              ? And(Not(UserRoles.SUPER), Equal(role))
+              : Not(UserRoles.SUPER),
       },
       relations: {
         branch: true,

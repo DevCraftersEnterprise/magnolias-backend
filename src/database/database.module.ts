@@ -25,4 +25,4 @@ import { CommonModule } from '../common/common.module';
     }),
   ],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}
