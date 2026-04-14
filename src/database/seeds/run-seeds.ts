@@ -131,6 +131,7 @@ import { UpdateOrderUseCase } from '../../orders/usecases/order/update-order.use
 import { ChangeOrderStatusUseCase } from '../../orders/usecases/order/change-order-status.usecase';
 import { GetOrderStatsUseCase } from '../../orders/usecases/order/get-order-stats.usecase';
 import { AssignOrderUseCase } from '../../orders/usecases/order-assignment/assign-order.usecase';
+import { UpdateAssignOrderUseCase } from '../../orders/usecases/order-assignment/update-assign-order.usecase';
 import { GetAssignmentsUseCase } from '../../orders/usecases/order-assignment/get-assignments.usecase';
 // Utils
 import { CheckForDuplicateAddressUtil } from '../../addresses/utils/check-for-duplicate-address.util';
@@ -519,6 +520,10 @@ async function runSeeds() {
       orderAssignmentRepository,
     );
 
+    const updateAssignOrderUseCase = new UpdateAssignOrderUseCase(
+      userRepository,
+      orderAssignmentRepository);
+
     const ordersService = new OrdersService(
       createOrderUseCase,
       setPickupPersonUseCase,
@@ -529,6 +534,7 @@ async function runSeeds() {
       getOrderStatsUseCase,
       assignOrderUseCase,
       getAssignmentsUseCase,
+      updateAssignOrderUseCase,
     );
 
     console.log('✅ Conexión establecida\n');
