@@ -20,6 +20,7 @@ import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
 import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
+import { UpdateAssignOrderUseCase } from './usecases/order-assignment/update-assign-order.usecase';
 
 @Injectable()
 export class OrdersService {
@@ -33,6 +34,7 @@ export class OrdersService {
     private readonly getOrderStatsUseCase: GetOrderStatsUseCase,
     private readonly assignOrderUseCase: AssignOrderUseCase,
     private readonly getAssignmentsUseCase: GetAssignmentsUseCase,
+    private readonly updateAssignOrderUseCase: UpdateAssignOrderUseCase,
   ) {}
 
   async createOrder(
@@ -117,5 +119,13 @@ export class OrdersService {
 
   async getAssignments(bakerId: string): Promise<OrderAssignment[]> {
     return await this.getAssignmentsUseCase.execute(bakerId);
+  }
+
+  async reassignOrder(
+    bakerId: string,
+    assignOrderDto: AssignOrderDto,
+    user: User,
+  ): Promise<OrderAssignment> {
+    return await this.updateAssignOrderUseCase.execute(bakerId, assignOrderDto, user);
   }
 }

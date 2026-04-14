@@ -406,4 +406,34 @@ export class OrdersController {
   ): Promise<OrderAssignment[]> {
     return this.ordersService.getAssignments(id);
   }
+
+  @Patch(':id/reassign-order')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Reassign order to another baker',
+    description: 'Reassigns an order to a different baker.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the new baker',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Order successfully reassigned.',  
+    type: OrderAssignment,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data or order cannot be reassigned.',
+  })
+  @ApiNotFoundResponse({ description: 'Baker or Order not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  reassignOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignOrderDto: AssignOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<OrderAssignment> {
+    return this.ordersService.reassignOrder(id, assignOrderDto, user);
+  }
 }
