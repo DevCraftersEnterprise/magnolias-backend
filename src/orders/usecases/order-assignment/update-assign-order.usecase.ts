@@ -27,7 +27,9 @@ export class UpdateAssignOrderUseCase {
 
     const baker = await this.userRepository.findOne({
       where: { id: bakerId, role: UserRoles.BAKER },
-      relations: ['branches'],
+      relations: {
+        branches: true,
+      },
     });
 
     if (!baker) {
@@ -37,61 +39,65 @@ export class UpdateAssignOrderUseCase {
       );
     }
 
-    const assignment  = await this.orderAssignmentRepository.findOne({
+    const assignment = await this.orderAssignmentRepository.findOne({
       where: {
         order: { id: orderId },
       },
-      relations: ['order', 'order.branch', 'baker'],
+      relations: {
+        order: {
+          branch: true,
+        },
+        baker: true,
+      },
     });
 
     if (!assignment) {
       this.logger.warn(`Assignment for order "${orderId}" not found`);
-        throw new BadRequestException(
+      throw new BadRequestException(
         `Assignment for order "${orderId}" not found`,
-        );
+      );
     }
     if (assignment.order.status !== OrderStatus.CREATED) {
-        this.logger.warn(
-            `Order ${orderId} cannot be reassigned because its status is ${assignment.order.status}`,
-        );
+      this.logger.warn(
+        `Order ${orderId} cannot be reassigned because its status is ${assignment.order.status}`,
+      );
 
-        throw new BadRequestException(
-            `Order ${orderId} cannot be reassigned because its status is ${assignment.order.status}`,
-        );
+      throw new BadRequestException(
+        `Order ${orderId} cannot be reassigned because its status is ${assignment.order.status}`,
+      );
     }
     if (assignment.baker.id === bakerId) {
-        throw new BadRequestException(
-        `Order already assigned to this baker`,
-        );
+      throw new BadRequestException(`Order already assigned to this baker`);
     }
 
     const hasAccessToBranch = baker.branches?.some(
-        (branch) => branch.id === assignment.order.branch.id,
+      (branch) => branch.id === assignment.order.branch.id,
     );
     if (!hasAccessToBranch) {
-        this.logger.warn(
+      this.logger.warn(
         `Baker ${bakerId} does not belong to branch ${assignment.order.branch.id}`,
-        );
-        throw new BadRequestException(
+      );
+      throw new BadRequestException(
         `Baker ${bakerId} does not belong to the order's branch`,
-        );
+      );
     }
     assignment.baker = baker;
 
     if (notes) {
-        assignment.notes = notes;
+      assignment.notes = notes;
     }
 
     if (assignedDate) {
-        assignment.assignedDate = assignedDate;
+      assignment.assignedDate = assignedDate;
     }
 
     assignment.updatedBy = user;
-    
-    const updatedAssignment = await this.orderAssignmentRepository.save(assignment);
+
+    const updatedAssignment =
+      await this.orderAssignmentRepository.save(assignment);
 
     this.logger.log(
-        `Order with identifier "${orderId}" reassigned to baker "${bakerId}" successfully`,
+      `Order with identifier "${orderId}" reassigned to baker "${bakerId}" successfully`,
     );
 
     return updatedAssignment;
