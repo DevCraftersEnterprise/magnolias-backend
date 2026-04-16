@@ -5,7 +5,6 @@ import { AssignOrderDto } from './dto/assign-order.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
-import { OrdersRangeFilterDto } from './dto/orders-range-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderAssignment } from './entities/order-assignment.entity';
@@ -17,7 +16,6 @@ import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignmen
 import { UpdateAssignOrderUseCase } from './usecases/order-assignment/update-assign-order.usecase';
 import { ChangeOrderStatusUseCase } from './usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from './usecases/order/create-order.usecase';
-import { FindAllOrdersByRangeUseCase } from './usecases/order/find-all-orders-by-range.usecase';
 import { FindAllOrdersUseCase } from './usecases/order/find-all-orders.usecase';
 import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
@@ -37,8 +35,7 @@ export class OrdersService {
     private readonly assignOrderUseCase: AssignOrderUseCase,
     private readonly getAssignmentsUseCase: GetAssignmentsUseCase,
     private readonly updateAssignOrderUseCase: UpdateAssignOrderUseCase,
-    private readonly findAllOrderByRange: FindAllOrdersByRangeUseCase,
-  ) {}
+  ) { }
 
   async createOrder(
     dto: CreateOrderDto,
@@ -134,12 +131,5 @@ export class OrdersService {
       assignOrderDto,
       user,
     );
-  }
-
-  async getOrdersByRange(
-    filters: OrdersRangeFilterDto,
-    branchId: string,
-  ): Promise<PaginationResponse<Order> | Order[]> {
-    return await this.findAllOrderByRange.execute(filters, branchId);
   }
 }

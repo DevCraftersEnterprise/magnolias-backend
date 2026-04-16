@@ -128,7 +128,6 @@ import { GetAssignmentsUseCase } from '../../orders/usecases/order-assignment/ge
 import { UpdateAssignOrderUseCase } from '../../orders/usecases/order-assignment/update-assign-order.usecase';
 import { ChangeOrderStatusUseCase } from '../../orders/usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from '../../orders/usecases/order/create-order.usecase';
-import { FindAllOrdersByRangeUseCase } from '../../orders/usecases/order/find-all-orders-by-range.usecase';
 import { FindAllOrdersUseCase } from '../../orders/usecases/order/find-all-orders.usecase';
 import { FindOneOrderUseCase } from '../../orders/usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from '../../orders/usecases/order/get-order-stats.usecase';
@@ -526,10 +525,6 @@ async function runSeeds() {
       orderAssignmentRepository,
     );
 
-    const getOrdersByRangeUseCase = new FindAllOrdersByRangeUseCase(
-      orderRepository,
-    );
-
     const ordersService = new OrdersService(
       createOrderUseCase,
       setPickupPersonUseCase,
@@ -541,7 +536,6 @@ async function runSeeds() {
       assignOrderUseCase,
       getAssignmentsUseCase,
       updateAssignOrderUseCase,
-      getOrdersByRangeUseCase,
     );
 
     console.log('✅ Conexión establecida\n');

@@ -34,7 +34,6 @@ import { AssignOrderDto } from './dto/assign-order.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
-import { OrdersRangeFilterDto } from './dto/orders-range-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderAssignment } from './entities/order-assignment.entity';
@@ -45,7 +44,7 @@ import { OrderStatsResponse } from './responses/order-stats.response';
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -167,6 +166,18 @@ export class OrdersController {
     type: Date,
     description: 'Filter orders by delivery date',
   })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date from this date (inclusive)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date up to this date (inclusive)',
+  })
   @ApiOkResponse({
     description: 'List of orders retrieved successfully.',
     type: [Order],
@@ -198,87 +209,6 @@ export class OrdersController {
   getOrders(
     @Param('branchId', ParseUUIDPipe) branchId: string,
     @Query() filterDto: OrdersFilterDto,
-  ): Promise<PaginationResponse<Order> | Order[]> {
-    return this.ordersService.getOrders(filterDto, branchId);
-  }
-
-  @Get('range/branch/:branchId')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get orders for a specific branch within a date range',
-    description:
-      'Retrieves a list of orders for the specified branch within a specified date range with optional filters.',
-  })
-  @ApiParam({
-    name: 'branchId',
-    description: 'UUID of the branch to retrieve orders from',
-    type: 'string',
-    format: 'uuid',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Number of items to return',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'offset',
-    required: false,
-    type: Number,
-    description: 'Number of items to skip',
-    example: 0,
-  })
-  @ApiQuery({
-    name: 'orderStatus',
-    required: false,
-    type: String,
-    description: 'Filter orders by status',
-  })
-  @ApiQuery({
-    name: 'startDate',
-    required: false,
-    type: Date,
-    description: 'Filter orders by start date',
-  })
-  @ApiQuery({
-    name: 'endDate',
-    required: false,
-    type: Date,
-    description: 'Filter orders by end date',
-  })
-  @ApiOkResponse({
-    description: 'List of orders retrieved successfully.',
-    type: [Order],
-  })
-  @ApiOkResponse({
-    description: 'List of orders retrieved successfully.',
-    schema: {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/Order' },
-        },
-        total: { type: 'number', example: 100 },
-        pagination: {
-          type: 'object',
-          properties: {
-            limit: { type: 'number', example: 10 },
-            offset: { type: 'number', example: 0 },
-            totalPages: { type: 'number', example: 10 },
-            currentPage: { type: 'number', example: 1 },
-          },
-        },
-      },
-    },
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  @ApiNotFoundResponse({ description: 'Branch not found.' })
-  getOrdersByRange(
-    @Param('branchId', ParseUUIDPipe) branchId: string,
-    @Query() filterDto: OrdersRangeFilterDto,
   ): Promise<PaginationResponse<Order> | Order[]> {
     return this.ordersService.getOrders(filterDto, branchId);
   }

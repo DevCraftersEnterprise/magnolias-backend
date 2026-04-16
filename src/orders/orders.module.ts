@@ -23,7 +23,6 @@ import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignmen
 import { UpdateAssignOrderUseCase } from './usecases/order-assignment/update-assign-order.usecase';
 import { ChangeOrderStatusUseCase } from './usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from './usecases/order/create-order.usecase';
-import { FindAllOrdersByRangeUseCase } from './usecases/order/find-all-orders-by-range.usecase';
 import { FindAllOrdersUseCase } from './usecases/order/find-all-orders.usecase';
 import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
@@ -46,7 +45,6 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
     AssignOrderUseCase,
     GetAssignmentsUseCase,
     UpdateAssignOrderUseCase,
-    FindAllOrdersByRangeUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -70,4 +68,4 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
   ],
   exports: [TypeOrmModule, OrdersService],
 })
-export class OrdersModule {}
+export class OrdersModule { }
