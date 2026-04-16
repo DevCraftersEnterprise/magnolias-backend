@@ -2,52 +2,52 @@ import { config } from 'dotenv';
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../data-source';
 // Services
+import { AddressesService } from '../../addresses/addresses.service';
 import { BranchesService } from '../../branches/branches.service';
-import { UsersService } from '../../users/users.service';
+import { BreadTypesService } from '../../bread-types/bread-types.service';
 import { CategoriesService } from '../../categories/categories.service';
 import { ColorsService } from '../../colors/colors.service';
-import { FlavorsService } from '../../flavors/flavors.service';
-import { FillingsService } from '../../fillings/fillings.service';
-import { FrostingsService } from '../../frostings/frostings.service';
-import { FlowersService } from '../../flowers/flowers.service';
-import { StylesService } from '../../styles/styles.service';
-import { BreadTypesService } from '../../bread-types/bread-types.service';
-import { CustomersService } from '../../customers/customers.service';
-import { ProductsService } from '../../products/products.service';
-import { OrdersService } from '../../orders/orders.service';
-import { AddressesService } from '../../addresses/addresses.service';
 import { GeocodingService } from '../../common/services/geocoding.service';
+import { CustomersService } from '../../customers/customers.service';
+import { FillingsService } from '../../fillings/fillings.service';
+import { FlavorsService } from '../../flavors/flavors.service';
+import { FlowersService } from '../../flowers/flowers.service';
+import { FrostingsService } from '../../frostings/frostings.service';
+import { OrdersService } from '../../orders/orders.service';
+import { ProductsService } from '../../products/products.service';
+import { StylesService } from '../../styles/styles.service';
+import { UsersService } from '../../users/users.service';
 // Entities
+import { CommonAddress } from '../../addresses/entities/common-address.entity';
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
-import { User } from '../../users/entities/user.entity';
+import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { Color } from '../../colors/entities/color.entity';
-import { Flavor } from '../../flavors/entities/flavor.entity';
-import { Filling } from '../../fillings/entities/filling.entity';
-import { Frosting } from '../../frostings/entities/frosting.entity';
-import { Flower } from '../../flowers/entities/flower.entity';
-import { Style } from '../../styles/entities/style.entity';
-import { BreadType } from '../../bread-types/entities/bread-type.entity';
-import { Customer } from '../../customers/entities/customer.entity';
 import { CustomerAddress } from '../../customers/entities/customer-address.entity';
-import { Product } from '../../products/entities/product.entity';
-import { ProductPicture } from '../../products/entities/product-picture.entity';
-import { CommonAddress } from '../../addresses/entities/common-address.entity';
-import { Order } from '../../orders/entities/order.entity';
+import { Customer } from '../../customers/entities/customer.entity';
+import { Filling } from '../../fillings/entities/filling.entity';
+import { Flavor } from '../../flavors/entities/flavor.entity';
+import { Flower } from '../../flowers/entities/flower.entity';
+import { Frosting } from '../../frostings/entities/frosting.entity';
+import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
+import { OrderCancellation } from '../../orders/entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
 import { OrderDetail } from '../../orders/entities/order-detail.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
-import { OrderCancellation } from '../../orders/entities/order-cancellation.entity';
-import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
 import { OrderPayment } from '../../orders/entities/order-payment.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { ProductPicture } from '../../products/entities/product-picture.entity';
+import { Product } from '../../products/entities/product.entity';
+import { Style } from '../../styles/entities/style.entity';
+import { User } from '../../users/entities/user.entity';
 // Use Cases
 import { CreateBranchUseCase } from '../../branches/usecases/branch/create-branch.usecase';
 import { FindAllUsersUseCase } from '../../users/usecases/find-all-users.usecase';
 import { FindOneUserUseCase } from '../../users/usecases/find-one-user.usecase';
-import { UpdateUserUseCase } from '../../users/usecases/update-user.usecase';
 import { RemoveUserUseCase } from '../../users/usecases/remove-user.usecase';
 import { ResetPasswordForUserUseCase } from '../../users/usecases/reset-password-for-user.usecase';
+import { UpdateUserUseCase } from '../../users/usecases/update-user.usecase';
 
 import { FindAllBranchesUseCase } from '../../branches/usecases/branch/find-all-branches.usecase';
 import { FindOneBranchUseCase } from '../../branches/usecases/branch/find-one-branch.usecase';
@@ -60,8 +60,8 @@ import { RegisterUserUseCase } from '../../users/usecases/register-user.usecase'
 import { CreateCategoryUseCase } from '../../categories/usecases/create-category.usecase';
 import { FindAllCategoriesUseCase } from '../../categories/usecases/find-all-categories.usecase';
 import { FindOneCategoryUseCase } from '../../categories/usecases/find-one-category.usecase';
-import { UpdateCategoryUseCase } from '../../categories/usecases/update-category.usecase';
 import { RemoveCategoryUseCase } from '../../categories/usecases/remove-category.usecase';
+import { UpdateCategoryUseCase } from '../../categories/usecases/update-category.usecase';
 
 import { CreateColorUseCase } from '../../colors/usecases/create-color.usecase';
 import { FindAllColorsUseCase } from '../../colors/usecases/find-all-colors.usecase';
@@ -69,20 +69,20 @@ import { FindAllColorsUseCase } from '../../colors/usecases/find-all-colors.usec
 import { CreateFlavorUseCase } from '../../flavors/usecases/create-flavor.usecase';
 import { FindAllFlavorsUseCase } from '../../flavors/usecases/find-all-flavors.usecase';
 import { FindOneFlavorUseCase } from '../../flavors/usecases/find-one-flavor.usecase';
-import { UpdateFlavorUseCase } from '../../flavors/usecases/update-flavor.usecase';
 import { RemoveFlavorUseCase } from '../../flavors/usecases/remove-flavor.usecase';
+import { UpdateFlavorUseCase } from '../../flavors/usecases/update-flavor.usecase';
 
 import { CreateFillingUseCase } from '../../fillings/usecases/create-filling.usecase';
 import { FindAllFillingsUseCase } from '../../fillings/usecases/find-all-fillings.usecase';
 import { FindOneFillingUseCase } from '../../fillings/usecases/find-one-filling.usecase';
-import { UpdateFillingUseCase } from '../../fillings/usecases/update-filling.usecase';
 import { RemoveFillingUseCase } from '../../fillings/usecases/remove-filling.usecase';
+import { UpdateFillingUseCase } from '../../fillings/usecases/update-filling.usecase';
 
 import { CreateFrostingUseCase } from '../../frostings/usecases/create-frosting.usecase';
 import { FindAllFrostingsUseCase } from '../../frostings/usecases/find-all-frostings.usecase';
 import { FindOneFrostingUseCase } from '../../frostings/usecases/find-one-frosting.usecase';
-import { UpdateFrostingUseCase } from '../../frostings/usecases/update-frosting.usecase';
 import { RemoveFrostingUseCase } from '../../frostings/usecases/remove-frosting.usecase';
+import { UpdateFrostingUseCase } from '../../frostings/usecases/update-frosting.usecase';
 
 import { CreateFlowerUseCase } from '../../flowers/usecases/create-flower.usecase';
 import { FindAllFlowersUseCase } from '../../flowers/usecases/find-all-flowers.usecase';
@@ -93,8 +93,8 @@ import { UpdateFlowerUseCase } from '../../flowers/usecases/update-flower.usecas
 import { CreateStyleUseCase } from '../../styles/usecases/create-style.usecase';
 import { FindAllStylesUseCase } from '../../styles/usecases/find-all-styles.usecase';
 import { FindOneStyleUseCase } from '../../styles/usecases/find-one-style.usecase';
-import { UpdateStyleUseCase } from '../../styles/usecases/update-style.usecase';
 import { RemoveStyleUseCase } from '../../styles/usecases/remove-style.usecase';
+import { UpdateStyleUseCase } from '../../styles/usecases/update-style.usecase';
 
 import { CreateBreadTypeUseCase } from '../../bread-types/usecases/create-bread-type.usecase';
 import { FindAllBreadTypesUseCase } from '../../bread-types/usecases/find-all-bread-types.usecase';
@@ -105,52 +105,53 @@ import { UpdateBreadTypeUseCase } from '../../bread-types/usecases/update-bread-
 import { CreateCustomerUseCase } from '../../customers/usecases/create-customer.usecase';
 import { FindAllCustomersUseCase } from '../../customers/usecases/find-all-customers.usecase';
 import { FindOneCustomerUseCase } from '../../customers/usecases/find-one-customer.usecase';
-import { UpdateCustomerUseCase } from '../../customers/usecases/update-customer.usecase';
 import { RemoveCustomerUseCase } from '../../customers/usecases/remove-customer.usecase';
+import { UpdateCustomerUseCase } from '../../customers/usecases/update-customer.usecase';
 
 import { CreateProductUseCase } from '../../products/usecases/create-product.usecase';
 import { FindAllProductsUseCase } from '../../products/usecases/find-all-products.usecase';
 import { FindOneProductUseCase } from '../../products/usecases/find-one-product.usecase';
-import { UpdateProductUseCase } from '../../products/usecases/update-product.usecase';
-import { UpdateFavoriteProductStatusUseCase } from '../../products/usecases/update-favorite-product-status.usecase';
-import { RemoveProductUseCase } from '../../products/usecases/remove-product.usecase';
-import { UploadPicturesForProductUseCase } from '../../products/usecases/upload-pictures-for-product.usecase';
 import { HideProductPictureUseCase } from '../../products/usecases/hide-product-picture.usecase';
+import { RemoveProductUseCase } from '../../products/usecases/remove-product.usecase';
+import { UpdateFavoriteProductStatusUseCase } from '../../products/usecases/update-favorite-product-status.usecase';
+import { UpdateProductUseCase } from '../../products/usecases/update-product.usecase';
+import { UploadPicturesForProductUseCase } from '../../products/usecases/upload-pictures-for-product.usecase';
 
 import { CreateCommonAddressUseCase } from '../../addresses/usecases/create-common-address.usecase';
 import { FindAllCommonAddressesUseCase } from '../../addresses/usecases/find-all-common-addresses.usecase';
 import { FindOneCommonAddressUseCase } from '../../addresses/usecases/find-one-common-address.usecase';
-import { UpdateCommonAddressUseCase } from '../../addresses/usecases/update-common-address.usecase';
 import { RemoveCommonAddressUseCase } from '../../addresses/usecases/remove-common-address.usecase';
+import { UpdateCommonAddressUseCase } from '../../addresses/usecases/update-common-address.usecase';
 
-import { CreateOrderUseCase } from '../../orders/usecases/order/create-order.usecase';
-import { SetPickupPersonUseCase } from '../../orders/usecases/order/set-pickup-person.usecase';
-import { FindAllOrdersUseCase } from '../../orders/usecases/order/find-all-orders.usecase';
-import { FindOneOrderUseCase } from '../../orders/usecases/order/find-one-order.usecase';
-import { UpdateOrderUseCase } from '../../orders/usecases/order/update-order.usecase';
-import { ChangeOrderStatusUseCase } from '../../orders/usecases/order/change-order-status.usecase';
-import { GetOrderStatsUseCase } from '../../orders/usecases/order/get-order-stats.usecase';
 import { AssignOrderUseCase } from '../../orders/usecases/order-assignment/assign-order.usecase';
 import { GetAssignmentsUseCase } from '../../orders/usecases/order-assignment/get-assignments.usecase';
+import { UpdateAssignOrderUseCase } from '../../orders/usecases/order-assignment/update-assign-order.usecase';
+import { ChangeOrderStatusUseCase } from '../../orders/usecases/order/change-order-status.usecase';
+import { CreateOrderUseCase } from '../../orders/usecases/order/create-order.usecase';
+import { FindAllOrdersUseCase } from '../../orders/usecases/order/find-all-orders.usecase';
+import { FindOneOrderUseCase } from '../../orders/usecases/order/find-one-order.usecase';
+import { GetOrderStatsUseCase } from '../../orders/usecases/order/get-order-stats.usecase';
+import { SetPickupPersonUseCase } from '../../orders/usecases/order/set-pickup-person.usecase';
+import { UpdateOrderUseCase } from '../../orders/usecases/order/update-order.usecase';
 // Utils
 import { CheckForDuplicateAddressUtil } from '../../addresses/utils/check-for-duplicate-address.util';
 // Seeds
-import { cleanDatabase } from './clean-database.seed';
-import { seedInitialUsers } from './initial-users.seed';
-import { seedBranches } from './branches.seed';
-import { seedExtraUsers } from './extra-users.seed';
-import { seedCategories } from './categories.seed';
-import { seedColors } from './colors.seed';
-import { seedFlavors } from './flavors.seed';
-import { seedFillings } from './fillings.seed';
-import { seedFrostings } from './frostings.seed';
-import { seedFlowers } from './flowers.seed';
-import { seedStyles } from './styles.seed';
-import { seedBreadTypes } from './bread-types.seed';
-import { seedCustomers } from './customers.seed';
-import { seedProducts } from './products.seed';
-import { seedOrders } from './orders.seed';
 import { ConfigService } from '@nestjs/config';
+import { seedBranches } from './branches.seed';
+import { seedBreadTypes } from './bread-types.seed';
+import { seedCategories } from './categories.seed';
+import { cleanDatabase } from './clean-database.seed';
+import { seedColors } from './colors.seed';
+import { seedCustomers } from './customers.seed';
+import { seedExtraUsers } from './extra-users.seed';
+import { seedFillings } from './fillings.seed';
+import { seedFlavors } from './flavors.seed';
+import { seedFlowers } from './flowers.seed';
+import { seedFrostings } from './frostings.seed';
+import { seedInitialUsers } from './initial-users.seed';
+import { seedOrders } from './orders.seed';
+import { seedProducts } from './products.seed';
+import { seedStyles } from './styles.seed';
 
 // Cargar variables de entorno
 config();
@@ -519,6 +520,11 @@ async function runSeeds() {
       orderAssignmentRepository,
     );
 
+    const updateAssignOrderUseCase = new UpdateAssignOrderUseCase(
+      userRepository,
+      orderAssignmentRepository,
+    );
+
     const ordersService = new OrdersService(
       createOrderUseCase,
       setPickupPersonUseCase,
@@ -529,6 +535,7 @@ async function runSeeds() {
       getOrderStatsUseCase,
       assignOrderUseCase,
       getAssignmentsUseCase,
+      updateAssignOrderUseCase,
     );
 
     console.log('✅ Conexión establecida\n');

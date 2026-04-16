@@ -14,11 +14,13 @@ import { OrderCancellation } from './entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { OrderFlower } from './entities/order-flower.entity';
+import { OrderPayment } from './entities/order-payment.entity';
 import { Order } from './entities/order.entity';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { AssignOrderUseCase } from './usecases/order-assignment/assign-order.usecase';
 import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignments.usecase';
+import { UpdateAssignOrderUseCase } from './usecases/order-assignment/update-assign-order.usecase';
 import { ChangeOrderStatusUseCase } from './usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from './usecases/order/create-order.usecase';
 import { FindAllOrdersUseCase } from './usecases/order/find-all-orders.usecase';
@@ -26,7 +28,6 @@ import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
 import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
-import { OrderPayment } from './entities/order-payment.entity';
 
 @Module({
   controllers: [OrdersController],
@@ -43,6 +44,7 @@ import { OrderPayment } from './entities/order-payment.entity';
     GetOrderStatsUseCase,
     AssignOrderUseCase,
     GetAssignmentsUseCase,
+    UpdateAssignOrderUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -66,4 +68,4 @@ import { OrderPayment } from './entities/order-payment.entity';
   ],
   exports: [TypeOrmModule, OrdersService],
 })
-export class OrdersModule {}
+export class OrdersModule { }

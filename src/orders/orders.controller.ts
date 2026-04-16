@@ -44,7 +44,7 @@ import { OrderStatsResponse } from './responses/order-stats.response';
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -165,6 +165,18 @@ export class OrdersController {
     required: false,
     type: Date,
     description: 'Filter orders by delivery date',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date from this date (inclusive)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date up to this date (inclusive)',
   })
   @ApiOkResponse({
     description: 'List of orders retrieved successfully.',
@@ -405,5 +417,35 @@ export class OrdersController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<OrderAssignment[]> {
     return this.ordersService.getAssignments(id);
+  }
+
+  @Patch(':id/reassign-order')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Reassign order to another baker',
+    description: 'Reassigns an order to a different baker.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the new baker',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Order successfully reassigned.',
+    type: OrderAssignment,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data or order cannot be reassigned.',
+  })
+  @ApiNotFoundResponse({ description: 'Baker or Order not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  reassignOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignOrderDto: AssignOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<OrderAssignment> {
+    return this.ordersService.reassignOrder(id, assignOrderDto, user);
   }
 }

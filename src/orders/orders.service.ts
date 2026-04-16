@@ -13,6 +13,7 @@ import { OrderStatus } from './enums/order-status.enum';
 import { OrderStatsResponse } from './responses/order-stats.response';
 import { AssignOrderUseCase } from './usecases/order-assignment/assign-order.usecase';
 import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignments.usecase';
+import { UpdateAssignOrderUseCase } from './usecases/order-assignment/update-assign-order.usecase';
 import { ChangeOrderStatusUseCase } from './usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from './usecases/order/create-order.usecase';
 import { FindAllOrdersUseCase } from './usecases/order/find-all-orders.usecase';
@@ -33,7 +34,8 @@ export class OrdersService {
     private readonly getOrderStatsUseCase: GetOrderStatsUseCase,
     private readonly assignOrderUseCase: AssignOrderUseCase,
     private readonly getAssignmentsUseCase: GetAssignmentsUseCase,
-  ) {}
+    private readonly updateAssignOrderUseCase: UpdateAssignOrderUseCase,
+  ) { }
 
   async createOrder(
     dto: CreateOrderDto,
@@ -117,5 +119,17 @@ export class OrdersService {
 
   async getAssignments(bakerId: string): Promise<OrderAssignment[]> {
     return await this.getAssignmentsUseCase.execute(bakerId);
+  }
+
+  async reassignOrder(
+    bakerId: string,
+    assignOrderDto: AssignOrderDto,
+    user: User,
+  ): Promise<OrderAssignment> {
+    return await this.updateAssignOrderUseCase.execute(
+      bakerId,
+      assignOrderDto,
+      user,
+    );
   }
 }

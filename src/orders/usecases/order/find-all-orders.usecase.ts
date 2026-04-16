@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Order } from '../../entities/order.entity';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrdersFilterDto } from '../../dto/orders-filter.dto';
 import { PaginationResponse } from '../../../common/responses/pagination.response';
@@ -12,13 +12,13 @@ export class FindAllOrdersUseCase {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) {}
+  ) { }
 
   async execute(
     ordersFilterDto: OrdersFilterDto,
     branchId: string,
   ): Promise<PaginationResponse<Order> | Order[]> {
-    const { name, orderStatus, clientPhone, orderDate, limit, offset } =
+    const { name, orderStatus, clientPhone, orderDate, limit, offset, startDate, endDate } =
       ordersFilterDto;
 
     const whereConditions: FindOptionsWhere<Order> = {
@@ -30,6 +30,10 @@ export class FindAllOrdersUseCase {
       status: orderStatus ? orderStatus : undefined,
       deliveryDate: orderDate ? orderDate : undefined,
     };
+
+    if (startDate && endDate) {
+      whereConditions.deliveryDate = Between(startDate, endDate);
+    }
 
     const [orders, total] = await this.orderRepository.findAndCount({
       where: whereConditions,
