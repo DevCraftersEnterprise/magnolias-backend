@@ -44,7 +44,7 @@ import { OrderStatsResponse } from './responses/order-stats.response';
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -165,6 +165,18 @@ export class OrdersController {
     required: false,
     type: Date,
     description: 'Filter orders by delivery date',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date from this date (inclusive)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date up to this date (inclusive)',
   })
   @ApiOkResponse({
     description: 'List of orders retrieved successfully.',
@@ -421,7 +433,7 @@ export class OrdersController {
     format: 'uuid',
   })
   @ApiOkResponse({
-    description: 'Order successfully reassigned.',  
+    description: 'Order successfully reassigned.',
     type: OrderAssignment,
   })
   @ApiBadRequestResponse({
