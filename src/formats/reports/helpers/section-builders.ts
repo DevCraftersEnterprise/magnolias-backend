@@ -413,19 +413,21 @@ export const getDomicilioCustomerSection = (
         valueCell('', { border: [false, false, false, false] }),
         detail.referenceImageUrl
           ? {
-              qr: detail.referenceImageUrl,
-              rowSpan: 2,
-              fit: 60,
-              alignment: 'center',
-              border: [false, false, true, false],
-            }
+            // qr: detail.referenceImageUrl,
+            image: detail.referenceImageUrl,
+            rowSpan: 2,
+            // fit: 60,
+            fit: [60, 60],
+            alignment: 'right',
+            border: [false, false, true, false],
+          }
           : { text: '', rowSpan: 2, border: [false, false, true, false] },
         labelCell('', { border: [false, false, true, false] }),
         valueCell('', { border: [false, false, true, false] }),
       ],
       [
         labelCell('FOTO', { border: [true, false, true, false] }),
-        valueCell(formatYesNo(order.hasPhotoReference), {
+        valueCell(detail.referenceImageUrl ? 'SI' : 'NO', {
           border: [false, false, false, false],
         }),
         {
@@ -478,12 +480,14 @@ export const getSimpleCustomerSection = (
         labelCell('', { border: [true, true, true, false] }),
         detail.referenceImageUrl
           ? {
-              qr: detail.referenceImageUrl,
-              rowSpan: 2,
-              fit: 60,
-              alignment: 'right',
-              border: [false, false, true, false],
-            }
+            // qr: detail.referenceImageUrl,
+            image: detail.referenceImageUrl,
+            rowSpan: 2,
+            // fit: 60,
+            fit: [60, 60],
+            alignment: 'right',
+            border: [false, false, true, false],
+          }
           : { text: '', border: [false, false, true, false], rowSpan: 2 },
         labelCell(showReadyTime ? 'TELÉFONO' : '', {
           border: [false, false, true, false],
@@ -695,8 +699,8 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         valueCell(
           detail?.writingLocation
             ? EnumTransformer.translateWritingLocation(
-                detail.writingLocation,
-              ).toUpperCase()
+              detail.writingLocation,
+            ).toUpperCase()
             : '',
           { border: [true, true, true, true] },
         ),
@@ -717,8 +721,8 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         valueCell(
           detail?.pipingLocation
             ? EnumTransformer.translatePipingLocation(
-                detail.pipingLocation,
-              ).toUpperCase()
+              detail.pipingLocation,
+            ).toUpperCase()
             : '',
           {
             border: [true, true, true, false],
@@ -941,8 +945,8 @@ export const getDomicilioTotalsSection = (order: Order): Content => ({
         valueCell(
           order.paymentMethod
             ? EnumTransformer.translatePaymentMethod(
-                order.paymentMethod,
-              ).toUpperCase()
+              order.paymentMethod,
+            ).toUpperCase()
             : '',
           { border: [true, true, true, true] },
         ),
@@ -1310,12 +1314,14 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
           labelCell('', { border: [true, true, true, false] }),
           detail.referenceImageUrl
             ? {
-                qr: detail.referenceImageUrl,
-                rowSpan: 2,
-                fit: 60,
-                alignment: 'right',
-                border: [false, true, true, false],
-              }
+              // qr: detail.referenceImageUrl,
+              image: detail.referenceImageUrl,
+              rowSpan: 2,
+              // fit: 60,
+              fit: [60, 60],
+              alignment: 'right',
+              border: [false, false, true, false],
+            }
             : { text: '', border: [false, true, true, false], rowSpan: 2 },
           labelCell('', { border: [false, true, true, false] }),
           valueCell('', { border: [false, true, true, false] }),
