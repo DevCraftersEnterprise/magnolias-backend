@@ -1,0 +1,282 @@
+name: Watch Render API Deploy (staging)
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+concurrency:
+  group: watch-render-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  watch-render-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wait for Render deploy to appear and finish
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_STAGING_SERVICE_ID }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          echo "Esperando a que Render registre el deploy para staging..."
+          echo "Commit esperado: $GITHUB_SHA"
+
+          DEPLOY_ID=""
+          DEPLOY_STATUS=""
+          DEPLOY_COMMIT=""
+          DEPLOY_STARTED_AT=""
+          DEPLOY_FINISHED_AT=""
+
+          for i in {1..60}; do
+            RESPONSE=$(curl -sS \
+              -H "Authorization: Bearer $RENDER_API_KEY" \
+              "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys")
+
+            echo "$RESPONSE" > render-deploys.json
+
+            MATCHING_DEPLOY=$(jq -c --arg sha "$GITHUB_SHA" '
+              map(select(.deploy.commit.id? == $sha)) | first
+            ' render-deploys.json)
+
+            if [ "$MATCHING_DEPLOY" != "null" ] && [ -n "$MATCHING_DEPLOY" ]; then
+              DEPLOY_ID=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.id // empty')
+              DEPLOY_STATUS=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.status // empty')
+              DEPLOY_COMMIT=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.commit.id // empty')
+              DEPLOY_STARTED_AT=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.startedAt // empty')
+              DEPLOY_FINISHED_AT=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.finishedAt // empty')
+
+              echo "Deploy encontrado"
+              echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+              echo "DEPLOY_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
+              echo "DEPLOY_COMMIT=$DEPLOY_COMMIT" >> $GITHUB_ENV
+              echo "DEPLOY_STARTED_AT=$DEPLOY_STARTED_AT" >> $GITHUB_ENV
+              echo "DEPLOY_FINISHED_AT=$DEPLOY_FINISHED_AT" >> $GITHUB_ENV
+              break
+            fi
+
+            echo "Aún no aparece el deploy asociado al commit. Reintentando en 15 segundos..."
+            sleep 15
+          done
+
+          if [ -z "${DEPLOY_ID:-}" ]; then
+            echo "No se encontró un deploy en Render para el commit actual."
+            exit 1
+          fi
+
+          echo "Vigilando deploy $DEPLOY_ID..."
+
+          for i in {1..80}; do
+            DETAIL=$(curl -sS \
+              -H "Authorization: Bearer $RENDER_API_KEY" \
+              "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys/$DEPLOY_ID")
+
+            echo "$DETAIL" > render-deploy-detail.json
+
+            DEPLOY_STATUS=$(jq -r '.status // .deploy.status // empty' render-deploy-detail.json)
+            DEPLOY_STARTED_AT=$(jq -r '.startedAt // .deploy.startedAt // empty' render-deploy-detail.json)
+            DEPLOY_FINISHED_AT=$(jq -r '.finishedAt // .deploy.finishedAt // empty' render-deploy-detail.json)
+
+            echo "Estado actual: $DEPLOY_STATUS"
+
+            echo "DEPLOY_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
+            echo "DEPLOY_STARTED_AT=$DEPLOY_STARTED_AT" >> $GITHUB_ENV
+            echo "DEPLOY_FINISHED_AT=$DEPLOY_FINISHED_AT" >> $GITHUB_ENV
+
+            case "$DEPLOY_STATUS" in
+              live|succeeded)
+                echo "Deploy completado con éxito."
+                exit 0
+                ;;
+              build_failed|failed|canceled|update_failed)
+                echo "Deploy falló con estado: $DEPLOY_STATUS"
+                exit 1
+                ;;
+              *)
+                sleep 15
+                ;;
+            esac
+          done
+
+          echo "Timeout esperando a que Render terminara el deploy."
+          exit 1
+
+      - name: Notify Discord Success
+        if: success()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DEPLOY_STATUS: ${{ env.DEPLOY_STATUS }}
+          DEPLOY_STARTED_AT: ${{ env.DEPLOY_STARTED_AT }}
+          DEPLOY_FINISHED_AT: ${{ env.DEPLOY_FINISHED_AT }}
+        run: |
+          SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+          SAFE_COMMIT_MESSAGE="${COMMIT_MESSAGE:-Sin mensaje de commit disponible}"
+
+          START_TS=$(date -d "$DEPLOY_STARTED_AT" +%s 2>/dev/null || echo "")
+          END_TS=$(date -d "$DEPLOY_FINISHED_AT" +%s 2>/dev/null || echo "")
+          DURATION_TEXT="No disponible"
+
+          if [ -n "$START_TS" ] && [ -n "$END_TS" ]; then
+            DURATION_SEC=$((END_TS - START_TS))
+            MINUTES=$((DURATION_SEC / 60))
+            SECONDS=$((DURATION_SEC % 60))
+
+            if [ "$MINUTES" -gt 0 ]; then
+              if [ "$SECONDS" -lt 10 ]; then
+                DURATION_TEXT="${MINUTES} min 0${SECONDS} seg"
+              else
+                DURATION_TEXT="${MINUTES} min ${SECONDS} seg"
+              fi
+            else
+              DURATION_TEXT="${SECONDS} seg"
+            fi
+          fi
+
+          DEPLOY_STATUS_LABEL="Completado"
+          case "${DEPLOY_STATUS:-live}" in
+            live|succeeded)
+              DEPLOY_STATUS_LABEL="Completado"
+              ;;
+            failed|build_failed|update_failed)
+              DEPLOY_STATUS_LABEL="Fallido"
+              ;;
+            canceled)
+              DEPLOY_STATUS_LABEL="Cancelado"
+              ;;
+            *)
+              DEPLOY_STATUS_LABEL="${DEPLOY_STATUS:-Desconocido}"
+              ;;
+          esac
+
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg actor "$ACTOR" \
+            --arg short_sha "$SHORT_SHA" \
+            --arg commit_message "$SAFE_COMMIT_MESSAGE" \
+            --arg run_url "$RUN_URL" \
+            --arg deploy_status_label "$DEPLOY_STATUS_LABEL" \
+            --arg duration_text "$DURATION_TEXT" \
+            '{
+              "username": "DevCrafters CI",
+              "embeds": [
+                {
+                  "title": "🚀 Deploy exitoso en Render",
+                  "description": "La API de staging quedó desplegada correctamente.",
+                  "color": 3066993,
+                  "fields": [
+                    { "name": "Rama", "value": ("`" + $branch + "`"), "inline": true },
+                    { "name": "Estado", "value": $deploy_status_label, "inline": true },
+                    { "name": "Duración", "value": $duration_text, "inline": true },
+                    { "name": "Autor", "value": $actor, "inline": true },
+                    { "name": "Commit", "value": ("`" + $short_sha + "` — " + $commit_message), "inline": false },
+                    { "name": "Ver ejecución", "value": ("[Abrir workflow](" + $run_url + ")"), "inline": false }
+                  ],
+                  "footer": {
+                    "text": "Magnolias Backend · Staging"
+                  },
+                  "timestamp": (now | todateiso8601)
+                }
+              ]
+            }' > discord-success.json
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d @discord-success.json \
+               "$DISCORD_WEBHOOK_URL"
+
+      - name: Notify Discord Failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DEPLOY_STATUS: ${{ env.DEPLOY_STATUS }}
+          DEPLOY_STARTED_AT: ${{ env.DEPLOY_STARTED_AT }}
+          DEPLOY_FINISHED_AT: ${{ env.DEPLOY_FINISHED_AT }}
+        run: |
+          SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+          SAFE_COMMIT_MESSAGE="${COMMIT_MESSAGE:-Sin mensaje de commit disponible}"
+
+          START_TS=$(date -d "$DEPLOY_STARTED_AT" +%s 2>/dev/null || echo "")
+          END_TS=$(date -d "$DEPLOY_FINISHED_AT" +%s 2>/dev/null || echo "")
+          DURATION_TEXT="No disponible"
+
+          if [ -n "$START_TS" ] && [ -n "$END_TS" ]; then
+            DURATION_SEC=$((END_TS - START_TS))
+            MINUTES=$((DURATION_SEC / 60))
+            SECONDS=$((DURATION_SEC % 60))
+
+            if [ "$MINUTES" -gt 0 ]; then
+              if [ "$SECONDS" -lt 10 ]; then
+                DURATION_TEXT="${MINUTES} min 0${SECONDS} seg"
+              else
+                DURATION_TEXT="${MINUTES} min ${SECONDS} seg"
+              fi
+            else
+              DURATION_TEXT="${SECONDS} seg"
+            fi
+          fi
+
+          DEPLOY_STATUS_LABEL="Fallido"
+          case "${DEPLOY_STATUS:-failed}" in
+            live|succeeded)
+              DEPLOY_STATUS_LABEL="Completado"
+              ;;
+            failed|build_failed|update_failed)
+              DEPLOY_STATUS_LABEL="Fallido"
+              ;;
+            canceled)
+              DEPLOY_STATUS_LABEL="Cancelado"
+              ;;
+            *)
+              DEPLOY_STATUS_LABEL="${DEPLOY_STATUS:-Desconocido}"
+              ;;
+          esac
+
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg actor "$ACTOR" \
+            --arg short_sha "$SHORT_SHA" \
+            --arg commit_message "$SAFE_COMMIT_MESSAGE" \
+            --arg run_url "$RUN_URL" \
+            --arg deploy_status_label "$DEPLOY_STATUS_LABEL" \
+            --arg duration_text "$DURATION_TEXT" \
+            '{
+              "username": "DevCrafters CI",
+              "embeds": [
+                {
+                  "title": "💥 Deploy fallido en Render",
+                  "description": "La API de staging no terminó correctamente.",
+                  "color": 15158332,
+                  "fields": [
+                    { "name": "Rama", "value": ("`" + $branch + "`"), "inline": true },
+                    { "name": "Estado", "value": $deploy_status_label, "inline": true },
+                    { "name": "Duración", "value": $duration_text, "inline": true },
+                    { "name": "Autor", "value": $actor, "inline": true },
+                    { "name": "Commit", "value": ("`" + $short_sha + "` — " + $commit_message), "inline": false },
+                    { "name": "Revisar error", "value": ("[Abrir workflow](" + $run_url + ")"), "inline": false }
+                  ],
+                  "footer": {
+                    "text": "Magnolias Backend · Staging"
+                  },
+                  "timestamp": (now | todateiso8601)
+                }
+              ]
+            }' > discord-failure.json
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d @discord-failure.json \
+               "$DISCORD_WEBHOOK_URL"
