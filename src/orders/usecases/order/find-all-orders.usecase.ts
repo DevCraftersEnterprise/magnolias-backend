@@ -73,12 +73,16 @@ export class FindAllOrdersUseCase {
           phone: true,
         },
         assignments: {
+          id: true,
+          assignedDate: true,
+          notes: true,
           baker: {
             id: true,
             name: true,
             lastname: true,
-            role: true
-          }
+            role: true,
+            area: true,
+          },
         },
         createdBy: {
           name: true,
