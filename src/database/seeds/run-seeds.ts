@@ -48,6 +48,7 @@ import { FindOneUserUseCase } from '../../users/usecases/find-one-user.usecase';
 import { RemoveUserUseCase } from '../../users/usecases/remove-user.usecase';
 import { ResetPasswordForUserUseCase } from '../../users/usecases/reset-password-for-user.usecase';
 import { UpdateUserUseCase } from '../../users/usecases/update-user.usecase';
+import { FindAllBakersUseCase } from '../../users/usecases/find-all-bakers.usecase';
 
 import { FindAllBranchesUseCase } from '../../branches/usecases/branch/find-all-branches.usecase';
 import { FindOneBranchUseCase } from '../../branches/usecases/branch/find-one-branch.usecase';
@@ -152,7 +153,6 @@ import { seedInitialUsers } from './initial-users.seed';
 import { seedOrders } from './orders.seed';
 import { seedProducts } from './products.seed';
 import { seedStyles } from './styles.seed';
-
 // Cargar variables de entorno
 config();
 
@@ -222,6 +222,8 @@ async function runSeeds() {
     const resetPasswordForUserUseCase = new ResetPasswordForUserUseCase(
       userRepository,
     );
+
+    const getAllBakersByBranchUseCase = new FindAllBakersUseCase(userRepository);
 
     const configService = new ConfigService();
     const geocodingService = new GeocodingService(configService);
@@ -373,6 +375,7 @@ async function runSeeds() {
       updateUserUseCase,
       removeUserUseCase,
       resetPasswordForUserUseCase,
+      getAllBakersByBranchUseCase
     );
 
     const categoriesService = new CategoriesService(

@@ -42,6 +42,9 @@ export class FindAllOrdersUseCase {
         deliveryAddress: true,
         createdBy: true,
         updatedBy: true,
+        assignments: {
+          baker: true,
+        },
       },
       select: {
         id: true,
@@ -68,6 +71,14 @@ export class FindAllOrdersUseCase {
           id: true,
           fullName: true,
           phone: true,
+        },
+        assignments: {
+          baker: {
+            id: true,
+            name: true,
+            lastname: true,
+            role: true
+          }
         },
         createdBy: {
           name: true,

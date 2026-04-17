@@ -12,16 +12,17 @@ import {
 } from 'typeorm';
 import { Branch } from '../../branches/entities/branch.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
+import { EventServiceType } from '../../common/enums/event-service-type.enum';
 import { OrderType } from '../../common/enums/order-type.enum';
+import { PaymentMethod } from '../../common/enums/payment-methods.enum';
+import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 import { Customer } from '../../customers/entities/customer.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { User } from '../../users/entities/user.entity';
+import { OrderAssignment } from '../entities/order-assignment.entity';
 import { OrderStatus } from '../enums/order-status.enum';
-import { OrderDetail } from './order-detail.entity';
-import { EventServiceType } from '../../common/enums/event-service-type.enum';
-import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { OrderDeliveryAddress } from './order-delivery-address.entity';
-import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
+import { OrderDetail } from './order-detail.entity';
 import { OrderPayment } from './order-payment.entity';
 
 @Entity({ name: 'orders' })
@@ -315,4 +316,8 @@ export class Order {
   @ApiHideProperty()
   @OneToMany(() => OrderPayment, (payment) => payment.order)
   payments: OrderPayment[];
+
+  @ApiHideProperty()
+  @OneToMany(() => OrderAssignment, (assignment) => assignment.order)
+  assignments: OrderAssignment[];
 }
