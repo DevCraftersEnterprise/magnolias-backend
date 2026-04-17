@@ -13,6 +13,7 @@ import { UsersService } from './users.service';
 import { UpdateUserUseCase } from './usecases/update-user.usecase';
 import { RemoveUserUseCase } from './usecases/remove-user.usecase';
 import { ResetPasswordForUserUseCase } from './usecases/reset-password-for-user.usecase';
+import { FindAllBakersUseCase } from './usecases/find-all-bakers.usecase';
 
 @Module({
   controllers: [UsersController],
@@ -28,6 +29,7 @@ import { ResetPasswordForUserUseCase } from './usecases/reset-password-for-user.
     UpdateUserUseCase,
     RemoveUserUseCase,
     ResetPasswordForUserUseCase,
+    FindAllBakersUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([User]),
@@ -37,4 +39,4 @@ import { ResetPasswordForUserUseCase } from './usecases/reset-password-for-user.
   ],
   exports: [UsersService, TypeOrmModule],
 })
-export class UsersModule {}
+export class UsersModule { }

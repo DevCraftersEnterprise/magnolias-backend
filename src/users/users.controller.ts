@@ -37,7 +37,7 @@ import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 @Auth([UserRoles.SUPER, UserRoles.ADMIN])
 @ApiBearerAuth('access-token')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
@@ -132,6 +132,41 @@ export class UsersController {
   ): Promise<PaginationResponse<User> | User[]> {
     return this.usersService.findUsers(filterDto, user);
   }
+
+  @Get('bakers/:branchId')
+  @ApiOperation({
+    summary: 'Get bakers by branch ID',
+    description: 'Retrieves a list of bakers based on the provided branch ID.',
+  })
+  @ApiOkResponse({
+    description: 'List of bakers retrieved successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/User' },
+        },
+        total: { type: 'number', example: 100 },
+        pagination: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number', example: 10 },
+            offset: { type: 'number', example: 0 },
+            totalPages: { type: 'number', example: 10 },
+            currentPage: { type: 'number', example: 1 },
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  findBakers(
+    @Param('branchId') branchId: string,
+  ): Promise<User[]> {
+    return this.usersService.findBakers(branchId);
+  }
+
 
   @Get(':term')
   @ApiOperation({
