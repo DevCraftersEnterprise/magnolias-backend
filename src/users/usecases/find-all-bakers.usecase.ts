@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserRoles } from '../enums/user-role';
 
@@ -19,7 +19,9 @@ export class FindAllBakersUseCase {
 
     const users = await this.userRepository.find({
       where: {
-        branches: In([branchId]),
+        branches: {
+          id: branchId,
+        },
         role: UserRoles.BAKER
       },
       relations: {
