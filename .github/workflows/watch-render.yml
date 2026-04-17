@@ -38,18 +38,13 @@ jobs:
             echo "$RESPONSE" > render-deploys.json
 
             MATCHING_DEPLOY=$(jq -c --arg sha "$GITHUB_SHA" '
-              map(select(
-                (.commit.id? == $sha) or
-                (.commit.commitId? == $sha) or
-                (.commit.sha? == $sha) or
-                (.commit.commit? == $sha)
-              )) | first
+              map(select(.deploy.commit.id? == $sha)) | first
             ' render-deploys.json)
 
             if [ "$MATCHING_DEPLOY" != "null" ] && [ -n "$MATCHING_DEPLOY" ]; then
-              DEPLOY_ID=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.id // .id // empty')
-              DEPLOY_STATUS=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.status // .status // empty')
-              DEPLOY_COMMIT=$(echo "$MATCHING_DEPLOY" | jq -r '.commit.id // .commit.commitId // .commit.sha // .commit.commit // empty')
+              DEPLOY_ID=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.id // empty')
+              DEPLOY_STATUS=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.status // empty')
+              DEPLOY_COMMIT=$(echo "$MATCHING_DEPLOY" | jq -r '.deploy.commit.id // empty')
 
               echo "Deploy encontrado"
               echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
@@ -86,7 +81,7 @@ jobs:
                 echo "Deploy completado con éxito."
                 exit 0
                 ;;
-              build_failed|failed|canceled)
+              build_failed|failed|canceled|update_failed)
                 echo "Deploy falló con estado: $DEPLOY_STATUS"
                 exit 1
                 ;;
