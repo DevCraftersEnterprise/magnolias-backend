@@ -4,6 +4,29 @@ export class InitialSchema1776483163437 implements MigrationInterface {
     name = 'InitialSchema1776483163437'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        // Drop enum types if they exist (cleanup from failed migrations)
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."order_details_productsize_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."order_details_writinglocation_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."order_details_pipinglocation_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."orders_ordertype_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."orders_deliveryround_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."orders_paymentmethod_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."orders_status_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."users_role_enum"`);
+        await queryRunner.query(`DROP TYPE IF EXISTS "public"."users_area_enum"`);
+
+        // Create enum types
+        await queryRunner.query(`CREATE TYPE "public"."order_details_productsize_enum" AS ENUM('10P', '15P', '20P', '25P', '30P', '40P', '50P', 'CUSTOM')`);
+        await queryRunner.query(`CREATE TYPE "public"."order_details_writinglocation_enum" AS ENUM('TOP', 'CENTER', 'BOTTOM', 'SIDE', 'PLAQUE')`);
+        await queryRunner.query(`CREATE TYPE "public"."order_details_pipinglocation_enum" AS ENUM('TOP_BORDER', 'BOTTOM_BORDER', 'FULL_BORDER', 'CENTER', 'FULL_DESING', 'NONE')`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_ordertype_enum" AS ENUM('H-ESP', 'DOMICILIO', 'TIENDA', 'FLOR', 'VITRINA', 'EVENTO', 'PERSONALIZADO')`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_deliveryround_enum" AS ENUM('ROUND_1', 'ROUND_2', 'ROUND_3')`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_paymentmethod_enum" AS ENUM('CASH', 'CARD', 'TRANSFER', 'MIXED')`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_status_enum" AS ENUM('CREATED', 'IN PROCESS', 'DONE', 'DELIVERED', 'CANCELED')`);
+        await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('SUPER', 'ADMIN', 'EMPLOYEE', 'BAKER', 'ASSISTANT')`);
+        await queryRunner.query(`CREATE TYPE "public"."users_area_enum" AS ENUM('BO', 'PA', 'PE', 'CK', '3L')`);
+
+        // Now create tables
         await queryRunner.query(`CREATE TABLE "phones" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "phone1" text NOT NULL, "phone2" text, "whatsapp" text, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "branchId" uuid NOT NULL, "createdBy" uuid NOT NULL, "updatedBy" uuid NOT NULL, CONSTRAINT "REL_b5a41150ed03b76c81de795815" UNIQUE ("branchId"), CONSTRAINT "PK_30d7fc09a458d7a4d9471bda554" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "branches" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(255) NOT NULL, "address" character varying(255) NOT NULL, "latitude" numeric(10,7), "longitude" numeric(10,7), "isActive" boolean NOT NULL DEFAULT true, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "phoneId" uuid, "createdBy" uuid NOT NULL, "updatedBy" uuid NOT NULL, CONSTRAINT "REL_4fc2dfa7df2b760d9f452f8f9d" UNIQUE ("phoneId"), CONSTRAINT "PK_7f37d3b42defea97f1df0d19535" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "customer_addresses" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "street" character varying(255) NOT NULL, "number" character varying(50) NOT NULL, "neighborhood" character varying(255) NOT NULL, "city" character varying(150), "postalCode" character varying(10), "interphoneCode" character varying(50), "betweenStreets" character varying(255), "reference" text, "notes" text, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "customerId" uuid, "createdBy" uuid NOT NULL, "updatedBy" uuid NOT NULL, CONSTRAINT "REL_7bd088b1c8d3506953240ebf03" UNIQUE ("customerId"), CONSTRAINT "PK_336bda7b0a0cd04241f719fc834" PRIMARY KEY ("id"))`);
@@ -191,6 +214,17 @@ export class InitialSchema1776483163437 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "customer_addresses"`);
         await queryRunner.query(`DROP TABLE "branches"`);
         await queryRunner.query(`DROP TABLE "phones"`);
+
+        // Drop enum types at the end
+        await queryRunner.query(`DROP TYPE "public"."users_area_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."users_role_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_paymentmethod_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_deliveryround_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_ordertype_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."order_details_pipinglocation_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."order_details_writinglocation_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."order_details_productsize_enum"`);
     }
 
 }
