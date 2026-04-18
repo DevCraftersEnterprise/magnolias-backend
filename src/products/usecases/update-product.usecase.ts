@@ -19,7 +19,7 @@ export class UpdateProductUseCase {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private readonly categoriesService: CategoriesService,
-  ) {}
+  ) { }
 
   async execute(
     id: string,
@@ -40,7 +40,7 @@ export class UpdateProductUseCase {
 
     if (name && product.name !== name) {
       const duplicatedProduct = await this.productRepository.findOne({
-        where: { name: name.toUpperCase() },
+        where: { name: name.toUpperCase(), category: { id: categoryId } },
       });
 
       if (duplicatedProduct && duplicatedProduct.id !== id) {
