@@ -22,7 +22,7 @@ export class UpdateUserUseCase {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-  ) {}
+  ) { }
 
   async execute(
     updateUserDto: UpdateUserDto,
@@ -55,7 +55,7 @@ export class UpdateUserUseCase {
       user.branches = [];
     }
 
-    if (user.role !== role && role === UserRoles.BAKER) {
+    if (currentUser.role !== role && role === UserRoles.BAKER) {
       if (!branchIds || branchIds.length === 0) {
         this.logger.warn(
           `Users with role BAKER must be linked to at least one branch`,
