@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -6,19 +6,24 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Branch } from '../../branches/entities/branch.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
+import { EventServiceType } from '../../common/enums/event-service-type.enum';
 import { OrderType } from '../../common/enums/order-type.enum';
-import { ProductSize } from '../../common/enums/product-size.enum';
+import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 import { Customer } from '../../customers/entities/customer.entity';
-import { OrderFlower } from '../../flowers/entities/order-flower.entity';
+import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { User } from '../../users/entities/user.entity';
+import { OrderAssignment } from '../entities/order-assignment.entity';
 import { OrderStatus } from '../enums/order-status.enum';
+import { OrderDeliveryAddress } from './order-delivery-address.entity';
 import { OrderDetail } from './order-detail.entity';
+import { OrderPayment } from './order-payment.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -38,7 +43,7 @@ export class Order {
 
   @ApiProperty({
     description: 'Order code generated based on type and sequence',
-    example: 'DOM-2026-0001',
+    example: 'DOM-NAVARRETE-2026-0001',
   })
   @Column({ type: 'varchar', length: 50, nullable: false, unique: true })
   orderCode: string;
@@ -50,22 +55,6 @@ export class Order {
   })
   @Column({ type: 'enum', enum: DeliveryRound, nullable: true })
   deliveryRound?: DeliveryRound;
-
-  @ApiProperty({
-    description: 'Product size for the order',
-    example: ProductSize.TWENTY_P,
-    required: false,
-  })
-  @Column({ type: 'enum', enum: ProductSize, nullable: true })
-  productSize?: ProductSize;
-
-  @ApiProperty({
-    description: 'Custom size for the order (if product size is CUSTOM)',
-    example: '80 personas',
-    required: false,
-  })
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  customSize?: string;
 
   @ApiProperty({
     description: 'Date when the order is to be delivered',
@@ -83,41 +72,70 @@ export class Order {
   deliveryTime?: string;
 
   @ApiProperty({
-    description: 'Name of the person who will pick up the order',
-    example: 'María García',
+    description: 'Time when the order should be ready',
+    example: '14:00',
+    required: false,
+  })
+  @Column({ type: 'time', nullable: true })
+  readyTime?: string;
+
+  @ApiProperty({
+    description: 'Time of the event (for event orders)',
+    example: '18:00',
+    required: false,
+  })
+  @Column({ type: 'time', nullable: true })
+  eventTime?: string;
+
+  @ApiProperty({
+    description: 'Setup/assembly time for events',
+    example: '16:00',
+    required: false,
+  })
+  @Column({ type: 'time', nullable: true })
+  setupTime?: string;
+
+  @ApiProperty({
+    description: 'Time of departure from branch',
+    example: '15:30',
+    required: false,
+  })
+  @Column({ type: 'time', nullable: true })
+  branchDepartureTime?: string;
+
+  @ApiProperty({
+    description: 'Date and time for collection/pickup',
+    example: '2026-02-15T10:00:00Z',
+    required: false,
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  collectionDateTime?: Date;
+
+  @ApiProperty({
+    description: 'Name of the person responsible for setup',
+    example: 'Juan Pérez',
     required: false,
   })
   @Column({ type: 'varchar', length: 255, nullable: true })
-  pickupPersonName?: string;
+  setupPersonName?: string;
 
   @ApiProperty({
-    description: 'Phone of the person who will pick up the order',
-    example: '+52 123 456 7890',
+    description: 'Types of services for the event',
+    example: [EventServiceType.DESSERT_TABLE, EventServiceType.CAKE],
+    enum: EventServiceType,
+    isArray: true,
     required: false,
   })
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-    transformer: EncryptedTransformer,
-  })
-  pickupPersonPhone?: string;
+  @Column({ type: 'simple-array', nullable: true })
+  eventServices?: EventServiceType[];
 
   @ApiProperty({
-    description: 'Delivery address (for delivery orders)',
-    example: 'Av. Principal 123, Col. Centro',
+    description: 'Number of guests for the event',
+    example: 100,
     required: false,
   })
-  @Column({ type: 'text', nullable: true })
-  deliveryAddress?: string;
-
-  @ApiProperty({
-    description: 'Additional delivery notes',
-    example: 'Casa verde con portón blanco',
-    required: false,
-  })
-  @Column({ type: 'text', nullable: true })
-  deliveryNotes?: string;
+  @Column({ type: 'int', nullable: true })
+  guestCount?: number;
 
   @ApiProperty({
     description: 'Total amount of the order',
@@ -141,40 +159,134 @@ export class Order {
   remainingBalance: number;
 
   @ApiProperty({
+    description: 'Amount already paid (for vitrina orders)',
+    example: 350.0,
+  })
+  @Column({ type: 'money', default: 0 })
+  paidAmount: number;
+
+  @ApiProperty({
+    description: 'Total cost for desserts (events)',
+    example: 5000.0,
+  })
+  @Column({ type: 'money', default: 0 })
+  dessertsTotal: number;
+
+  @ApiProperty({
+    description: 'Cost for setup/assembly service (events)',
+    example: 1500.0,
+  })
+  @Column({ type: 'money', default: 0 })
+  setupServiceCost: number;
+
+  @ApiProperty({
+    description: 'Indicates if the order has a photo reference',
+    example: true,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  hasPhotoReference: boolean;
+
+  @ApiProperty({
+    description: 'Ticket number for advance payment',
+    example: 'TKT-2026-001234',
+    required: false,
+  })
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  ticketNumber?: string;
+
+  @ApiProperty({
+    description: 'Ticket number for settlement/final payment',
+    example: 'TKT-2026-001235',
+    required: false,
+  })
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  settlementTicketNumber?: string;
+
+  @ApiProperty({
+    description: 'Payment method',
+    example: PaymentMethod.CARD,
+    enum: PaymentMethod,
+    required: false,
+  })
+  @Column({ type: 'enum', enum: PaymentMethod, nullable: true })
+  paymentMethod?: PaymentMethod;
+
+  @ApiProperty({
+    description: 'Bank account for transfer payments',
+    example: 'BBVA 1234567890',
+    required: false,
+  })
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    transformer: EncryptedTransformer,
+  })
+  transferAccount?: string;
+
+  @ApiProperty({
+    description: 'Indicates if the customer requires an invoice',
+    example: false,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  requiresInvoice: boolean;
+
+  @ApiProperty({
+    description:
+      'Indicates if the order is going to be collected by the customer',
+    example: false,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  isCustomerPickup: boolean;
+
+  @ApiProperty({
+    description: 'Date of settlement/final payment',
+    example: '2026-02-20T00:00:00Z',
+    required: false,
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  settlementDate?: Date;
+
+  @ApiProperty({
+    description: 'Total amount to settle',
+    example: 2500.0,
+  })
+  @Column({ type: 'money', default: 0 })
+  settlementTotal: number;
+
+  @ApiProperty({
     description: 'Current status of the order',
     example: OrderStatus.IN_PROCESS,
   })
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.CREATED })
   status: OrderStatus;
 
-  @ApiProperty({
-    description: ' Customer who placed the order',
-    type: () => Customer,
+  @ApiHideProperty()
+  @OneToOne(() => OrderDeliveryAddress, (address) => address.order, {
+    cascade: true,
+    eager: false,
   })
+  deliveryAddress?: OrderDeliveryAddress;
+
+  @ApiHideProperty()
   @ManyToOne(() => Customer, (customer) => customer.orders, { nullable: false })
   @JoinColumn({ name: 'customerId' })
   customer: Customer;
 
-  @ApiProperty({
-    description: 'Branch where the order was placed',
-    type: () => Branch,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => Branch, { nullable: false })
   @JoinColumn({ name: 'branchId' })
   branch: Branch;
 
-  @ApiProperty({
-    description: 'User who created the order',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who updated the order',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;
@@ -193,17 +305,19 @@ export class Order {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: 'Details associated with the order',
-    type: () => [OrderDetail],
-  })
+  @ApiHideProperty()
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
   details: OrderDetail[];
 
-  @ApiProperty({
-    description: 'Flowers associated with the order',
-    type: () => [OrderFlower],
-  })
+  @ApiHideProperty()
   @OneToMany(() => OrderFlower, (orderFlower) => orderFlower.order)
   orderFlowers: OrderFlower[];
+
+  @ApiHideProperty()
+  @OneToMany(() => OrderPayment, (payment) => payment.order)
+  payments: OrderPayment[];
+
+  @ApiHideProperty()
+  @OneToMany(() => OrderAssignment, (assignment) => assignment.order)
+  assignments: OrderAssignment[];
 }

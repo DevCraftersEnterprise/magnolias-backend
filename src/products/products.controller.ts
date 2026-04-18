@@ -26,7 +26,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
@@ -94,6 +94,10 @@ export class ProductsController {
     description: 'Filter products by description',
   })
   @ApiOkResponse({
+    description: 'List of all active products retrieved successfully.',
+    type: [Product],
+  })
+  @ApiOkResponse({
     description: 'List of products retrieved successfully.',
     schema: {
       type: 'object',
@@ -117,21 +121,21 @@ export class ProductsController {
   })
   findProducts(
     @Query() filterDto: ProductsFilterDto,
-  ): Promise<PaginationResponse<Product>> {
+  ): Promise<PaginationResponse<Product> | Product[]> {
     return this.productsService.findProducts(filterDto);
   }
 
-  @Get('all')
+  @Get('favorite')
   @ApiOperation({
-    summary: 'Get all products',
-    description: 'Retrieves a list of all active products without pagination.',
+    summary: 'Get favorite product',
+    description: 'Retrieves the favorite product.',
   })
   @ApiOkResponse({
-    description: 'List of all active products retrieved successfully.',
-    type: [Product],
+    description: 'Favorite product retrieved successfully.',
+    type: Product,
   })
-  findAllProducts(): Promise<Product[]> {
-    return this.productsService.findAllProducts();
+  findFavoriteProduct(): Promise<Product | null> {
+    return this.productsService.findFavoriteProduct();
   }
 
   @Get(':term')
@@ -151,11 +155,18 @@ export class ProductsController {
   @ApiNotFoundResponse({
     description: 'Product not found with the provided term.',
   })
-  findProductByTerm(@Param('term') term: string): Promise<Product | null> {
+  @ApiOkResponse({
+    description: 'Product retrieved successfully.',
+    type: Product,
+  })
+  @ApiNotFoundResponse({
+    description: 'Product not found with the provided term.',
+  })
+  findProductByTerm(@Param('term') term: string): Promise<Product> {
     return this.productsService.findProductByTerm(term);
   }
 
-  @Patch()
+  @Patch(':id')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
@@ -170,13 +181,35 @@ export class ProductsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   @ApiNotFoundResponse({ description: 'Product not found.' })
   updateProduct(
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
     @CurrentUser() user: User,
   ): Promise<Product> {
-    return this.productsService.updateProduct(updateProductDto, user);
+    return this.productsService.updateProduct(id, updateProductDto, user);
   }
 
-  @Delete()
+  @Patch('favorite/:id')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Update product favorite status',
+    description: 'Updates the favorite status of an existing product.',
+  })
+  @ApiOkResponse({
+    description: 'Product successfully updated.',
+    type: Product,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid product data provided.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiNotFoundResponse({ description: 'Product not found.' })
+  updateProductFavoriteStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+  ): Promise<Product> {
+    return this.productsService.updateProductFavoriteStatus(id, user);
+  }
+
+  @Delete(':id')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
@@ -190,14 +223,14 @@ export class ProductsController {
     description: 'Product not found or already inactive.',
   })
   deleteProduct(
-    @Body() updateProductDto: UpdateProductDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
   ): Promise<void> {
-    return this.productsService.deleteProduct(updateProductDto, user);
+    return this.productsService.deleteProduct(id, user);
   }
 
   // Product Pictures
-  @Post('picture')
+  @Post('picture/:id')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.ASSISTANT])
   @UseInterceptors(FilesInterceptor('files'))
   @ApiBearerAuth('access-token')
@@ -214,15 +247,11 @@ export class ProductsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   @ApiNotFoundResponse({ description: 'Product not found.' })
   uploadProductPicture(
-    @Body() updateProductDto: UpdateProductDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.productsService.uploadProductPicture(
-      files,
-      updateProductDto,
-      user,
-    );
+    return this.productsService.uploadProductPicture(files, id, user);
   }
 
   @Delete('picture/:id')

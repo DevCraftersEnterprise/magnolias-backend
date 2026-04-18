@@ -23,7 +23,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
@@ -55,19 +55,6 @@ export class FlavorsController {
     return this.flavorsService.create(createFlavorDto, user);
   }
 
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get all flavor types',
-    description: 'Retrieves all active flavor types.',
-  })
-  @ApiOkResponse({ description: 'Flavor types list.', type: [Flavor] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll(): Promise<Flavor[]> {
-    return this.flavorsService.findAll();
-  }
-
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -89,6 +76,7 @@ export class FlavorsController {
     description: 'Number of items to skip',
     example: 0,
   })
+  @ApiOkResponse({ description: 'Flavor types list.', type: [Flavor] })
   @ApiOkResponse({
     description: 'List of flavors retrieved successfully.',
     schema: {
@@ -111,10 +99,10 @@ export class FlavorsController {
       },
     },
   })
-  paginated(
+  findAll(
     @Query() filterDto: PaginationDto,
-  ): Promise<PaginationResponse<Flavor>> {
-    return this.flavorsService.paginated(filterDto);
+  ): Promise<PaginationResponse<Flavor> | Flavor[]> {
+    return this.flavorsService.findAll(filterDto);
   }
 
   @Get(':term')

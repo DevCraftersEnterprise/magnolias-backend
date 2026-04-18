@@ -9,7 +9,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => [
         {
-          name: 'defailt',
+          name: 'default',
           ttl: Number(configService.get<number>('THROTTLER_TTL', 60)) * 1000,
           limit: Number(configService.get<number>('THROTTLER_LIMIT', 10)),
         },

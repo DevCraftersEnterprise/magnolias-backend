@@ -1,3 +1,4 @@
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -8,9 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Branch } from './branch.entity';
+import { Branch } from '../../branches/entities/branch.entity';
 import { User } from '../../users/entities/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'phones' })
 export class Phone {
@@ -44,28 +44,19 @@ export class Phone {
   @Column({ name: 'whatsapp', type: 'text', nullable: true })
   whatsapp?: string;
 
-  @ApiProperty({
-    description: 'Associated branch for the phone record',
-    type: () => Branch,
-  })
+  @ApiHideProperty()
   @OneToOne(() => Branch, (branch) => branch.phones, {
     nullable: false,
   })
   @JoinColumn({ name: 'branchId' })
   branch: Branch;
 
-  @ApiProperty({
-    description: 'User who created the phone record',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who updated the phone record',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;

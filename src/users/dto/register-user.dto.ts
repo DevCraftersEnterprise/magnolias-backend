@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsOptional,
+  IsString,
+  IsUUID,
   Matches,
   MinLength,
 } from 'class-validator';
 import { UserRoles } from '../enums/user-role';
+import { BakerArea } from '../../common/enums/baker-area.enum';
 
 export class RegisterUserDto {
   @ApiProperty({
@@ -60,11 +64,34 @@ export class RegisterUserDto {
   branchId?: string;
 
   @ApiProperty({
-    description: 'UUID of the baker profile to link (required for BAKER role)',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'UUIDs of branches to assign (only for BAKER role)',
+    example: [
+      '123e4567-e89b-12d3-a456-426614174000',
+      '987e6543-e21b-12d3-a456-426614174999',
+    ],
     required: false,
+    type: [String],
   })
   @IsOptional()
-  @IsNotEmpty()
-  bakerId?: string;
+  @IsArray()
+  @IsUUID('all', { each: true })
+  branchIds?: string[];
+
+  @ApiProperty({
+    description: 'Work area',
+    example: BakerArea.PE,
+    enum: BakerArea,
+  })
+  @IsOptional({ message: 'Area is required only for BAKER role' })
+  @IsEnum(BakerArea, { message: 'Invalid area' })
+  area?: BakerArea;
+
+  @ApiProperty({
+    description: 'Specialty description',
+    example: 'Especialista en pasteles de tres leches',
+    required: false,
+  })
+  @IsOptional({ message: 'Specialty is required only for BAKER role' })
+  @IsString({ message: 'Specialty must be a string' })
+  specialty?: string;
 }

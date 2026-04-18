@@ -1,99 +1,38 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { Injectable } from '@nestjs/common';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { CreateFrostingDto } from './dto/create-frosting.dto';
+import { FrostingsFilterDto } from './dto/frostings-filter.dto';
 import { UpdateFrostingDto } from './dto/update-frosting.dto';
 import { Frosting } from './entities/frosting.entity';
-import { isUUID } from 'class-validator';
+import { CreateFrostingUseCase } from './usecases/create-frosting.usecase';
+import { FindAllFrostingsUseCase } from './usecases/find-all-frostings.usecase';
+import { FindOneFrostingUseCase } from './usecases/find-one-frosting.usecase';
+import { RemoveFrostingUseCase } from './usecases/remove-frosting.usecase';
+import { UpdateFrostingUseCase } from './usecases/update-frosting.usecase';
 
 @Injectable()
 export class FrostingsService {
   constructor(
-    @InjectRepository(Frosting)
-    private readonly frostingRepository: Repository<Frosting>,
+    private readonly createFrostingUseCase: CreateFrostingUseCase,
+    private readonly findAllFrostingsUseCase: FindAllFrostingsUseCase,
+    private readonly findOneFrostingUseCase: FindOneFrostingUseCase,
+    private readonly updateFrostingUseCase: UpdateFrostingUseCase,
+    private readonly removeFrostingUseCase: RemoveFrostingUseCase,
   ) {}
 
   async create(dto: CreateFrostingDto, user: User): Promise<Frosting> {
-    const { name } = dto;
-
-    const existingFrosting = await this.frostingRepository.findOne({
-      where: { name: name.toUpperCase() },
-    });
-
-    if (existingFrosting) {
-      throw new BadRequestException(
-        `Frosting with name ${name} already exists`,
-      );
-    }
-
-    const frosting = this.frostingRepository.create({
-      ...dto,
-      name: name.toUpperCase(),
-      createdBy: user,
-      updatedBy: user,
-    });
-
-    return await this.frostingRepository.save(frosting);
+    return await this.createFrostingUseCase.execute(dto, user);
   }
 
-  async findAll(): Promise<Frosting[]> {
-    return await this.frostingRepository.find({
-      where: { isActive: true },
-      order: { name: 'ASC' },
-    });
-  }
-
-  async paginated(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<Frosting>> {
-    const { limit = 10, offset = 0 } = paginationDto;
-
-    const [frostings, total] = await this.frostingRepository.findAndCount({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-      },
-      take: limit,
-      skip: offset,
-      order: { name: 'ASC' },
-    });
-
-    return {
-      items: frostings,
-      total,
-      pagination: {
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-      },
-    };
+  async findAll(
+    frostingsFilterDto: FrostingsFilterDto,
+  ): Promise<PaginationResponse<Frosting> | Frosting[]> {
+    return await this.findAllFrostingsUseCase.execute(frostingsFilterDto);
   }
 
   async findOne(term: string): Promise<Frosting> {
-    const whereConditions: FindOptionsWhere<Frosting> = {};
-
-    if (isUUID(term)) whereConditions.id = term;
-    else whereConditions.name = term.toUpperCase();
-
-    const frosting = await this.frostingRepository.findOne({
-      where: whereConditions,
-    });
-
-    if (!frosting) {
-      throw new NotFoundException(`Frosting with term ${term} not found`);
-    }
-
-    return frosting;
+    return await this.findOneFrostingUseCase.execute(term);
   }
 
   async update(
@@ -101,31 +40,10 @@ export class FrostingsService {
     dto: UpdateFrostingDto,
     user: User,
   ): Promise<Frosting> {
-    const frosting = await this.findOne(id);
-
-    if (dto.name && dto.name !== frosting.name) {
-      const existingFrosting = await this.frostingRepository.findOne({
-        where: { name: dto.name.toUpperCase() },
-      });
-
-      if (existingFrosting && existingFrosting.id !== id) {
-        throw new BadRequestException(
-          `Another frosting with name ${dto.name} already exists`,
-        );
-      }
-    }
-
-    Object.assign(frosting, dto);
-    frosting.name = frosting.name.toUpperCase();
-    frosting.updatedBy = user;
-
-    return await this.frostingRepository.save(frosting);
+    return await this.updateFrostingUseCase.execute(id, dto, user);
   }
 
   async remove(id: string, user: User): Promise<void> {
-    const frosting = await this.findOne(id);
-    frosting.isActive = false;
-    frosting.updatedBy = user;
-    await this.frostingRepository.save(frosting);
+    return await this.removeFrostingUseCase.execute(id, user);
   }
 }

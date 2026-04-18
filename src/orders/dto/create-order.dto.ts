@@ -1,9 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, Type, plainToInstance } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDate,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -15,9 +17,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
+import { EventServiceType } from '../../common/enums/event-service-type.enum';
 import { OrderType } from '../../common/enums/order-type.enum';
-import { ProductSize } from '../../common/enums/product-size.enum';
+import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { AddFlowerToOrderDto } from '../../flowers/dto/add-flower-to-order.dto';
+import { CreateOrderDeliveryAddressDto } from './create-order-delivery-address.dto';
 import { CreateOrderDetailDto } from './create-order-detail.dto';
 
 export class CreateOrderDto {
@@ -38,11 +42,10 @@ export class CreateOrderDto {
   @IsUUID('4', { message: 'Customer ID must be a valid UUID' })
   customerId: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Delivery round (required for DOM and FLOR orders)',
     example: DeliveryRound.ROUND_1,
     enum: DeliveryRound,
-    required: false,
   })
   @ValidateIf((o) =>
     [OrderType.DOMICILIO, OrderType.FLOR].includes(o.orderType),
@@ -53,28 +56,6 @@ export class CreateOrderDto {
   deliveryRound?: DeliveryRound;
 
   @ApiProperty({
-    description: 'Product size',
-    example: ProductSize.TWENTY_P,
-    enum: ProductSize,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(ProductSize, { message: 'Invalid product size' })
-  productSize?: ProductSize;
-
-  @ApiProperty({
-    description: 'Custom size (required if productSize is CUSTOM)',
-    example: '35 personas',
-    required: false,
-  })
-  @ValidateIf((o) => o.productSize === ProductSize.CUSTOM)
-  @IsNotEmpty({ message: 'Custom size is required when size is CUSTOM' })
-  @IsString({ message: 'Custom size must be a string' })
-  @MaxLength(100)
-  @IsOptional()
-  customSize?: string;
-
-  @ApiProperty({
     description: 'Delivery date for the order',
     example: '2023-12-31T23:59:59.000Z',
   })
@@ -83,44 +64,182 @@ export class CreateOrderDto {
   @IsDate({ message: 'deliveryDate must be a valid date' })
   deliveryDate: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Specific delivery time (HH:MM format)',
     example: '15:30',
-    required: false,
   })
   @IsOptional()
   @IsString({ message: 'Delivery time must be a string' })
   deliveryTime?: string;
 
-  @ApiProperty({
-    description:
-      'Delivery address (required for DOM and FLOR if not using customer default)',
-    example: 'Av. Principal 123, Col. Centro',
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Time when the order should be ready (HH:MM format)',
+    example: '14:00',
   })
   @IsOptional()
-  @IsString({ message: 'Delivery address must be a string' })
-  deliveryAddress?: string;
+  @IsString({ message: 'Ready time must be a string' })
+  readyTime?: string;
 
-  @ApiProperty({
-    description: 'Delivery notes',
-    example: 'Casa verde con portón blanco',
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Time of the event (HH:MM format, for event orders)',
+    example: '18:00',
   })
   @IsOptional()
-  @IsString({ message: 'Delivery notes must be a string' })
-  deliveryNotes?: string;
+  @IsString({ message: 'Event time must be a string' })
+  eventTime?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
+    description: 'Setup/assembly time for events (HH:MM format)',
+    example: '16:00',
+  })
+  @IsOptional()
+  @IsString({ message: 'Setup time must be a string' })
+  setupTime?: string;
+
+  @ApiPropertyOptional({
+    description: 'Time of departure from branch (HH:MM format)',
+    example: '15:30',
+  })
+  @IsOptional()
+  @IsString({ message: 'Branch departure time must be a string' })
+  branchDepartureTime?: string;
+
+  @ApiPropertyOptional({
+    description: 'Date and time for collection/pickup',
+    example: '2026-02-15T10:00:00Z',
+  })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate({ message: 'Collection date time must be a valid date' })
+  collectionDateTime?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Name of the person responsible for setup',
+    example: 'Juan Pérez',
+  })
+  @IsOptional()
+  @IsString({ message: 'Setup person name must be a string' })
+  @MaxLength(255, {
+    message: 'Setup person name must not exceed 255 characters',
+  })
+  setupPersonName?: string;
+
+  @ApiPropertyOptional({
+    description: 'Types of services for the event',
+    example: [EventServiceType.DESSERT_TABLE, EventServiceType.CAKE],
+    enum: EventServiceType,
+    isArray: true,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    }
+    return value;
+  })
+  @IsArray({ message: 'Event services must be an array' })
+  @IsEnum(EventServiceType, {
+    each: true,
+    message: 'Invalid event service type',
+  })
+  eventServices?: EventServiceType[];
+
+  @ApiPropertyOptional({
+    description: 'Number of guests for the event',
+    example: 100,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'Guest count must be an integer' })
+  @Min(1, { message: 'Guest count must be at least 1' })
+  guestCount?: number;
+
+  @ApiPropertyOptional({
     description: 'Advance payment amount',
     example: 200.0,
-    required: false,
   })
   @IsOptional()
   @Type(() => Number)
   @IsNumber({}, { message: 'Advance payment must be a number' })
   @Min(0, { message: 'Advance payment must be at least 0' })
   advancePayment?: number;
+
+  @ApiPropertyOptional({
+    description: 'Indicates if the order has a photo reference',
+    example: true,
+    default: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  @IsBoolean({ message: 'hasPhotoReference must be a boolean' })
+  hasPhotoReference?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Ticket number for advance payment',
+    example: 'TKT-2026-001234',
+  })
+  @IsOptional()
+  @IsString({ message: 'Ticket number must be a string' })
+  @MaxLength(50, { message: 'Ticket number must not exceed 50 characters' })
+  ticketNumber?: string;
+
+  @ApiPropertyOptional({
+    description: 'Payment method',
+    example: PaymentMethod.CARD,
+    enum: PaymentMethod,
+  })
+  @IsOptional()
+  @IsEnum(PaymentMethod, { message: 'Invalid payment method' })
+  paymentMethod?: PaymentMethod;
+
+  @ApiPropertyOptional({
+    description: 'Bank account for transfer payments',
+    example: 'BBVA 1234567890',
+  })
+  @ValidateIf((o) => o.paymentMethod === PaymentMethod.TRANSFER)
+  @IsString({ message: 'Transfer account must be a string' })
+  @MaxLength(255, {
+    message: 'Transfer account must not exceed 255 characters',
+  })
+  @IsOptional()
+  transferAccount?: string;
+
+  @ApiPropertyOptional({
+    description: 'Indicates if the customer requires an invoice',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  @IsBoolean({ message: 'requiresInvoice must be a boolean' })
+  requiresInvoice?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Indicates if the order is going to be collected by the customer',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  @IsBoolean({ message: 'isCustomerPickup must be a boolean' })
+  isCustomerPickup?: boolean;
 
   @ApiProperty({
     description: 'Identifier of the branch where the order is placed',
@@ -130,9 +249,50 @@ export class CreateOrderDto {
   @IsUUID('4', { message: 'Branch ID must be a valid UUID' })
   branchId: string;
 
+  @ApiPropertyOptional({
+    description:
+      'Delivery address information (required for DOM and FLOR orders)',
+    type: CreateOrderDeliveryAddressDto,
+  })
+  @ValidateIf((o) =>
+    [OrderType.DOMICILIO, OrderType.FLOR, OrderType.EVENTO].includes(
+      o.orderType,
+    ),
+  )
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null
+          ? plainToInstance(CreateOrderDeliveryAddressDto, parsed)
+          : value;
+      } catch {
+        return value;
+      }
+    }
+    return value;
+  })
+  @ValidateNested()
+  @Type(() => CreateOrderDeliveryAddressDto)
+  @IsOptional()
+  deliveryAddress?: CreateOrderDeliveryAddressDto;
+
   @ApiProperty({
     description: 'Details of the order',
     type: [CreateOrderDetailDto],
+  })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed)
+          ? parsed.map((item) => plainToInstance(CreateOrderDetailDto, item))
+          : value;
+      } catch {
+        return value;
+      }
+    }
+    return value;
   })
   @IsArray({ message: 'Details must be an array' })
   @ValidateNested({ each: true })
@@ -140,16 +300,48 @@ export class CreateOrderDto {
   @IsNotEmpty({ message: 'At least one order detail is required' })
   details: CreateOrderDetailDto[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Flowers for the order (required for FLOR type)',
     type: [AddFlowerToOrderDto],
-    required: false,
   })
   @ValidateIf((o) => o.orderType === OrderType.FLOR)
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed)
+          ? parsed.map((item) => plainToInstance(AddFlowerToOrderDto, item))
+          : value;
+      } catch {
+        return value;
+      }
+    }
+    return value;
+  })
   @IsArray({ message: 'Flowers must be an array' })
   @ValidateNested({ each: true })
   @Type(() => AddFlowerToOrderDto)
   @IsNotEmpty({ message: 'At least one flower is required for FLOR orders' })
   @IsOptional()
   flowers?: AddFlowerToOrderDto[];
+
+  @ApiPropertyOptional({
+    description: 'Desserts total amount (for event orders)',
+    example: 200.0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Desserts total must be a number' })
+  @Min(0, { message: 'Desserts total must be at least 0' })
+  dessertsTotal?: number;
+
+  @ApiPropertyOptional({
+    description: 'Setup service cost (for event orders)',
+    example: 200.0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Setup service cost must be a number' })
+  @Min(0, { message: 'Setup service cost must be at least 0' })
+  setupServiceCost?: number;
 }

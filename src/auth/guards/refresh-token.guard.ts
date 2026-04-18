@@ -31,11 +31,21 @@ export class RefreshTokenGuard implements CanActivate {
 
       const user = await this.userRepository.findOne({
         where: { id: payload.id },
+        relations: {
+          branch: true,
+          branches: true,
+        },
         select: {
           id: true,
           username: true,
           role: true,
           isActive: true,
+          branch: {
+            id: true,
+          },
+          branches: {
+            id: true,
+          },
         },
       });
 
@@ -56,11 +66,21 @@ export class RefreshTokenGuard implements CanActivate {
 
           const user = await this.userRepository.findOne({
             where: { id: payload.id },
+            relations: {
+              branch: true,
+              branches: true,
+            },
             select: {
               id: true,
               username: true,
               role: true,
               isActive: true,
+              branch: {
+                id: true,
+              },
+              branches: {
+                id: true,
+              },
             },
           });
 

@@ -7,6 +7,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Repository } from 'typeorm';
+
 import { User } from '../../users/entities/user.entity';
 
 @Injectable()
@@ -31,11 +32,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     const user = await this.userRepository.findOne({
       where: { id: payload.id },
+      relations: {
+        branch: true,
+        branches: true,
+      },
       select: {
         id: true,
         username: true,
         role: true,
         isActive: true,
+        branch: {
+          id: true,
+        },
+        branches: {
+          id: true,
+        },
       },
     });
 

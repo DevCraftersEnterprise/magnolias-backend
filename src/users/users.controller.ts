@@ -21,7 +21,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -30,13 +30,14 @@ import { UsersFilterDto } from './dto/users-filter.dto';
 import { User } from './entities/user.entity';
 import { UserRoles } from './enums/user-role';
 import { UsersService } from './users.service';
+import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 
 @ApiTags('Users')
 @Controller('users')
 @Auth([UserRoles.SUPER, UserRoles.ADMIN])
 @ApiBearerAuth('access-token')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
@@ -127,9 +128,45 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   findUsers(
     @Query() filterDto: UsersFilterDto,
-  ): Promise<PaginationResponse<Partial<User>>> {
-    return this.usersService.findUsers(filterDto);
+    @CurrentUser() user: User,
+  ): Promise<PaginationResponse<User> | User[]> {
+    return this.usersService.findUsers(filterDto, user);
   }
+
+  @Get('bakers/:branchId')
+  @ApiOperation({
+    summary: 'Get bakers by branch ID',
+    description: 'Retrieves a list of bakers based on the provided branch ID.',
+  })
+  @ApiOkResponse({
+    description: 'List of bakers retrieved successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/User' },
+        },
+        total: { type: 'number', example: 100 },
+        pagination: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number', example: 10 },
+            offset: { type: 'number', example: 0 },
+            totalPages: { type: 'number', example: 10 },
+            currentPage: { type: 'number', example: 1 },
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  findBakers(
+    @Param('branchId') branchId: string,
+  ): Promise<User[]> {
+    return this.usersService.findBakers(branchId);
+  }
+
 
   @Get(':term')
   @ApiOperation({
@@ -171,6 +208,24 @@ export class UsersController {
     @CurrentUser() user: User,
   ): Promise<Partial<User>> {
     return this.usersService.updateUser(updateUserDto, user);
+  }
+
+  @Patch('reset-password')
+  @ApiOperation({
+    summary: 'Reset user password (userkey)',
+    description:
+      'Resets the password for user following certain restriction, based on user level',
+  })
+  @ApiOkResponse({ description: 'Password successfully reset.', type: User })
+  @ApiForbiddenResponse({
+    description:
+      'The user try to reset a password for a similar or higher role',
+  })
+  resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @CurrentUser() user: User,
+  ): Promise<Partial<User>> {
+    return this.usersService.resetPassword(resetPasswordDto, user);
   }
 
   @Delete()

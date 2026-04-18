@@ -36,4 +36,20 @@ export class OrdersFilterDto extends PaginationDto {
   })
   @IsOptional()
   orderDate?: Date;
+
+  @ApiProperty({
+    description: 'Start date to filter by (inclusive)',
+    example: '2023-10-15',
+    required: false,
+  })
+  @IsOptional()
+  startDate?: Date;
+
+  @ApiProperty({
+    description: 'End date to filter by (inclusive)',
+    example: '2023-10-18',
+    required: false,
+  })
+  @IsOptional()
+  endDate?: Date;
 }

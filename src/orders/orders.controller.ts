@@ -25,23 +25,26 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { FileValidator } from '../common/utils/file-validator';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
+import { AssignOrderDto } from './dto/assign-order.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderAssignment } from './entities/order-assignment.entity';
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
+import { OrderStatsResponse } from './responses/order-stats.response';
 
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
@@ -73,6 +76,42 @@ export class OrdersController {
       user,
       referenceImages,
     );
+  }
+
+  @Get('stats')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get order statistics',
+    description:
+      'Retrieves statistics for orders, including counts for different statuses (e.g., CREATED, IN_PROCESS, DONE). ' +
+      'Admins and Super users can optionally filter by branch using the branchId query parameter. ' +
+      'Other roles will automatically use their associated branch.',
+  })
+  @ApiQuery({
+    name: 'branchId',
+    required: false,
+    type: String,
+    description:
+      'UUID of the branch to filter orders by (only for Admins and Super users)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiOkResponse({
+    description: 'Order statistics retrieved successfully.',
+    type: OrderStatsResponse,
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Invalid request. For example, if the user does not have an associated branch.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized access.',
+  })
+  getOrderStats(
+    @CurrentUser() user: User,
+    @Query('branchId') branchId?: string,
+  ): Promise<OrderStatsResponse> {
+    return this.ordersService.getStats(user, branchId);
   }
 
   @Get('branch/:branchId')
@@ -127,6 +166,22 @@ export class OrdersController {
     type: Date,
     description: 'Filter orders by delivery date',
   })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date from this date (inclusive)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: Date,
+    description: 'Filter orders with delivery date up to this date (inclusive)',
+  })
+  @ApiOkResponse({
+    description: 'List of orders retrieved successfully.',
+    type: [Order],
+  })
   @ApiOkResponse({
     description: 'List of orders retrieved successfully.',
     schema: {
@@ -154,7 +209,7 @@ export class OrdersController {
   getOrders(
     @Param('branchId', ParseUUIDPipe) branchId: string,
     @Query() filterDto: OrdersFilterDto,
-  ): Promise<PaginationResponse<Order>> {
+  ): Promise<PaginationResponse<Order> | Order[]> {
     return this.ordersService.getOrders(filterDto, branchId);
   }
 
@@ -243,6 +298,26 @@ export class OrdersController {
     return this.ordersService.markOrderAsDone(updateOrderDto, user);
   }
 
+  @Patch('delivered')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Mark order as delivered',
+    description: 'Updates the order status to DELIVERED.',
+  })
+  @ApiOkResponse({
+    description: 'Order status successfully updated to DELIVERED.',
+    type: Order,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiNotFoundResponse({ description: 'Order not found.' })
+  markOrderAsDelivered(
+    @Body() updateOrderDto: UpdateOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<Order> {
+    return this.ordersService.markOrderAsDelivered(updateOrderDto, user);
+  }
+
   @Patch(':id/pickup-person')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
   @ApiBearerAuth('access-token')
@@ -286,5 +361,91 @@ export class OrdersController {
     @CurrentUser() user: User,
   ): Promise<Order> {
     return this.ordersService.markOrderAsCancel(cancelOrderDto, user);
+  }
+
+  // Assign Orders
+  @Post(':id/assign-order')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Assign order to baker',
+    description: 'Assigns an order to a specific baker.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the baker',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Order successfully assigned.',
+    type: OrderAssignment,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data or order already assigned.',
+  })
+  @ApiNotFoundResponse({ description: 'Baker or Order not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  assignOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignOrderDto: AssignOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<OrderAssignment> {
+    return this.ordersService.assignOrder(id, assignOrderDto, user);
+  }
+
+  @Get(':id/assignments')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get baker assignments',
+    description: 'Retrieves all order assignments for a specific baker.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the baker',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'List of assignments.',
+    type: [OrderAssignment],
+  })
+  @ApiNotFoundResponse({ description: 'Baker not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  getAssignments(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<OrderAssignment[]> {
+    return this.ordersService.getAssignments(id);
+  }
+
+  @Patch(':id/reassign-order')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Reassign order to another baker',
+    description: 'Reassigns an order to a different baker.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the new baker',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Order successfully reassigned.',
+    type: OrderAssignment,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data or order cannot be reassigned.',
+  })
+  @ApiNotFoundResponse({ description: 'Baker or Order not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  reassignOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignOrderDto: AssignOrderDto,
+    @CurrentUser() user: User,
+  ): Promise<OrderAssignment> {
+    return this.ordersService.reassignOrder(id, assignOrderDto, user);
   }
 }

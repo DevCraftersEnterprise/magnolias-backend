@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { UserRoles } from 'src/users/enums/user-role';
+import { UserRoles } from '../../users/enums/user-role';
 
 export const META_ROLE = 'roles-protected';
 

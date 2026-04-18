@@ -1,8 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { Type } from 'class-transformer';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
-import { CreateBranchDto } from './create-branch.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { CreateBranchDto } from '../../branches/dto/create-branch.dto';
+import { TransformBoolean } from '../../common/decorators/transform-boolean.decorator';
 
 export class UpdateBranchDto extends PartialType(CreateBranchDto) {
   @ApiProperty({
@@ -19,6 +18,6 @@ export class UpdateBranchDto extends PartialType(CreateBranchDto) {
   })
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
+  @TransformBoolean()
   isActive?: boolean;
 }

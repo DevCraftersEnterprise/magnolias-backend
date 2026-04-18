@@ -23,19 +23,19 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { CurrentUser } from 'src/auth/decorators/curret-user.decorator';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { BranchesService } from '../branches/branches.service';
+import { BranchesFilterDto } from '../branches/dto/branches-filter.dto';
+import { CreateBranchDto } from '../branches/dto/create-branch.dto';
+import { CreatePhonesDto } from '../branches/dto/create-phones.dto';
+import { UpdateBranchDto } from '../branches/dto/update-branch.dto';
+import { UpdatePhonesDto } from '../branches/dto/update-phones.dto';
+import { Branch } from '../branches/entities/branch.entity';
+import { Phone } from '../branches/entities/phone.entity';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
-import { BranchesService } from './branches.service';
-import { BranchesFilterDto } from './dto/branches-filter.dto';
-import { CreateBranchDto } from './dto/create-branch.dto';
-import { CreatePhonesDto } from './dto/create-phones.dto';
-import { UpdateBranchDto } from './dto/update-branch.dto';
-import { UpdatePhonesDto } from './dto/update-phones.dto';
-import { Branch } from './entities/branch.entity';
-import { Phone } from './entities/phone.entity';
 
 @ApiTags('Branches')
 @Controller('branches')
@@ -56,11 +56,11 @@ export class BranchesController {
   @ApiBadRequestResponse({ description: 'Invalid branch data provided.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
   @ApiForbiddenResponse({ description: 'Forbidden access.' })
-  registerBranch(
+  create(
     @Body() createBranchDto: CreateBranchDto,
     @CurrentUser() user: User,
   ): Promise<Branch> {
-    return this.branchesService.registerBranch(createBranchDto, user);
+    return this.branchesService.create(createBranchDto, user);
   }
 
   @Post('phones/:branchId')
@@ -129,6 +129,10 @@ export class BranchesController {
     description: 'Filter branches by address',
   })
   @ApiOkResponse({
+    description: 'List of all branches retrieved successfully.',
+    type: [Branch],
+  })
+  @ApiOkResponse({
     description: 'List of branches retrieved successfully.',
     schema: {
       type: 'object',
@@ -150,23 +154,10 @@ export class BranchesController {
       },
     },
   })
-  findBranches(
+  findAll(
     @Query() filterDto: BranchesFilterDto,
-  ): Promise<PaginationResponse<Branch>> {
-    return this.branchesService.findBranches(filterDto);
-  }
-
-  @Get('all')
-  @ApiOperation({
-    summary: 'Get all branches',
-    description: 'Retrieves a list of all branches without pagination.',
-  })
-  @ApiOkResponse({
-    description: 'List of all branches retrieved successfully.',
-    type: [Branch],
-  })
-  findAllBranches(): Promise<Branch[]> {
-    return this.branchesService.findAllBranches();
+  ): Promise<PaginationResponse<Branch> | Branch[]> {
+    return this.branchesService.findAll(filterDto);
   }
 
   @Get(':term')

@@ -22,7 +22,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
 import { CustomersService } from './customers.service';
@@ -98,6 +98,10 @@ export class CustomersController {
     required: false,
     type: Boolean,
     description: 'Filter customers by active status',
+  })
+  @ApiOkResponse({
+    description: 'List of customers retrieved successfully',
+    type: [Customer],
   })
   @ApiOkResponse({
     description: 'List of customers retrieved successfully.',

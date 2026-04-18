@@ -1,14 +1,3 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { CreateFlavorDto } from './create-flavor.dto';
-import { IsOptional, IsBoolean } from 'class-validator';
+import { BaseUpdateCatalogDto } from '../../common/dto/base-update-catalog.dto';
 
-export class UpdateFlavorDto extends PartialType(CreateFlavorDto) {
-  @ApiProperty({
-    description: 'Indicates if the flavor is active',
-    example: true,
-    required: false,
-  })
-  @IsOptional()
-  @IsBoolean({ message: 'isActive must be a boolean value' })
-  isActive?: boolean;
-}
+export class UpdateFlavorDto extends BaseUpdateCatalogDto {}

@@ -1,23 +1,26 @@
 import { Module } from '@nestjs/common';
+import { AddressesModule } from './addresses/addresses.module';
 import { AuthModule } from './auth/auth.module';
 import { BranchesModule } from './branches/branches.module';
+import { BreadTypesModule } from './bread-types/bread-types.module';
+import { CategoriesModule } from './categories/categories.module';
+import { ColorsModule } from './colors/colors.module';
 import { CommonModule } from './common/common.module';
 import { CustomJwtModule } from './custom-jwt/custom-jwt.module';
 import { CustomPassportModule } from './custom-passport/custom-passport.module';
 import { CustomThrottlerModule } from './custom-throttler/custom-throttler.module';
-import { DatabaseModule } from './database/database.module';
-import { ProductsModule } from './products/products.module';
-import { UsersModule } from './users/users.module';
-import { ColorsModule } from './colors/colors.module';
-import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
-import { BreadTypesModule } from './bread-types/bread-types.module';
+import { DatabaseModule } from './database/database.module';
 import { FillingsModule } from './fillings/fillings.module';
 import { FlavorsModule } from './flavors/flavors.module';
-import { FrostingsModule } from './frostings/frostings.module';
-import { StylesModule } from './styles/styles.module';
 import { FlowersModule } from './flowers/flowers.module';
-import { BakersModule } from './bakers/bakers.module';
+import { FormatsModule } from './formats/formats.module';
+import { FrostingsModule } from './frostings/frostings.module';
+import { OrdersModule } from './orders/orders.module';
+import { PrinterModule } from './printer/printer.module';
+import { ProductsModule } from './products/products.module';
+import { StylesModule } from './styles/styles.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -27,11 +30,11 @@ import { BakersModule } from './bakers/bakers.module';
     CustomPassportModule,
     CustomThrottlerModule,
     DatabaseModule,
+    OrdersModule,
     UsersModule,
     BranchesModule,
     ProductsModule,
     ColorsModule,
-    OrdersModule,
     CustomersModule,
     BreadTypesModule,
     FillingsModule,
@@ -39,7 +42,10 @@ import { BakersModule } from './bakers/bakers.module';
     FrostingsModule,
     StylesModule,
     FlowersModule,
-    BakersModule,
+    CategoriesModule,
+    PrinterModule,
+    FormatsModule,
+    AddressesModule,
   ],
   controllers: [],
   providers: [],

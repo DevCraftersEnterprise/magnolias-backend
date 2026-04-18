@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { GeocodingService } from './services/geocoding.service';
 
 @Module({
   imports: [
@@ -8,7 +9,7 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: ['.env'],
     }),
   ],
-  providers: [],
-  exports: [],
+  providers: [GeocodingService],
+  exports: [GeocodingService],
 })
 export class CommonModule {}

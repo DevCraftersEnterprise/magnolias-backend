@@ -1,3 +1,5 @@
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -8,10 +10,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Phone } from '../../branches/entities/phone.entity';
 import { User } from '../../users/entities/user.entity';
-import { Phone } from './phone.entity';
-import { Expose } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'branches' })
 export class Branch {
@@ -37,6 +37,22 @@ export class Branch {
   address: string;
 
   @ApiProperty({
+    description: 'Latitude coordinate of the branch location',
+    example: 21.8853,
+    required: false,
+  })
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude: number;
+
+  @ApiProperty({
+    description: 'Longitude coordinate of the branch location',
+    example: -102.2916,
+    required: false,
+  })
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude: number;
+
+  @ApiProperty({
     description: 'Indicates whether the branch is active',
     example: true,
     default: true,
@@ -44,11 +60,7 @@ export class Branch {
   @Column({ default: true, type: 'boolean' })
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'Phone details associated with the branch',
-    type: () => Phone,
-    nullable: true,
-  })
+  @ApiHideProperty()
   @OneToOne(() => Phone, (phone) => phone.branch, {
     cascade: true,
     eager: true,
@@ -58,18 +70,12 @@ export class Branch {
   @Expose()
   phones: Phone;
 
-  @ApiProperty({
-    description: 'User who created the branch',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
-  @ApiProperty({
-    description: 'User who updated the branch',
-    type: () => User,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;

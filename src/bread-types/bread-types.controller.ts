@@ -22,9 +22,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { UserRoles } from 'src/users/enums/user-role';
+import { UserRoles } from '../users/enums/user-role';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/curret-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
@@ -55,19 +55,6 @@ export class BreadTypesController {
     return this.breadTypesService.create(createBreadTypeDto, user);
   }
 
-  @Get('all')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Get all bread types',
-    description: 'Retrieves all active bread types.',
-  })
-  @ApiOkResponse({ description: 'Bread types list.', type: [BreadType] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  findAll(): Promise<BreadType[]> {
-    return this.breadTypesService.findAll();
-  }
-
   @Get()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
@@ -89,6 +76,7 @@ export class BreadTypesController {
     description: 'Number of items to skip',
     example: 0,
   })
+  @ApiOkResponse({ description: 'Bread types list.', type: [BreadType] })
   @ApiOkResponse({
     description: 'List of bread types retrieved successfully.',
     schema: {
@@ -111,10 +99,10 @@ export class BreadTypesController {
       },
     },
   })
-  paginated(
+  findAll(
     @Query() filterDto: PaginationDto,
-  ): Promise<PaginationResponse<BreadType>> {
-    return this.breadTypesService.paginated(filterDto);
+  ): Promise<PaginationResponse<BreadType> | BreadType[]> {
+    return this.breadTypesService.findAll(filterDto);
   }
 
   @Get(':term')
