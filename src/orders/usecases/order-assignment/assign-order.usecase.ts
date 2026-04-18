@@ -18,14 +18,14 @@ export class AssignOrderUseCase {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderAssignment)
     private readonly orderAssignmentRepository: Repository<OrderAssignment>,
-  ) {}
+  ) { }
 
   async execute(
     bakerId: string,
     assignOrderDto: AssignOrderDto,
     user: User,
   ): Promise<OrderAssignment> {
-    const { orderId, assignedDate, notes } = assignOrderDto;
+    const { orderId, assignedDate = new Date(), notes } = assignOrderDto;
 
     const baker = await this.userRepository.findOne({
       where: { id: bakerId, role: UserRoles.BAKER },
