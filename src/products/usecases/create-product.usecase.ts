@@ -14,7 +14,7 @@ export class CreateProductUseCase {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private readonly categoriesService: CategoriesService,
-  ) {}
+  ) { }
 
   async execute(
     createProductDto: CreateProductDto,
@@ -25,7 +25,10 @@ export class CreateProductUseCase {
     const category = await this.categoriesService.findOne(categoryId);
 
     const duplicatedProduct = await this.productRepository.findOne({
-      where: { name: name.toUpperCase() },
+      where: {
+        category: { id: categoryId },
+        name: name.toUpperCase()
+      },
     });
 
     if (duplicatedProduct) {
