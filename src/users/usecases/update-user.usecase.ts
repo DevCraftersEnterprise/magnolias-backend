@@ -55,7 +55,7 @@ export class UpdateUserUseCase {
       user.branches = [];
     }
 
-    if (currentUser.role !== role && role === UserRoles.BAKER) {
+    if (role === UserRoles.BAKER) {
       if (!branchIds || branchIds.length === 0) {
         this.logger.warn(
           `Users with role BAKER must be linked to at least one branch`,
