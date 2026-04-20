@@ -12,7 +12,7 @@ export class UpdatePhoneForBranchUseCase {
   constructor(
     @InjectRepository(Phone)
     private readonly phoneRepository: Repository<Phone>,
-  ) {}
+  ) { }
 
   async execute(updatePhoneDto: UpdatePhonesDto, user: User): Promise<Phone> {
     const { id } = updatePhoneDto;
@@ -26,7 +26,7 @@ export class UpdatePhoneForBranchUseCase {
       throw new NotFoundException(`Phone with ID ${id} not found`);
     }
 
-    Object.assign(phones, updatePhoneDto, { updatedBy: user });
+    Object.assign(phones, { ...updatePhoneDto, updatedBy: user });
 
     const savedPhones = await this.phoneRepository.save(phones);
 
