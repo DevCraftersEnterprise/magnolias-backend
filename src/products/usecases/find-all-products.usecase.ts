@@ -12,7 +12,7 @@ export class FindAllProductsUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
   async execute(
     productsFiltersDto: ProductsFilterDto,
@@ -50,7 +50,11 @@ export class FindAllProductsUseCase {
           isActive: true,
         },
       },
-      order: { createdAt: 'DESC' },
+      order: {
+        category: { name: 'ASC' },
+        name: 'ASC',
+        createdAt: 'DESC'
+      },
       skip: offset,
       take: limit,
     });
