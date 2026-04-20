@@ -20,7 +20,9 @@ export class FindOneOrderUseCase {
         branch: true,
         deliveryAddress: true,
         details: {
-          product: true,
+          product: {
+            category: true,
+          },
           frosting: true,
           breadType: true,
           style: true,

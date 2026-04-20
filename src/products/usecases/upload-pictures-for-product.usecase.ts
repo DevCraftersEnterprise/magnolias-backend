@@ -15,17 +15,21 @@ export class UploadPicturesForProductUseCase {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
-  ) {}
+  ) { }
 
   async execute(
     files: Express.Multer.File[],
     id: string,
     user: User,
   ): Promise<Product> {
-    const folder =
-      process.env.NODE_ENV === 'production'
-        ? `magnolias/product/pictures/${id}`
-        : `dev/magnolias/product/pictures/${id}`;
+
+    let folder = '';
+
+    switch (process.env.NODE_ENV) {
+      case 'production': folder = `magnolias/product/pictures/${id}`; break;
+      case 'development': folder = `development/magnolias/product/pictures/${id}`; break;
+      case 'staging': folder = `staging/magnolias/product/pictures/${id}`; break;
+    }
 
     const product = await this.productRepository.findOne({
       where: { id },

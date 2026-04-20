@@ -60,7 +60,13 @@ export class CreateOrderDto {
     example: '2023-12-31T23:59:59.000Z',
   })
   @IsNotEmpty({ message: 'Delivery date is required' })
-  @Type(() => Date)
+  @Transform(({ value }) => {
+    if (!value) return value;
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return value;
+    date.setUTCHours(12, 0, 0, 0);
+    return date;
+  })
   @IsDate({ message: 'deliveryDate must be a valid date' })
   deliveryDate: Date;
 

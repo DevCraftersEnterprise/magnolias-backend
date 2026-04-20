@@ -6,7 +6,6 @@ import { OrdersService } from '../orders/orders.service';
 import { PrinterService } from '../printer/printer.service';
 import { getDomicilioReport } from './reports/domicilio.report';
 import { getEventoReport } from './reports/evento.report';
-import { getPersonalizadoReport } from './reports/personalizado.report';
 import { getVitrinaReport } from './reports/vitrina.report';
 
 @Injectable()
@@ -42,7 +41,7 @@ export class FormatsService {
     const order = await this.ordersService.getOrderByTerm(orderId);
     await this.processOrderImages(order);
 
-    const docDefinition = getPersonalizadoReport(order);
+    const docDefinition = getDomicilioReport(order);
 
     const doc = this.printerService.createPdf(docDefinition, {});
 

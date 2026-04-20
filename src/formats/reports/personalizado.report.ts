@@ -22,7 +22,11 @@ const generatePageContent = (
   return [
     getPersonalizadoHeader(order, pageNumber, totalPages),
     getSimpleCustomerSection(order, detail!, true),
-    getDetailSectionTitle(),
+    getDetailSectionTitle(
+      totalPages > 1
+        ? `DESCRIPCIÓN DEL PEDIDO - DETALLE ${pageNumber} DE ${totalPages}: ${detail ? detail.product.name : 'N/A'}`
+        : `DESCRIPCIÓN DEL PEDIDO - DETALLE: ${detail ? detail.product.name : 'N/A'}`
+    ),
     getDetailTable(detail),
     detail ? getDecorationSection(detail) : [],
     getConditionsSection('PERSONALIZADO'),
