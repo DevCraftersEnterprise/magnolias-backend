@@ -45,7 +45,7 @@ export class CreateOrderUseCase {
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
-  ) {}
+  ) { }
 
   async execute(
     createOrderDto: CreateOrderDto,
@@ -304,10 +304,13 @@ export class CreateOrderUseCase {
 
     const orderDatails: OrderDetail[] = [];
 
-    const folder =
-      process.env.NODE_ENV === 'production'
-        ? `magnolias/orders/reference-images`
-        : `dev/magnolias/orders/reference-images`;
+    let folder = '';
+
+    switch (process.env.NODE_ENV) {
+      case 'production': folder = 'magnolias/orders/reference-images'; break;
+      case 'development': folder = 'development/magnolias/orders/reference-images'; break;
+      case 'staging': folder = 'staging/magnolias/orders/reference-images'; break;
+    }
 
     for (let i = 0; i < details.length; i++) {
       const detailDto = details[i];

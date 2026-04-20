@@ -1305,7 +1305,7 @@ export const getEventoDescriptionSection = (order: Order): Content[] => [
 
 /** Sección de pastel para evento */
 export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
-  getDetailSectionTitle('PASTEL'),
+  getDetailSectionTitle(`${detail.product.category?.name} - ${detail.product?.name}`),
   {
     table: {
       widths: ['20%', '30%', '20%', '30%'],

@@ -39,8 +39,8 @@ const generatePageContent = (
   // Título descripción del pedido
   const detailTitle =
     totalPages > 1
-      ? `DESCRIPCIÓN DEL PEDIDO - DETALLE ${pageNumber} DE ${totalPages}`
-      : 'DESCRIPCIÓN DEL PEDIDO';
+      ? `DESCRIPCIÓN DEL PEDIDO - DETALLE ${pageNumber} DE ${totalPages}: ${detail.product.name}`
+      : `DESCRIPCIÓN DEL PEDIDO - DETALLE: ${detail.product.name}`;
   content.push(getDetailSectionTitle(detailTitle));
 
   // Tabla de descripción del producto
