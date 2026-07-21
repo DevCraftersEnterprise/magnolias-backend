@@ -9,7 +9,7 @@ import {
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from '../auth/auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginUserDto } from '../auth/dto/login-user.dto';
@@ -27,7 +27,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly loginThrottleGuard: LoginThrottleGuard,
-  ) {}
+  ) { }
 
   @Post('login')
   @UseGuards(LoginThrottleGuard)
@@ -65,8 +65,9 @@ export class AuthController {
   }
 
   @Post('refresh-token')
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(ThrottlerGuard, RefreshTokenGuard)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @SkipThrottle({ login: true })
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Refresh access token',
