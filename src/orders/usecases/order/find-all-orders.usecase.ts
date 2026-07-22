@@ -1,9 +1,37 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Order } from '../../entities/order.entity';
 import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrdersFilterDto } from '../../dto/orders-filter.dto';
 import { PaginationResponse } from '../../../common/responses/pagination.response';
+
+function startOfUtcDay(date: Date): Date {
+  return new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      0,
+      0,
+      0,
+      0,
+    ),
+  );
+}
+
+function endOfUtcDay(date: Date): Date {
+  return new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      23,
+      59,
+      59,
+      999,
+    ),
+  );
+}
 
 @Injectable()
 export class FindAllOrdersUseCase {
@@ -18,8 +46,28 @@ export class FindAllOrdersUseCase {
     ordersFilterDto: OrdersFilterDto,
     branchId: string,
   ): Promise<PaginationResponse<Order> | Order[]> {
-    const { name, orderStatus, clientPhone, orderDate, limit, offset, startDate, endDate } =
-      ordersFilterDto;
+    const {
+      name,
+      orderStatus,
+      clientPhone,
+      orderDate,
+      limit,
+      offset,
+      startDate,
+      endDate
+    } = ordersFilterDto;
+
+    if (orderDate && (startDate || endDate)) {
+      throw new BadRequestException(
+        'orderDate cannot be combined with startDate/endDate; use either an exact date or a range'
+      );
+    }
+
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+      throw new BadRequestException(
+        'startDate and endDate must be provided together'
+      );
+    }
 
     const whereConditions: FindOptionsWhere<Order> = {
       branch: { id: branchId },
@@ -28,11 +76,22 @@ export class FindAllOrdersUseCase {
         phone: clientPhone ? clientPhone : undefined,
       },
       status: orderStatus ? orderStatus : undefined,
-      deliveryDate: orderDate ? orderDate : undefined,
+      deliveryDate: orderDate
+        ? Between(startOfUtcDay(orderDate), endOfUtcDay(orderDate))
+        : undefined,
     };
 
     if (startDate && endDate) {
-      whereConditions.deliveryDate = Between(startDate, endDate);
+      const rangeStart = startOfUtcDay(startDate);
+      const rangeEnd = endOfUtcDay(endDate);
+
+      if (rangeStart > rangeEnd) {
+        throw new BadRequestException(
+          'startDate must be before or equal to endDate'
+        );
+      }
+
+      whereConditions.deliveryDate = Between(rangeStart, rangeEnd);
     }
 
     const [orders, total] = await this.orderRepository.findAndCount({
@@ -97,6 +156,7 @@ export class FindAllOrdersUseCase {
       take: limit,
       order: { deliveryDate: 'DESC' },
     });
+
 
     if (limit !== undefined && offset !== undefined) {
       this.logger.log(`Found ${total} orders matching filters with pagination`);

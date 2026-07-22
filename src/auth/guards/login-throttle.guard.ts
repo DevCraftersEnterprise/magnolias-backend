@@ -36,7 +36,7 @@ export class LoginThrottleGuard implements CanActivate {
     const attempts = this.getAttempts(ip);
     const now = Date.now();
 
-    if (attempts && now - attempts.firstAttempt < this.windowMs) {
+    if (attempts && now - attempts.firstAttempt >= this.windowMs) {
       this.failedAttempts.delete(ip);
       return true;
     }
