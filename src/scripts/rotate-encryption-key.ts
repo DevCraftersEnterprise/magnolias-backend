@@ -27,7 +27,7 @@ config();
 const OLD_KEY_ENV = 'OLD_ENCRYPTION_KEY';
 const NEW_KEY_ENV = 'NEW_ENCRYPTION_KEY';
 
-interface RotationStats {
+export interface RotationStats {
   table: string;
   total: number;
   rotated: number;
@@ -35,7 +35,7 @@ interface RotationStats {
   errors: number;
 }
 
-function validateEnvironment(): void {
+export function validateEnvironment(): void {
   const requiredVars = [
     OLD_KEY_ENV,
     NEW_KEY_ENV,
@@ -61,7 +61,7 @@ function validateEnvironment(): void {
   }
 }
 
-async function rotateCustomerPhones(
+export async function rotateCustomerPhones(
   dataSource: DataSource,
 ): Promise<RotationStats> {
   const stats: RotationStats = {
@@ -128,54 +128,7 @@ async function rotateCustomerPhones(
   return stats;
 }
 
-async function rotateOrderPhones(
-  dataSource: DataSource,
-): Promise<RotationStats> {
-  const stats: RotationStats = {
-    table: 'orders (pickupPersonPhone)',
-    total: 0,
-    rotated: 0,
-    skipped: 0,
-    errors: 0,
-  };
-
-  console.log('\n📦 Rotating order pickup phones...');
-
-  const orders = await dataSource.query(
-    'SELECT id, "pickupPersonPhone" FROM orders WHERE "pickupPersonPhone" IS NOT NULL',
-  );
-
-  stats.total = orders.length;
-
-  for (const order of orders) {
-    try {
-      if (order.pickupPersonPhone && isEncrypted(order.pickupPersonPhone)) {
-        const newEncrypted = reEncrypt(
-          order.pickupPersonPhone,
-          OLD_KEY_ENV,
-          NEW_KEY_ENV,
-        );
-
-        await dataSource.query(
-          'UPDATE orders SET "pickupPersonPhone" = $1 WHERE id = $2',
-          [newEncrypted, order.id],
-        );
-        stats.rotated++;
-        process.stdout.write('.');
-      } else {
-        stats.skipped++;
-      }
-    } catch (error) {
-      stats.errors++;
-      console.error(`\n❌ Error rotating order ${order.id}:`, error);
-    }
-  }
-
-  console.log('');
-  return stats;
-}
-
-async function rotateOrderTransferAccounts(
+export async function rotateOrderTransferAccounts(
   dataSource: DataSource,
 ): Promise<RotationStats> {
   const stats: RotationStats = {
@@ -222,7 +175,7 @@ async function rotateOrderTransferAccounts(
   return stats;
 }
 
-function printStats(allStats: RotationStats[]): void {
+export function printStats(allStats: RotationStats[]): void {
   console.log('\n📊 Rotation Summary:');
   console.log('═'.repeat(60));
 
@@ -248,7 +201,7 @@ function printStats(allStats: RotationStats[]): void {
   }
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   console.log('🔐 Encryption Key Rotation Script');
   console.log('═'.repeat(60));
 
@@ -274,9 +227,11 @@ async function main(): Promise<void> {
 
     const allStats: RotationStats[] = [];
 
-    // Rotate all encrypted fields
+    // Rotate all encrypted fields.
+    // orders.pickupPersonPhone fue eliminada por la migración
+    // 1770770758520-Add-addresses-and-order-fields.ts; ese dato ahora vive en
+    // order_delivery_addresses.receiverPhone, sin cifrar, y no se rota aquí.
     allStats.push(await rotateCustomerPhones(dataSource));
-    allStats.push(await rotateOrderPhones(dataSource));
     allStats.push(await rotateOrderTransferAccounts(dataSource));
 
     printStats(allStats);
@@ -291,4 +246,6 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
