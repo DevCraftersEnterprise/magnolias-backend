@@ -1,10 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { FindOneFlavorUseCase } from './find-one-flavor.usecase';
 
-jest.mock('../../common/entities/base-catalog.entity', () => ({
-    BaseCatalogEntity: class BaseCatalogEntity { },
-}));
-
 describe('FindOneFlavorUseCase', () => {
     let findOneMock: jest.Mock;
     let useCase: FindOneFlavorUseCase;
