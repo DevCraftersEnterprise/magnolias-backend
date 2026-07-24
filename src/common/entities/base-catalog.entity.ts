@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { User } from '../../users/entities/user.entity';
+import type { User } from '../../users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -40,12 +40,12 @@ export abstract class BaseCatalogEntity {
   isActive: boolean;
 
   @ApiHideProperty()
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne('User', { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
   @ApiHideProperty()
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne('User', { nullable: false })
   @JoinColumn({ name: 'updatedBy' })
   updatedBy: User;
 

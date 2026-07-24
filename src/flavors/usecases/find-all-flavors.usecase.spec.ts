@@ -1,9 +1,5 @@
 import { FindAllFlavorsUseCase } from './find-all-flavors.usecase';
 
-jest.mock('../../common/entities/base-catalog.entity', () => ({
-    BaseCatalogEntity: class BaseCatalogEntity { },
-}));
-
 describe('FindAllFlavorsUseCase', () => {
     let findAndCountMock: jest.Mock;
     let useCase: FindAllFlavorsUseCase;

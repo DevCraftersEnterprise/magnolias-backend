@@ -2,10 +2,6 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { RemoveFlavorUseCase } from './remove-flavor.usecase';
 import type { User } from '../../users/entities/user.entity';
 
-jest.mock('../../common/entities/base-catalog.entity', () => ({
-    BaseCatalogEntity: class BaseCatalogEntity { },
-}));
-
 describe('RemoveFlavorUseCase', () => {
     let findOneMock: jest.Mock;
     let saveMock: jest.Mock;
