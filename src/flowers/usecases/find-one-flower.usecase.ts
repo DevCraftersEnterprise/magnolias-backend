@@ -1,33 +1,18 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { isUUID } from 'class-validator';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { BaseFindOneCatalogUseCase } from '../../common/usecases/base-find-one-catalog.usecase';
 import { Flower } from '../entities/flower.entity';
 
 @Injectable()
-export class FindOneFlowerUseCase {
-  private readonly logger = new Logger(FindOneFlowerUseCase.name);
+export class FindOneFlowerUseCase extends BaseFindOneCatalogUseCase<Flower> {
+  protected readonly logger = new Logger(FindOneFlowerUseCase.name);
+  protected readonly entityName = 'Flower';
 
   constructor(
     @InjectRepository(Flower)
-    private readonly flowerRepository: Repository<Flower>,
-  ) {}
-
-  async execute(term: string): Promise<Flower> {
-    const whereConditions: FindOptionsWhere<Flower> = {};
-
-    if (isUUID(term)) whereConditions.id = term;
-    else whereConditions.name = term.toUpperCase();
-
-    const flower = await this.flowerRepository.findOne({
-      where: whereConditions,
-    });
-
-    if (!flower) {
-      this.logger.warn(`Flower with term ${term} not found`);
-      throw new NotFoundException(`Flower with term ${term} not found`);
-    }
-
-    return flower;
+    repository: Repository<Flower>,
+  ) {
+    super(repository);
   }
 }
