@@ -38,7 +38,7 @@ describe('CreatePhoneForBranchUseCase', () => {
         expect(mocks.phoneRepository.create).not.toHaveBeenCalled();
     });
 
-    it('crea el teléfono asociado a la sucursal y actualiza la sucursal con la nueva relación', async () => {
+    it('crea el teléfono asociado a la sucursal (vía Phone.branch) y registra updatedBy en la sucursal', async () => {
         const mocks = createMocks();
         const branch = { id: 'branch-1', phones: null, updatedBy: null };
         mocks.branchRepository.findOne.mockResolvedValue(branch);
@@ -54,8 +54,8 @@ describe('CreatePhoneForBranchUseCase', () => {
             }),
         );
         expect(result.id).toBe('phone-1');
-        expect(branch.phones).toEqual(expect.objectContaining({ id: 'phone-1' }));
         expect(branch.updatedBy).toBe(user);
         expect(mocks.branchRepository.save).toHaveBeenCalledWith(branch);
     });
+
 });
