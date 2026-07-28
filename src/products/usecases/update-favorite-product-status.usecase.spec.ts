@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UpdateFavoriteProductStatusUseCase } from './update-favorite-product-status.usecase';
 import type { User } from '../../users/entities/user.entity';
 
@@ -42,7 +42,7 @@ describe('UpdateFavoriteProductStatusUseCase', () => {
 
   it('marca el producto como favorito si no había uno previo', async () => {
     const mocks = createMocks();
-    const product = { id: 'p1', isActive: true, isFavorite: false };
+    const product = { id: 'p1', isActive: true, isFavorite: false, isPublic: true };
     mocks.productRepository.findOne
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(product);
@@ -55,8 +55,8 @@ describe('UpdateFavoriteProductStatusUseCase', () => {
 
   it('desmarca el favorito anterior y marca el nuevo cuando son productos distintos', async () => {
     const mocks = createMocks();
-    const oldFavorite = { id: 'old', isActive: true, isFavorite: true };
-    const product = { id: 'p1', isActive: true, isFavorite: false };
+    const oldFavorite = { id: 'old', isActive: true, isFavorite: true, isPublic: true };
+    const product = { id: 'p1', isActive: true, isFavorite: false, isPublic: true };
     mocks.productRepository.findOne
       .mockResolvedValueOnce(oldFavorite)
       .mockResolvedValueOnce(product);
@@ -67,6 +67,20 @@ describe('UpdateFavoriteProductStatusUseCase', () => {
     expect(result.isFavorite).toBe(true);
     expect(mocks.productRepository.save).toHaveBeenCalledTimes(2);
   });
+
+  it('lanza BadRequestException si el producto está oculto al público', async () => {
+    const mocks = createMocks();
+    const product = { id: 'p1', isActive: true, isFavorite: false, isPublic: false };
+    mocks.productRepository.findOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(product);
+
+    await expect(mocks.useCase.execute('p1', user)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(mocks.productRepository.save).not.toHaveBeenCalled();
+  });
+
 
   it('si el producto ya es el favorito: lo desmarca (toggle off) sin re-marcarlo', async () => {
     const mocks = createMocks();
