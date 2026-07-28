@@ -52,6 +52,14 @@ export class Product {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @ApiProperty({
+    description: 'Whether the product is visible on the public catalog',
+    example: true,
+    default: true,
+  })
+  @Column({ type: 'boolean', default: true })
+  isPublic: boolean;
+
   @ApiHideProperty()
   @ManyToOne(() => Category, { nullable: false })
   @JoinColumn({ name: 'categoryId' })
