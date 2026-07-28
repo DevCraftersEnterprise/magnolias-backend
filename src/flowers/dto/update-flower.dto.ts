@@ -1,14 +1,3 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { CreateFlowerDto } from './create-flower.dto';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { BaseUpdateCatalogDto } from '../../common/dto/base-update-catalog.dto';
 
-export class UpdateFlowerDto extends PartialType(CreateFlowerDto) {
-  @ApiProperty({
-    description: 'Indicates if the flower is active',
-    example: true,
-    required: false,
-  })
-  @IsOptional()
-  @IsBoolean({ message: 'isActive must be a boolean value' })
-  isActive?: boolean;
-}
+export class UpdateFlowerDto extends BaseUpdateCatalogDto { }

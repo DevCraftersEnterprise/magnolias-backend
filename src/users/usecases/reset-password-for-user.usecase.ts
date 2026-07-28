@@ -19,7 +19,7 @@ export class ResetPasswordForUserUseCase {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async execute(
     resetPasswordDto: ResetPasswordDto,
@@ -43,7 +43,7 @@ export class ResetPasswordForUserUseCase {
     const currentUserLevel = getRoleLevel(currentUser.role);
     const targetUserLevel = getRoleLevel(user.role);
 
-    if (currentUserLevel < targetUserLevel) {
+    if (currentUserLevel <= targetUserLevel) {
       this.logger.error(
         `User with ID ${currentUser.id} does not have permission to reset password for user with ID ${user.id}`,
       );

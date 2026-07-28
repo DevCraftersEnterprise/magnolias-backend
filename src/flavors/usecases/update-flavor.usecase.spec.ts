@@ -2,9 +2,6 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { UpdateFlavorUseCase } from './update-flavor.usecase';
 import type { User } from '../../users/entities/user.entity';
 
-jest.mock('../../common/entities/base-catalog.entity', () => ({
-    BaseCatalogEntity: class BaseCatalogEntity { },
-}));
 
 describe('UpdateFlavorUseCase', () => {
     let findOneMock: jest.Mock;

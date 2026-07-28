@@ -12,7 +12,7 @@ export class FindAllFlowersUseCase {
   constructor(
     @InjectRepository(Flower)
     private readonly flowerRepository: Repository<Flower>,
-  ) {}
+  ) { }
 
   async execute(
     flowersFilterDto: FlowersFilterDto,

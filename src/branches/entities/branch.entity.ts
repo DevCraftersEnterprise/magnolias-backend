@@ -64,11 +64,10 @@ export class Branch {
   @OneToOne(() => Phone, (phone) => phone.branch, {
     cascade: true,
     eager: true,
-    nullable: true,
   })
-  @JoinColumn({ name: 'phoneId' })
   @Expose()
   phones: Phone;
+
 
   @ApiHideProperty()
   @ManyToOne(() => User, { nullable: false })

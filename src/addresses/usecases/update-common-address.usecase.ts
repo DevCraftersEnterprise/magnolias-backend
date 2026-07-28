@@ -19,7 +19,7 @@ export class UpdateCommonAddressUseCase {
     @InjectRepository(CommonAddress)
     private commonAddressRepository: Repository<CommonAddress>,
     private readonly checkForDuplicateAddressUtil: CheckForDuplicateAddressUtil,
-  ) {}
+  ) { }
 
   async execute(
     id: string,
@@ -53,7 +53,7 @@ export class UpdateCommonAddressUseCase {
       );
     }
 
-    Object.assign(address, updateCommonAddressDto, { updateBy: user });
+    Object.assign(address, updateCommonAddressDto, { updatedBy: user });
 
     const updatedCommonAddress =
       await this.commonAddressRepository.save(address);

@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
@@ -11,7 +16,7 @@ export class UpdateFavoriteProductStatusUseCase {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
   async execute(id: string, user: User): Promise<Product> {
     const favorite = await this.productRepository.findOne({
@@ -32,6 +37,17 @@ export class UpdateFavoriteProductStatusUseCase {
       throw new NotFoundException(`Product with ID ${id} is not active`);
     }
 
+    const isUnsetting = favorite?.id === product.id;
+
+    if (!isUnsetting && !product.isPublic) {
+      this.logger.warn(
+        `Product with ID ${id} cannot be marked as favorite because it is hidden from the public catalog`,
+      );
+      throw new BadRequestException(
+        `Product with ID ${id} cannot be marked as favorite because it is hidden from the public catalog`,
+      );
+    }
+
     if (favorite) {
       Object.assign(favorite, { isFavorite: false, updatedBy: user });
       await this.productRepository.save(favorite);
@@ -39,7 +55,7 @@ export class UpdateFavoriteProductStatusUseCase {
 
     this.logger.log(`Updating favorite product with ID: ${id}`);
 
-    if (favorite?.id === product.id) {
+    if (isUnsetting) {
       this.logger.log(
         `Product with ID ${id} is already the favorite, unsetting it`,
       );
