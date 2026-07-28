@@ -44,11 +44,7 @@ describe('ResetPasswordForUserUseCase', () => {
         ).rejects.toThrow(BadRequestException);
     });
 
-    // REGRESIÓN: a diferencia de Remove/UpdateUserUseCase (que usan `<=` y
-    // bloquean actuar sobre el mismo nivel), aquí se usa `<`, así que SÍ se
-    // permite resetear la contraseña de alguien del mismo nivel. Documentado
-    // tal cual está hoy (flagueado en el backlog como posible inconsistencia).
-    it('REGRESIÓN: permite resetear la contraseña de un usuario del mismo nivel', async () => {
+    it('lanza BadRequestException si el usuario actual tiene el mismo nivel que el objetivo', async () => {
         const mocks = createMocks();
         mocks.userRepository.findOne.mockResolvedValue({
             id: 'u1',
@@ -59,8 +55,9 @@ describe('ResetPasswordForUserUseCase', () => {
 
         await expect(
             mocks.useCase.execute(baseDto(), currentUser),
-        ).resolves.toBeDefined();
+        ).rejects.toThrow(BadRequestException);
     });
+
 
     it('hashea la nueva contraseña con argon2 y retorna el usuario saneado', async () => {
         const mocks = createMocks();
