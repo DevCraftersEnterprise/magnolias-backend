@@ -314,7 +314,7 @@ export class CreateOrderUseCase {
 
     for (let i = 0; i < details.length; i++) {
       const detailDto = details[i];
-      const product = products.find((p) => p.id === detailDto.productId);
+      const product = products[i];
       if (!product) continue;
 
       let referenceImageUrl: string | undefined;
