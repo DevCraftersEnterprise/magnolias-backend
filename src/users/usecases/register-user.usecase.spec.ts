@@ -117,11 +117,7 @@ describe('RegisterUserUseCase', () => {
         );
     });
 
-    // REGRESIÓN: si branchIds trae un id inválido junto a uno válido, no se lanza
-    // error — se descarta silenciosamente. La validación `branches.length === 0`
-    // se evalúa ANTES de filtrar los null, así que nunca se cumple si al menos un
-    // id es válido. Documentado tal cual está hoy (flagueado en el backlog).
-    it('REGRESIÓN: descarta silenciosamente branchIds inválidos sin lanzar error', async () => {
+    it('lanza BadRequestException si algún branchId de branchIds no existe', async () => {
         const mocks = createMocks();
         mocks.userRepository.findOne.mockResolvedValue(null);
         const validBranch = { id: 'b1' };
@@ -133,12 +129,11 @@ describe('RegisterUserUseCase', () => {
             mocks.useCase.execute(
                 baseDto({ role: UserRoles.BAKER, branchIds: ['b1', 'no-existe'] }),
             ),
-        ).resolves.toBeDefined();
+        ).rejects.toThrow(BadRequestException);
 
-        expect(mocks.userRepository.create).toHaveBeenCalledWith(
-            expect.objectContaining({ branches: [validBranch] }),
-        );
+        expect(mocks.userRepository.create).not.toHaveBeenCalled();
     });
+
 
     it('retorna el usuario saneado sin exponer userkey', async () => {
         const mocks = createMocks();

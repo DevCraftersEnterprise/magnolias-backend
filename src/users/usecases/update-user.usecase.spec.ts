@@ -98,26 +98,23 @@ describe('UpdateUserUseCase', () => {
         expect(result.branch).toBeNull();
     });
 
-    // REGRESIÓN: a diferencia de RegisterUserUseCase (que filtra los null),
-    // aquí NO se filtran las sucursales no encontradas: un id inválido en
-    // branchIds termina como `null` dentro de user.branches. Documentado tal
-    // cual está hoy (flagueado en el backlog).
-    it('REGRESIÓN: un branchId inválido queda como null dentro de branches', async () => {
+    it('lanza BadRequestException si algún branchId no existe', async () => {
         const mocks = createMocks();
         mocks.userRepository.findOne.mockResolvedValue(baseTargetUser());
         mocks.branchRepository.findOne.mockResolvedValue(null);
 
-        const result = await mocks.useCase.execute(
-            {
-                id: 'u1',
-                role: UserRoles.BAKER,
-                branchIds: ['no-existe'],
-            } as UpdateUserDto,
-            admin,
-        );
-
-        expect(result.branches).toEqual([null]);
+        await expect(
+            mocks.useCase.execute(
+                {
+                    id: 'u1',
+                    role: UserRoles.BAKER,
+                    branchIds: ['no-existe'],
+                } as UpdateUserDto,
+                admin,
+            ),
+        ).rejects.toThrow(BadRequestException);
     });
+
 
     it('lanza NotFoundException si branchId (rol no-BAKER) no corresponde a una sucursal existente', async () => {
         const mocks = createMocks();
