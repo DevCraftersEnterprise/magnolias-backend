@@ -37,6 +37,7 @@ export class FindAllCategoriesUseCase {
           description: true,
           isActive: true,
           isFavorite: true,
+          isPublic: true,
           category: {
             id: true,
           },
