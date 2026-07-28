@@ -29,6 +29,16 @@ export class CreateProductDto {
   isFavorite?: boolean;
 
   @ApiProperty({
+    description: 'Whether the product is visible on the public catalog',
+    example: true,
+    required: false,
+    default: true,
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'isPublic must be a boolean' })
+  isPublic?: boolean;
+
+  @ApiProperty({
     description: 'CategoryId of the product',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
