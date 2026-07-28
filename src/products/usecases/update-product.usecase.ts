@@ -60,6 +60,14 @@ export class UpdateProductUseCase {
       product.name = normalizedName;
     }
 
+    if (!product.isPublic && product.isFavorite) {
+      this.logger.log(
+        `Product with ID ${id} is being hidden while marked as favorite — clearing favorite status`,
+      );
+      product.isFavorite = false;
+    }
+
+
     if (categoryId && product.category.id !== categoryId) {
       this.logger.log(`Updating product category with ID ${categoryId}`);
       const category = await this.categoriesService.findOne(categoryId);

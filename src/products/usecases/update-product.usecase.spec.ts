@@ -134,4 +134,19 @@ describe('UpdateProductUseCase', () => {
       expect.objectContaining({ updatedBy: user }),
     );
   });
+
+  it('desmarca el favorito si el producto se oculta al público', async () => {
+    const mocks = createMocks();
+    mocks.productRepository.findOne.mockResolvedValueOnce(
+      baseProduct({ isFavorite: true, isPublic: true }),
+    );
+
+    const result = await mocks.useCase.execute(
+      'p1',
+      { isPublic: false } as UpdateProductDto,
+      user,
+    );
+
+    expect(result.isFavorite).toBe(false);
+  });
 });
