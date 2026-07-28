@@ -12,7 +12,7 @@ export class FindAllStylesUseCase {
   constructor(
     @InjectRepository(Style)
     private readonly styleRepository: Repository<Style>,
-  ) {}
+  ) { }
 
   async execute(
     stylesFilterDto: StylesFilterDto,

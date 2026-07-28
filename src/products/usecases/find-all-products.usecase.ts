@@ -17,12 +17,13 @@ export class FindAllProductsUseCase {
   async execute(
     productsFiltersDto: ProductsFilterDto,
   ): Promise<PaginationResponse<Product> | Product[]> {
-    const { name, description, limit, offset } = productsFiltersDto;
+    const { name, description, includeHidden, limit, offset } = productsFiltersDto;
 
     const whereConditions: FindOptionsWhere<Product> = {};
 
     if (name) whereConditions.name = ILike(`%${name}%`);
     if (description) whereConditions.description = ILike(`%${description}%`);
+    if (!includeHidden) whereConditions.isPublic = true;
 
     const [products, total] = await this.productRepository.findAndCount({
       where: {

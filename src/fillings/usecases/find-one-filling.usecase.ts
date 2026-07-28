@@ -1,33 +1,18 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { isUUID } from 'class-validator';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { BaseFindOneCatalogUseCase } from '../../common/usecases/base-find-one-catalog.usecase';
 import { Filling } from '../entities/filling.entity';
 
 @Injectable()
-export class FindOneFillingUseCase {
-  private readonly logger = new Logger(FindOneFillingUseCase.name);
+export class FindOneFillingUseCase extends BaseFindOneCatalogUseCase<Filling> {
+  protected readonly logger = new Logger(FindOneFillingUseCase.name);
+  protected readonly entityName = 'Filling';
 
   constructor(
     @InjectRepository(Filling)
-    private readonly fillingRepository: Repository<Filling>,
-  ) {}
-
-  async execute(term: string): Promise<Filling> {
-    const whereConditions: FindOptionsWhere<Filling> = {};
-
-    if (isUUID(term)) whereConditions.id = term;
-    else whereConditions.name = term.toUpperCase();
-
-    const filling = await this.fillingRepository.findOne({
-      where: whereConditions,
-    });
-
-    if (!filling) {
-      this.logger.warn(`Filling with term ${term} not found`);
-      throw new NotFoundException(`Filling with term ${term} not found`);
-    }
-
-    return filling;
+    repository: Repository<Filling>,
+  ) {
+    super(repository);
   }
 }

@@ -12,7 +12,7 @@ export class FindAllCategoriesUseCase {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   async execute(
     paginationDto: PaginationDto,
@@ -37,6 +37,7 @@ export class FindAllCategoriesUseCase {
           description: true,
           isActive: true,
           isFavorite: true,
+          isPublic: true,
           category: {
             id: true,
           },

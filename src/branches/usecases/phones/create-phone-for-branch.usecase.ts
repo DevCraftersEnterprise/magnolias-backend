@@ -15,7 +15,7 @@ export class CreatePhoneForBranchUseCase {
     private readonly branchRepository: Repository<Branch>,
     @InjectRepository(Phone)
     private readonly phoneRepository: Repository<Phone>,
-  ) {}
+  ) { }
 
   async execute(
     createPhoneDto: CreatePhonesDto,
@@ -44,13 +44,11 @@ export class CreatePhoneForBranchUseCase {
       `Created phone with ID ${savedPhones.id} for branch ID ${branchId}`,
     );
 
-    Object.assign(branch, { phones: savedPhones, updatedBy: user });
+    Object.assign(branch, { updatedBy: user });
 
     await this.branchRepository.save(branch);
 
-    this.logger.log(
-      `Updated branch with ID ${branchId} to associate new phone with ID ${savedPhones.id}`,
-    );
+    this.logger.log(`Branch with ID ${branchId} updatedBy set to ${user.id}`);
 
     return savedPhones;
   }

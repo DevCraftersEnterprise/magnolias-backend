@@ -2,10 +2,6 @@ import { ConflictException } from '@nestjs/common';
 import { CreateFlavorUseCase } from './create-flavor.usecase';
 import type { User } from '../../users/entities/user.entity';
 
-jest.mock('../../common/entities/base-catalog.entity', () => ({
-    BaseCatalogEntity: class BaseCatalogEntity { },
-}));
-
 describe('CreateFlavorUseCase', () => {
     let findOneMock: jest.Mock;
     let createMock: jest.Mock;

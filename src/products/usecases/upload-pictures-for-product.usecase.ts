@@ -27,8 +27,8 @@ export class UploadPicturesForProductUseCase {
 
     switch (process.env.NODE_ENV) {
       case 'production': folder = `magnolias/product/pictures/${id}`; break;
-      case 'development': folder = `development/magnolias/product/pictures/${id}`; break;
       case 'staging': folder = `staging/magnolias/product/pictures/${id}`; break;
+      default: folder = `development/magnolias/product/pictures/${id}`; break;
     }
 
     const product = await this.productRepository.findOne({

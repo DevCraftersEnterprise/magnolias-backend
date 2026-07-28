@@ -50,7 +50,7 @@ export class UpdateOrderUseCase {
     private readonly flowersService: FlowersService,
     private readonly customersService: CustomersService,
     private readonly branchesService: BranchesService,
-  ) {}
+  ) { }
 
   async execute(updateOrderDto: UpdateOrderDto, user: User): Promise<Order> {
     const {
@@ -397,7 +397,7 @@ export class UpdateOrderUseCase {
 
     for (let i = 0; i < details.length; i++) {
       const detailDto = details[i];
-      const product = products.find((p) => p.id === detailDto.productId);
+      const product = products[i];
 
       if (!product) {
         this.logger.warn(
