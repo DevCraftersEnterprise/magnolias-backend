@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { GetAssignmentsUseCase } from './get-assignments.usecase';
 import { OrderStatus } from '../../../orders/enums/order-status.enum';
+import { In } from 'typeorm';
 
 function createMocks() {
   const userRepository = { findOne: jest.fn() };
@@ -35,7 +36,7 @@ describe('GetAssignmentsUseCase', () => {
     expect(result).toBe(assignments);
   });
 
-  it('REGRESIÓN (documenta un bug existente): el filtro de status colapsa siempre a CREATED por el uso de "||" en vez de una lista', async () => {
+  it('filtra asignaciones cuyo pedido está en CREATED, IN_PROCESS o DONE', async () => {
     const mocks = createMocks();
     mocks.userRepository.findOne.mockResolvedValue({ id: 'baker-1' });
     mocks.orderAssignmentRepository.find.mockResolvedValue([]);
@@ -43,8 +44,8 @@ describe('GetAssignmentsUseCase', () => {
     await mocks.useCase.execute('baker-1');
 
     const callArgs = mocks.orderAssignmentRepository.find.mock.calls[0][0];
-    // Este test documenta el comportamiento ACTUAL (probablemente no intencional):
-    // "CREATED || IN_PROCESS || DONE" siempre se evalúa a "CREATED".
-    expect(callArgs.where.order.status).toBe(OrderStatus.CREATED);
+    expect(callArgs.where.order.status).toEqual(
+      In([OrderStatus.CREATED, OrderStatus.IN_PROCESS, OrderStatus.DONE]),
+    );
   });
 });
