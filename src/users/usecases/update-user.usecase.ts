@@ -70,16 +70,20 @@ export class UpdateUserUseCase {
       );
       const branches = await Promise.all(branchesPromises);
 
-      if (branches.length === 0) {
-        this.logger.warn(`No valid branches found for the provided branchIds`);
+      const invalidBranchIds = branchIds.filter((id, index) => !branches[index]);
+
+      if (invalidBranchIds.length > 0) {
+        this.logger.warn(
+          `Invalid branch IDs provided: ${invalidBranchIds.join(', ')}`,
+        );
         throw new BadRequestException(
-          `No valid branches found for the provided branchIds`,
+          `Invalid branch IDs: ${invalidBranchIds.join(', ')}`,
         );
       }
 
       Object.assign(user, updateUserDto, {
         updatedBy: currentUser,
-        branches,
+        branches: branches as Branch[],
         branch: null,
       });
     }

@@ -17,7 +17,7 @@ export class RegisterUserUseCase {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-  ) {}
+  ) { }
 
   async execute(registerUserDto: RegisterUserDto): Promise<Partial<User>> {
     const { username, role, branchId, branchIds, userkey } = registerUserDto;
@@ -76,15 +76,20 @@ export class RegisterUserUseCase {
       );
       const branches = await Promise.all(branchesPromises);
 
-      if (branches.length === 0) {
-        this.logger.warn(`No valid branches found for the provided branchIds`);
+      const invalidBranchIds = branchIds.filter((_, index) => !branches[index]);
+
+      if (invalidBranchIds.length > 0) {
+        this.logger.warn(
+          `Invalid branch IDs provided: ${invalidBranchIds.join(', ')}`,
+        );
         throw new BadRequestException(
-          `No valid branches found for the provided branchIds`,
+          `Invalid branch IDs: ${invalidBranchIds.join(', ')}`,
         );
       }
 
-      userData.branches = branches.filter((branch) => branch !== null);
+      userData.branches = branches as Branch[];
     }
+
 
     const user = this.userRepository.create(userData);
 
