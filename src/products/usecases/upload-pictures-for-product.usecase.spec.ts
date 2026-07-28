@@ -94,10 +94,7 @@ describe('UploadPicturesForProductUseCase', () => {
     );
   });
 
-  // REGRESIÓN: el switch de NODE_ENV no tiene `default`, así que cualquier
-  // valor no listado (incluido 'test', el que usa Jest) deja folder=''.
-  // Documentado tal cual está hoy (flagueado en el backlog).
-  it('REGRESIÓN: folder queda vacío si NODE_ENV no es production/development/staging', async () => {
+  it('usa la carpeta de development como fallback si NODE_ENV no es production/staging', async () => {
     process.env.NODE_ENV = 'test';
     const mocks = createMocks();
     mocks.productRepository.findOne
@@ -108,8 +105,13 @@ describe('UploadPicturesForProductUseCase', () => {
     await mocks.useCase.execute(files, 'p1', user);
 
     expect(mockedUpload).toHaveBeenCalledWith(
-      expect.arrayContaining([expect.objectContaining({ folder: '' })]),
+      expect.arrayContaining([
+        expect.objectContaining({
+          folder: 'development/magnolias/product/pictures/p1',
+        }),
+      ]),
       3,
     );
   });
+
 });

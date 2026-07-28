@@ -38,9 +38,12 @@ export class UpdateProductUseCase {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    if (name && product.name !== name) {
+    const normalizedName = name?.toUpperCase();
+    const effectiveCategoryId = categoryId ?? product.category.id;
+
+    if (normalizedName && product.name !== normalizedName) {
       const duplicatedProduct = await this.productRepository.findOne({
-        where: { name: name.toUpperCase(), category: { id: categoryId } },
+        where: { name: normalizedName, category: { id: effectiveCategoryId } },
       });
 
       if (duplicatedProduct && duplicatedProduct.id !== id) {
@@ -52,6 +55,10 @@ export class UpdateProductUseCase {
     this.logger.log(`Updating product with ID ${id}`);
 
     Object.assign(product, { ...updateProductDto, updatedBy: user });
+
+    if (normalizedName) {
+      product.name = normalizedName;
+    }
 
     if (categoryId && product.category.id !== categoryId) {
       this.logger.log(`Updating product category with ID ${categoryId}`);

@@ -71,11 +71,7 @@ describe('UpdateProductUseCase', () => {
     ).resolves.toBeDefined();
   });
 
-  // REGRESIÓN: a diferencia de CreateProductUseCase (que siempre guarda el
-  // nombre en mayúsculas), aquí el nombre se asigna TAL CUAL viene en el DTO
-  // (Object.assign no lo normaliza), rompiendo la invariante de mayúsculas.
-  // Documentado tal cual está hoy (flagueado en el backlog).
-  it('REGRESIÓN: no normaliza el nombre a mayúsculas al actualizar', async () => {
+  it('normaliza el nombre a mayúsculas al actualizar', async () => {
     const mocks = createMocks();
     mocks.productRepository.findOne
       .mockResolvedValueOnce(baseProduct())
@@ -87,15 +83,10 @@ describe('UpdateProductUseCase', () => {
       user,
     );
 
-    expect(result.name).toBe('pastel minúsculas');
+    expect(result.name).toBe('PASTEL MINÚSCULAS');
   });
 
-  // REGRESIÓN: si se cambia el nombre sin enviar categoryId, el chequeo de
-  // duplicados arma `where: { category: { id: undefined } }` — TypeORM
-  // descarta esa condición, así que la búsqueda de duplicados deja de estar
-  // acotada a la categoría del producto y revisa TODAS las categorías.
-  // Documentado tal cual está hoy (flagueado en el backlog).
-  it('REGRESIÓN: sin categoryId, el chequeo de duplicados pierde el scope de categoría', async () => {
+  it('sin categoryId, el chequeo de duplicados usa la categoría actual del producto como fallback', async () => {
     const mocks = createMocks();
     mocks.productRepository.findOne
       .mockResolvedValueOnce(baseProduct())
@@ -108,7 +99,7 @@ describe('UpdateProductUseCase', () => {
     );
 
     expect(mocks.productRepository.findOne).toHaveBeenNthCalledWith(2, {
-      where: { name: 'PASTEL NUEVO', category: { id: undefined } },
+      where: { name: 'PASTEL NUEVO', category: { id: 'cat-1' } },
     });
   });
 

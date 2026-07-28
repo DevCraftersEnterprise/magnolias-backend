@@ -108,13 +108,7 @@ describe('UpdateCommonAddressUseCase', () => {
         expect(mocks.commonAddressRepository.save).toHaveBeenCalledWith(address);
     });
 
-    // REGRESIÓN: el usecase asigna `{ updateBy: user }` (typo) en vez de `updatedBy`,
-    // que es el nombre real de la columna en la entidad (ver create/remove, que sí
-    // usan `updatedBy`). Como resultado, `updatedBy` NUNCA se actualiza al editar.
-    // Este test documenta el bug tal cual está hoy (flagueado en el backlog, no se
-    // corrige en esta tarea). Si se corrige a futuro, este test debe fallar y
-    // obligar a actualizarlo a propósito.
-    it('REGRESIÓN: updatedBy NO se actualiza al editar (bug de typo updateBy vs updatedBy)', async () => {
+    it('actualiza updatedBy con el usuario que edita', async () => {
         const mocks = createMocks();
         const originalUpdatedBy = { id: 'old-user' };
         const address = baseAddress({ updatedBy: originalUpdatedBy });
@@ -127,7 +121,7 @@ describe('UpdateCommonAddressUseCase', () => {
             user,
         );
 
-        expect(result.updatedBy).toBe(originalUpdatedBy);
-        expect((result as unknown as { updateBy: User }).updateBy).toBe(user);
+        expect(result.updatedBy).toBe(user);
     });
+
 });

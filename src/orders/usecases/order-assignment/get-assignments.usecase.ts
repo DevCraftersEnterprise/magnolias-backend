@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { OrderAssignment } from '../../../orders/entities/order-assignment.entity';
 import { OrderStatus } from '../../../orders/enums/order-status.enum';
 import { User } from '../../../users/entities/user.entity';
@@ -14,7 +14,7 @@ export class GetAssignmentsUseCase {
     private readonly userRepository: Repository<User>,
     @InjectRepository(OrderAssignment)
     private readonly orderAssignmentRepository: Repository<OrderAssignment>,
-  ) {}
+  ) { }
 
   async execute(bakerId: string): Promise<OrderAssignment[]> {
     const baker = await this.userRepository.findOne({
@@ -32,8 +32,11 @@ export class GetAssignmentsUseCase {
       where: {
         baker: { id: bakerId },
         order: {
-          status:
-            OrderStatus.CREATED || OrderStatus.IN_PROCESS || OrderStatus.DONE,
+          status: In([
+            OrderStatus.CREATED,
+            OrderStatus.IN_PROCESS,
+            OrderStatus.DONE,
+          ])
         },
       },
       relations: {
