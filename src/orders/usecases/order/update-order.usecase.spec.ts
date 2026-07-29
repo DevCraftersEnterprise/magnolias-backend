@@ -4,6 +4,13 @@ import { OrderStatus } from '../../enums/order-status.enum';
 import { OrderType } from '../../../common/enums/order-type.enum';
 import type { User } from '../../../users/entities/user.entity';
 import type { UpdateOrderDto } from '../../dto/update-order.dto';
+import * as cloudinaryUtil from '../../../common/utils/upload-to-cloudinary';
+
+jest.mock('../../../common/utils/upload-to-cloudinary');
+
+const uploadPictureToCloudinaryMock =
+    cloudinaryUtil.uploadPictureToCloudinary as jest.Mock;
+
 
 function createMocks() {
     const orderRepository = {
@@ -26,6 +33,14 @@ function createMocks() {
         create: jest.fn((data) => ({ ...data })),
         save: jest.fn((entity) => Promise.resolve(entity)),
     };
+
+    const orderDetailReferenceImageRepository = {
+        create: jest.fn((data) => ({ ...data })),
+        save: jest.fn((entities) => Promise.resolve(entities)),
+        count: jest.fn().mockResolvedValue(0),
+    };
+
+
     const addressesService = {
         findOne: jest.fn(),
         create: jest.fn(),
@@ -43,6 +58,7 @@ function createMocks() {
         orderDetailRepository as never,
         orderFlowerRepository as never,
         orderPaymentRepository as never,
+        orderDetailReferenceImageRepository as never,
         addressesService as never,
         productsService as never,
         flowersService as never,
@@ -57,6 +73,7 @@ function createMocks() {
         orderDetailRepository,
         orderFlowerRepository,
         orderPaymentRepository,
+        orderDetailReferenceImageRepository,
         addressesService,
         productsService,
         flowersService,
@@ -91,6 +108,11 @@ function baseDto(overrides: Partial<UpdateOrderDto> = {}): UpdateOrderDto {
 }
 
 describe('UpdateOrderUseCase', () => {
+    beforeEach(() => {
+        uploadPictureToCloudinaryMock.mockReset();
+        uploadPictureToCloudinaryMock.mockResolvedValue('https://cdn/img.png');
+    });
+
     it('lanza NotFoundException si el pedido no existe', async () => {
         const mocks = createMocks();
         mocks.orderRepository.findOne.mockResolvedValue(null);
@@ -392,4 +414,92 @@ describe('UpdateOrderUseCase', () => {
         expect(result.settlementDate).toBeInstanceOf(Date);
         expect(result.settlementTotal).toBe(150);
     });
+
+    it('handleOrderDetails: sube fotos de referencia nuevas para un detalle existente', async () => {
+        process.env.NODE_ENV = 'production';
+        const mocks = createMocks();
+        const existingDetail = {
+            id: 'detail-1',
+            product: { id: 'product-1' },
+            quantity: 1,
+            price: 50,
+            breadType: {}, filling: {}, flavor: {}, frosting: {}, style: {}, color: {},
+        };
+        mocks.orderRepository.findOne.mockResolvedValue(
+            baseOrder({ details: [existingDetail] }),
+        );
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        const file0 = { buffer: Buffer.from('imagen') } as Express.Multer.File;
+
+        await mocks.useCase.execute(
+            baseDto({
+                details: [
+                    { productId: 'product-1', price: 50, quantity: 1 },
+                ] as never,
+                referenceImageDetailIndex: [0] as never,
+            }),
+            user,
+            [file0] as never,
+        );
+
+        expect(uploadPictureToCloudinaryMock).toHaveBeenCalledTimes(1);
+        expect(uploadPictureToCloudinaryMock).toHaveBeenCalledWith(
+            file0.buffer,
+            'magnolias/orders/reference-images',
+            expect.any(String),
+        );
+        expect(mocks.orderDetailReferenceImageRepository.save).toHaveBeenCalledTimes(1);
+
+        process.env.NODE_ENV = 'test';
+    });
+
+    it('handleOrderDetails: no sube nada si no llegan archivos', async () => {
+        const mocks = createMocks();
+        mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        await mocks.useCase.execute(
+            baseDto({
+                details: [{ productId: 'product-1', price: 50, quantity: 1 }] as never,
+            }),
+            user,
+        );
+
+        expect(uploadPictureToCloudinaryMock).not.toHaveBeenCalled();
+        expect(mocks.orderDetailReferenceImageRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('handleOrderDetails: lanza BadRequestException si al sumar fotos existentes y nuevas se supera el máximo', async () => {
+        const mocks = createMocks();
+        const existingDetail = {
+            id: 'detail-1',
+            product: { id: 'product-1' },
+            quantity: 1,
+            price: 50,
+            breadType: {}, filling: {}, flavor: {}, frosting: {}, style: {}, color: {},
+        };
+        mocks.orderRepository.findOne.mockResolvedValue(
+            baseOrder({ details: [existingDetail] }),
+        );
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+        mocks.orderDetailReferenceImageRepository.count.mockResolvedValue(9);
+
+        const files = [
+            { buffer: Buffer.from('a') } as Express.Multer.File,
+            { buffer: Buffer.from('b') } as Express.Multer.File,
+        ];
+
+        await expect(
+            mocks.useCase.execute(
+                baseDto({
+                    details: [{ productId: 'product-1', price: 50, quantity: 1 }] as never,
+                    referenceImageDetailIndex: [0, 0] as never,
+                }),
+                user,
+                files as never,
+            ),
+        ).rejects.toThrow(BadRequestException);
+    });
+
 });

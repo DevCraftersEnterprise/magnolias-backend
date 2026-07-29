@@ -3,6 +3,7 @@ import { OrderType } from '../../../common/enums/order-type.enum';
 import * as cloudinaryUtil from '../../../common/utils/upload-to-cloudinary';
 import type { User } from '../../../users/entities/user.entity';
 import type { CreateOrderDto } from '../../dto/create-order.dto';
+import { BadRequestException } from '@nestjs/common';
 
 jest.mock('../../../common/utils/upload-to-cloudinary');
 
@@ -22,6 +23,10 @@ function createMocks() {
         save: jest.fn((entity) => Promise.resolve(entity)),
     };
     const orderDetailRepository = {
+        create: jest.fn((data) => ({ ...data })),
+        save: jest.fn((entities) => Promise.resolve(entities)),
+    };
+    const orderDetailReferenceImageRepository = {
         create: jest.fn((data) => ({ ...data })),
         save: jest.fn((entities) => Promise.resolve(entities)),
     };
@@ -47,6 +52,7 @@ function createMocks() {
         orderRepository as never,
         orderDeliveryAddressRepository as never,
         orderDetailRepository as never,
+        orderDetailReferenceImageRepository as never,
         orderFlowerRepository as never,
         orderPaymentRepository as never,
         customerService as never,
@@ -61,6 +67,7 @@ function createMocks() {
         orderRepository,
         orderDeliveryAddressRepository,
         orderDetailRepository,
+        orderDetailReferenceImageRepository,
         orderFlowerRepository,
         orderPaymentRepository,
         customerService,
@@ -69,6 +76,7 @@ function createMocks() {
         productsService,
         flowersService,
     };
+
 }
 
 const user = { id: 'user-1' } as User;
@@ -538,7 +546,7 @@ describe('CreateOrderUseCase', () => {
             expect(mocks.orderDetailRepository.save).not.toHaveBeenCalled();
         });
 
-        it('sube la imagen de referencia solo para los detalles que traen archivo, usando la carpeta según NODE_ENV', async () => {
+        it('sube la imagen de referencia solo para el detalle indicado en referenceImageDetailIndex, usando la carpeta según NODE_ENV', async () => {
             process.env.NODE_ENV = 'production';
             const mocks = createMocks();
             mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
@@ -553,6 +561,7 @@ describe('CreateOrderUseCase', () => {
                         baseDetail({ price: 50, quantity: 1 }),
                         baseDetail({ price: 50, quantity: 1 }),
                     ],
+                    referenceImageDetailIndex: [0] as never,
                 }),
                 user,
                 [file0] as never,
@@ -564,6 +573,66 @@ describe('CreateOrderUseCase', () => {
                 'magnolias/orders/reference-images',
                 expect.any(String),
             );
+            expect(
+                mocks.orderDetailReferenceImageRepository.create,
+            ).toHaveBeenCalledTimes(1);
+            expect(
+                mocks.orderDetailReferenceImageRepository.save,
+            ).toHaveBeenCalledTimes(1);
+        });
+
+        it('permite varias fotos de referencia para un mismo detalle', async () => {
+            process.env.NODE_ENV = 'production';
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            const file0 = { buffer: Buffer.from('a') } as Express.Multer.File;
+            const file1 = { buffer: Buffer.from('b') } as Express.Multer.File;
+
+            await mocks.useCase.execute(
+                baseOrderDto({
+                    details: [baseDetail({ price: 50, quantity: 1 })],
+                    referenceImageDetailIndex: [0, 0] as never,
+                }),
+                user,
+                [file0, file1] as never,
+            );
+
+            expect(uploadPictureToCloudinaryMock).toHaveBeenCalledTimes(2);
+            expect(
+                mocks.orderDetailReferenceImageRepository.create,
+            ).toHaveBeenCalledTimes(2);
+            expect(
+                mocks.orderDetailReferenceImageRepository.save,
+            ).toHaveBeenCalledTimes(1);
+        });
+
+        it('lanza BadRequestException si un detalle recibe más de 10 imágenes de referencia', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            const files = Array.from(
+                { length: 11 },
+                (_, i) => ({ buffer: Buffer.from(String(i)) }) as Express.Multer.File,
+            );
+            const referenceImageDetailIndex = files.map(() => 0);
+
+            await expect(
+                mocks.useCase.execute(
+                    baseOrderDto({
+                        details: [baseDetail({ price: 50, quantity: 1 })],
+                        referenceImageDetailIndex: referenceImageDetailIndex as never,
+                    }),
+                    user,
+                    files as never,
+                ),
+            ).rejects.toThrow(BadRequestException);
+
+            expect(mocks.orderDetailRepository.save).not.toHaveBeenCalled();
         });
     });
 });
