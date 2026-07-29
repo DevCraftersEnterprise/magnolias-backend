@@ -1,7 +1,7 @@
 /**
- * Helpers para construir secciones de reportes PDF
- * Soporta múltiples páginas con un detalle por página
- */
+* Helpers para construir secciones de reportes PDF
+* Soporta múltiples páginas con un detalle por página
+*/
 import { Content, ContentText, TableCell } from 'pdfmake/interfaces';
 import { Order } from '../../../orders/entities/order.entity';
 import { OrderDetail } from '../../../orders/entities/order-detail.entity';
@@ -96,6 +96,14 @@ export const formatCurrency = (value: number | undefined | null): string =>
 /** Formatear booleano a SI/NO */
 export const formatYesNo = (value: boolean | undefined | null): string =>
   value ? 'SI' : 'NO';
+
+/** Formatear SI/NO con contador de imágenes de referencia adicionales */
+export const formatPhotoCount = (count: number | undefined | null): string => {
+  const total = count ?? 0;
+  if (total === 0) return 'NO';
+  if (total === 1) return 'SI';
+  return `SI (+${total - 1} más)`;
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ENCABEZADOS POR TIPO DE REPORTE
@@ -411,10 +419,10 @@ export const getDomicilioCustomerSection = (
       [
         labelCell('', { border: [true, false, true, false] }),
         valueCell('', { border: [false, false, false, false] }),
-        detail.referenceImageUrl
+        detail.referenceImages?.[0]?.imageUrl
           ? {
             // qr: detail.referenceImageUrl,
-            image: detail.referenceImageUrl,
+            image: detail.referenceImages[0].imageUrl,
             rowSpan: 2,
             // fit: 60,
             fit: [60, 60],
@@ -427,7 +435,7 @@ export const getDomicilioCustomerSection = (
       ],
       [
         labelCell('FOTO', { border: [true, false, true, false] }),
-        valueCell(detail.referenceImageUrl ? 'SI' : 'NO', {
+        valueCell(formatPhotoCount(detail.referenceImages?.length), {
           border: [false, false, false, false],
         }),
         {
@@ -478,10 +486,10 @@ export const getSimpleCustomerSection = (
       ],
       [
         labelCell('', { border: [true, true, true, false] }),
-        detail.referenceImageUrl
+        detail.referenceImages?.[0]?.imageUrl
           ? {
             // qr: detail.referenceImageUrl,
-            image: detail.referenceImageUrl,
+            image: detail.referenceImages[0].imageUrl,
             rowSpan: 2,
             // fit: 60,
             fit: [60, 60],
@@ -510,7 +518,7 @@ export const getSimpleCustomerSection = (
       ],
       [
         labelCell('', { border: [true, false, true, false] }),
-        valueCell(order.hasPhotoReference ? `SI` : 'NO', {
+        valueCell(formatPhotoCount(detail.referenceImages?.length), {
           bold: true,
           alignment: 'left',
           border: [false, false, true, false],
@@ -1312,10 +1320,10 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
       body: [
         [
           labelCell('', { border: [true, true, true, false] }),
-          detail.referenceImageUrl
+          detail.referenceImages?.[0]?.imageUrl
             ? {
               // qr: detail.referenceImageUrl,
-              image: detail.referenceImageUrl,
+              image: detail.referenceImages[0].imageUrl,
               rowSpan: 2,
               // fit: 60,
               fit: [60, 60],
@@ -1336,7 +1344,7 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
         ],
         [
           labelCell('', { border: [true, false, true, false] }),
-          valueCell(detail.referenceImageUrl ? 'SI' : 'NO', {
+          valueCell(formatPhotoCount(detail.referenceImages?.length), {
             border: [true, false, true, false],
           }),
           labelCell('', { border: [true, false, true, false] }),

@@ -49,7 +49,7 @@ export class OrdersController {
   @Post()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
   @ApiBearerAuth('access-token')
-  @UseInterceptors(FilesInterceptor('referenceImages', 10))
+  @UseInterceptors(FilesInterceptor('referenceImages', 50))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a new order',
@@ -239,10 +239,12 @@ export class OrdersController {
   @Patch()
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
   @ApiBearerAuth('access-token')
+  @UseInterceptors(FilesInterceptor('referenceImages', 50))
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update order details',
     description:
-      'Updates the details of an existing order with status CREATED.',
+      'Updates the details of an existing order with status CREATED. New reference images can be uploaded for existing or new order details.',
   })
   @ApiOkResponse({
     description: 'Order successfully updated.',
@@ -254,8 +256,16 @@ export class OrdersController {
   updateOrder(
     @Body() updateOrderDto: UpdateOrderDto,
     @CurrentUser() user: User,
+    @UploadedFiles() referenceImages?: Express.Multer.File[],
   ): Promise<Order> {
-    return this.ordersService.updateOrder(updateOrderDto, user);
+    if (referenceImages?.length) {
+      FileValidator.validateImages(referenceImages);
+    }
+    return this.ordersService.updateOrder(
+      updateOrderDto,
+      user,
+      referenceImages,
+    );
   }
 
   @Patch('in-process')
@@ -362,6 +372,32 @@ export class OrdersController {
   ): Promise<Order> {
     return this.ordersService.markOrderAsCancel(cancelOrderDto, user);
   }
+
+  @Delete('details/reference-image/:id')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Hide an order detail reference image',
+    description:
+      'Soft-deletes a single reference image belonging to an order detail.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the reference image',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({ description: 'Reference image successfully hidden.' })
+  @ApiBadRequestResponse({ description: 'Reference image already hidden.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiNotFoundResponse({ description: 'Reference image not found.' })
+  hideOrderDetailReferenceImage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return this.ordersService.hideOrderDetailReferenceImage(id, user);
+  }
+
 
   // Assign Orders
   @Post(':id/assign-order')
