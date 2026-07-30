@@ -55,7 +55,7 @@ export class RegisterUserDto {
 
   @ApiProperty({
     description:
-      'UUID of the branch to assign the user (required for EMPLOYEE, BAKER, and ASSISTANT roles)',
+      'UUID of the branch to assign the user (required for EMPLOYEE role)',
     example: '123e4567-e89b-12d3-a456-426614174000',
     required: false,
   })

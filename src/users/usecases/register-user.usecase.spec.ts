@@ -52,7 +52,7 @@ describe('RegisterUserUseCase', () => {
         ).rejects.toThrow(BadRequestException);
     });
 
-    it('lanza BadRequestException si el rol requiere sucursal (EMPLOYEE/ASSISTANT) y no trae branchId', async () => {
+    it('lanza BadRequestException si el rol requiere sucursal (EMPLOYEE) y no trae branchId', async () => {
         const mocks = createMocks();
         mocks.userRepository.findOne.mockResolvedValue(null);
 
