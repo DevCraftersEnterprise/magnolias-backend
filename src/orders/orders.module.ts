@@ -28,6 +28,9 @@ import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
 import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
+import { OrderDetailReferenceImage } from './entities/order-detail-reference-image.entity';
+import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-order-detail-reference-image.usecase';
+
 
 @Module({
   controllers: [OrdersController],
@@ -45,11 +48,13 @@ import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
     AssignOrderUseCase,
     GetAssignmentsUseCase,
     UpdateAssignOrderUseCase,
+    HideOrderDetailReferenceImageUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([
       Order,
       OrderDetail,
+      OrderDetailReferenceImage,
       OrderCancellation,
       OrderDeliveryAddress,
       OrderAssignment,

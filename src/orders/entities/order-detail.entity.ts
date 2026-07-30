@@ -5,6 +5,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,6 +20,7 @@ import { Frosting } from '../../frostings/entities/frosting.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Style } from '../../styles/entities/style.entity';
 import { User } from '../../users/entities/user.entity';
+import { OrderDetailReferenceImage } from './order-detail-reference-image.entity';
 import { Order } from './order.entity';
 
 @Entity({ name: 'order_details' })
@@ -110,13 +112,13 @@ export class OrderDetail {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @ApiProperty({
-    description: 'Reference image URL for the order detail',
-    example: 'https://example.com/image.jpg',
-    required: false,
-  })
-  @Column({ type: 'text', nullable: true })
-  referenceImageUrl?: string;
+  @ApiHideProperty()
+  @OneToMany(
+    () => OrderDetailReferenceImage,
+    (image) => image.orderDetail,
+  )
+  referenceImages: OrderDetailReferenceImage[];
+
 
   @ApiProperty({
     description: 'Indicates if the order detail is active',

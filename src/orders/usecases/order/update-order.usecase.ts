@@ -29,6 +29,10 @@ import { OrderStatus } from '../../enums/order-status.enum';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { BranchesService } from '../../../branches/branches.service';
 import { Branch } from '../../../branches/entities/branch.entity';
+import { OrderDetailReferenceImage } from '../../entities/order-detail-reference-image.entity';
+import { uploadPictureToCloudinary } from '../../../common/utils/upload-to-cloudinary';
+
+const MAX_REFERENCE_IMAGES_PER_DETAIL = 10;
 
 @Injectable()
 export class UpdateOrderUseCase {
@@ -45,6 +49,8 @@ export class UpdateOrderUseCase {
     private readonly orderFlowerRepository: Repository<OrderFlower>,
     @InjectRepository(OrderPayment)
     private readonly orderPaymentRepository: Repository<OrderPayment>,
+    @InjectRepository(OrderDetailReferenceImage)
+    private readonly orderDetailReferenceImageRepository: Repository<OrderDetailReferenceImage>,
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
@@ -52,7 +58,11 @@ export class UpdateOrderUseCase {
     private readonly branchesService: BranchesService,
   ) { }
 
-  async execute(updateOrderDto: UpdateOrderDto, user: User): Promise<Order> {
+  async execute(
+    updateOrderDto: UpdateOrderDto,
+    user: User,
+    referenceImages?: Express.Multer.File[],
+  ): Promise<Order> {
     const {
       id,
       deliveryAddress,
@@ -64,6 +74,7 @@ export class UpdateOrderUseCase {
       customerId,
       branchId,
       isCustomerPickup,
+      referenceImageDetailIndex,
       ...dto
     } = updateOrderDto;
 
@@ -130,7 +141,13 @@ export class UpdateOrderUseCase {
 
     if (details && details.length > 0) {
       this.logger.log(`Updating order details for order ${id}`);
-      totalAmount = await this.handleOrderDetails(details, order, user);
+      totalAmount = await this.handleOrderDetails(
+        details,
+        order,
+        user,
+        referenceImages,
+        referenceImageDetailIndex
+      );
     }
 
     if (flowers && flowers.length > 0 && order.orderType === OrderType.FLOR) {
@@ -383,6 +400,8 @@ export class UpdateOrderUseCase {
     details: CreateOrderDetailDto[],
     order: Order,
     user: User,
+    referenceImages?: Express.Multer.File[],
+    referenceImageDetailIndex?: number[],
   ): Promise<number> {
     let totalAmount = 0;
 
@@ -394,6 +413,7 @@ export class UpdateOrderUseCase {
     const existingDetails = order.details || [];
     const detailsToUpdate: OrderDetail[] = [];
     const detailsToCreate: OrderDetail[] = [];
+    const orderedDetails: (OrderDetail | undefined)[] = [];
 
     for (let i = 0; i < details.length; i++) {
       const detailDto = details[i];
@@ -403,12 +423,15 @@ export class UpdateOrderUseCase {
         this.logger.warn(
           `Product with ID ${detailDto.productId} not found, skipping this detail`,
         );
+        orderedDetails.push(undefined);
         continue;
       }
 
       const existingDetail = existingDetails.find(
         (d) => d.product.id === detailDto.productId,
       );
+
+      let detail: OrderDetail;
 
       if (existingDetail) {
         existingDetail.quantity = detailDto.quantity;
@@ -434,6 +457,7 @@ export class UpdateOrderUseCase {
         existingDetail.updatedBy = user;
 
         detailsToUpdate.push(existingDetail);
+        detail = existingDetail;
       } else {
         const newDetail = this.orderDetailRepository.create({
           ...detailDto,
@@ -450,8 +474,10 @@ export class UpdateOrderUseCase {
         });
 
         detailsToCreate.push(newDetail);
+        detail = newDetail;
       }
 
+      orderedDetails.push(detail);
       totalAmount += detailDto.price * detailDto.quantity;
     }
 
@@ -460,7 +486,86 @@ export class UpdateOrderUseCase {
     if (detailsToCreate.length > 0)
       await this.orderDetailRepository.save(detailsToCreate);
 
+    if (referenceImages?.length) {
+      await this.handleReferenceImages(
+        referenceImages,
+        referenceImageDetailIndex,
+        orderedDetails,
+        order,
+        user,
+      );
+    }
+
     return totalAmount;
+  }
+
+  private async handleReferenceImages(
+    referenceImages: Express.Multer.File[],
+    referenceImageDetailIndex: number[] | undefined,
+    orderedDetails: (OrderDetail | undefined)[],
+    order: Order,
+    user: User,
+  ): Promise<void> {
+    const filesByDetailIndex = new Map<number, Express.Multer.File[]>();
+
+    for (let fileIndex = 0; fileIndex < referenceImages.length; fileIndex++) {
+      const detailIndex = referenceImageDetailIndex?.[fileIndex];
+
+      if (detailIndex === undefined || !orderedDetails[detailIndex]) continue;
+
+      const files = filesByDetailIndex.get(detailIndex) ?? [];
+      files.push(referenceImages[fileIndex]);
+      filesByDetailIndex.set(detailIndex, files);
+    }
+
+    let folder = '';
+    switch (process.env.NODE_ENV) {
+      case 'production':
+        folder = 'magnolias/orders/reference-images';
+        break;
+      case 'staging':
+        folder = 'staging/magnolias/orders/reference-images';
+        break;
+      default:
+        folder = 'development/magnolias/orders/reference-images';
+        break;
+    }
+
+    for (const [detailIndex, files] of filesByDetailIndex) {
+      const detail = orderedDetails[detailIndex]!;
+
+      const existingCount = await this.orderDetailReferenceImageRepository.count({
+        where: { orderDetail: { id: detail.id }, isActive: true },
+      });
+
+      if (existingCount + files.length > MAX_REFERENCE_IMAGES_PER_DETAIL) {
+        throw new BadRequestException(
+          `A product can have at most ${MAX_REFERENCE_IMAGES_PER_DETAIL} reference images`,
+        );
+      }
+
+      const images: OrderDetailReferenceImage[] = [];
+
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+        const fileName = `${order.orderCode}-detail-${detail.id}-${Date.now()}-${fileIndex + 1}`;
+        const imageUrl = await uploadPictureToCloudinary(
+          files[fileIndex].buffer,
+          folder,
+          fileName,
+        );
+
+        images.push(
+          this.orderDetailReferenceImageRepository.create({
+            imageUrl,
+            orderDetail: detail,
+            createdBy: user,
+            updatedBy: user,
+          }),
+        );
+      }
+
+      await this.orderDetailReferenceImageRepository.save(images);
+    }
   }
 
   private async handleOrderFlowers(

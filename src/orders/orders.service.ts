@@ -21,6 +21,7 @@ import { FindOneOrderUseCase } from './usecases/order/find-one-order.usecase';
 import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
 import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
+import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-order-detail-reference-image.usecase';
 
 @Injectable()
 export class OrdersService {
@@ -35,6 +36,7 @@ export class OrdersService {
     private readonly assignOrderUseCase: AssignOrderUseCase,
     private readonly getAssignmentsUseCase: GetAssignmentsUseCase,
     private readonly updateAssignOrderUseCase: UpdateAssignOrderUseCase,
+    private readonly hideOrderDetailReferenceImageUseCase: HideOrderDetailReferenceImageUseCase,
   ) { }
 
   async createOrder(
@@ -68,8 +70,16 @@ export class OrdersService {
     return await this.findOneOrderUseCase.execute(term);
   }
 
-  async updateOrder(dto: UpdateOrderDto, user: User): Promise<Order> {
-    return await this.updateOrderUseCase.execute(dto, user);
+  async updateOrder(
+    dto: UpdateOrderDto,
+    user: User,
+    referenceImages?: Express.Multer.File[],
+  ): Promise<Order> {
+    return await this.updateOrderUseCase.execute(dto, user, referenceImages);
+  }
+
+  async hideOrderDetailReferenceImage(id: string, user: User): Promise<void> {
+    return await this.hideOrderDetailReferenceImageUseCase.execute(id, user);
   }
 
   async markOrderAsInProcess(dto: UpdateOrderDto, user: User): Promise<Order> {
