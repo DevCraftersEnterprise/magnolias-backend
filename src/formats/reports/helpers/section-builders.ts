@@ -692,7 +692,7 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         ),
       ],
       [
-        labelCell('ESTILO Y COLOR DEL ESCRITO', {
+        labelCell('FORMA Y COLOR DEL ESCRITO', {
           border: [true, true, true, true],
         }),
         valueCell(
@@ -714,7 +714,7 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
         ),
       ],
       [
-        labelCell('ESTILO Y COLOR DE POMPEADO', {
+        labelCell('FORMA Y COLOR DE POMPEADO', {
           border: [true, true, true, false],
         }),
         valueCell(
@@ -835,7 +835,7 @@ export const getConditionsSection = (reportType: ReportType): Content => {
     DOMICILIO:
       'Los tonos, técnicas, tipos de flores, dulces, chocolates, frutas y diseños de dibujos son aproximados y pueden variar respecto a la imagen de referencia. Al aceptar estos términos, se deberá firmar la casilla correspondiente como consentimiento para proceder con el servicio.',
     VITRINA:
-      'Acepto los cambios solicitados en producto de vitrina como pan, relleno, tamaño, decoración, etc. Entiendo que el producto final puede variar en sabor, tamaño, o alteraciones adicionales al producto original en tienda.',
+      'Acepto los cambios solicitados en producto en tienda como pan, relleno, tamaño, decoración, etc. Entiendo que el producto final puede variar en sabor, tamaño, o alteraciones adicionales al producto original en tienda.',
     PERSONALIZADO:
       'Los tonos, técnicas, tipos de flores, dulces, chocolates, frutas y diseños de dibujos son aproximados y pueden variar respecto a la imagen de referencia. Al aceptar estos términos, se deberá firmar la casilla correspondiente como consentimiento para proceder con el servicio.',
     EVENTO:
@@ -1353,7 +1353,7 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
         [
           labelCell('TAMAÑO'),
           valueCell(''),
-          labelCell('ESTILO Y COLOR DEL ESCRITO'),
+          labelCell('FORMA Y COLOR DEL ESCRITO'),
           valueCell(toUpperSafe(detail.color?.name)),
         ],
         [
@@ -1365,7 +1365,7 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
         [
           labelCell('RELLENO'),
           valueCell(toUpperSafe(detail.filling?.name)),
-          labelCell('ESTILO Y COLOR DE POMPEADO'),
+          labelCell('FORMA Y COLOR DE POMPEADO'),
           valueCell(''),
         ],
         [
