@@ -15,7 +15,6 @@ import { PipingLocation } from '../../common/enums/piping-location.enum';
 import { ProductSize } from '../../common/enums/product-size.enum';
 import { WritingLocation } from '../../common/enums/writing-location.enum';
 import { Filling } from '../../fillings/entities/filling.entity';
-import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Style } from '../../styles/entities/style.entity';
@@ -151,11 +150,6 @@ export class OrderDetail {
   @ManyToOne(() => Filling, { nullable: true })
   @JoinColumn({ name: 'fillingId' })
   filling?: Filling;
-
-  @ApiHideProperty()
-  @ManyToOne(() => Flavor, { nullable: true })
-  @JoinColumn({ name: 'flavorId' })
-  flavor?: Flavor;
 
   @ApiHideProperty()
   @ManyToOne(() => Frosting, { nullable: true })

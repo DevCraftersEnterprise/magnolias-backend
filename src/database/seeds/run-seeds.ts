@@ -10,7 +10,6 @@ import { ColorsService } from '../../colors/colors.service';
 import { GeocodingService } from '../../common/services/geocoding.service';
 import { CustomersService } from '../../customers/customers.service';
 import { FillingsService } from '../../fillings/fillings.service';
-import { FlavorsService } from '../../flavors/flavors.service';
 import { FlowersService } from '../../flowers/flowers.service';
 import { FrostingsService } from '../../frostings/frostings.service';
 import { OrdersService } from '../../orders/orders.service';
@@ -27,7 +26,6 @@ import { Color } from '../../colors/entities/color.entity';
 import { CustomerAddress } from '../../customers/entities/customer-address.entity';
 import { Customer } from '../../customers/entities/customer.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
-import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
 import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
@@ -67,12 +65,6 @@ import { UpdateCategoryUseCase } from '../../categories/usecases/update-category
 
 import { CreateColorUseCase } from '../../colors/usecases/create-color.usecase';
 import { FindAllColorsUseCase } from '../../colors/usecases/find-all-colors.usecase';
-
-import { CreateFlavorUseCase } from '../../flavors/usecases/create-flavor.usecase';
-import { FindAllFlavorsUseCase } from '../../flavors/usecases/find-all-flavors.usecase';
-import { FindOneFlavorUseCase } from '../../flavors/usecases/find-one-flavor.usecase';
-import { RemoveFlavorUseCase } from '../../flavors/usecases/remove-flavor.usecase';
-import { UpdateFlavorUseCase } from '../../flavors/usecases/update-flavor.usecase';
 
 import { CreateFillingUseCase } from '../../fillings/usecases/create-filling.usecase';
 import { FindAllFillingsUseCase } from '../../fillings/usecases/find-all-fillings.usecase';
@@ -148,7 +140,6 @@ import { seedColors } from './colors.seed';
 import { seedCustomers } from './customers.seed';
 import { seedExtraUsers } from './extra-users.seed';
 import { seedFillings } from './fillings.seed';
-import { seedFlavors } from './flavors.seed';
 import { seedFlowers } from './flowers.seed';
 import { seedFrostings } from './frostings.seed';
 import { seedInitialUsers } from './initial-users.seed';
@@ -173,8 +164,6 @@ async function runSeeds() {
       AppDataSource.getRepository(Category);
     const colorRepository: Repository<Color> =
       AppDataSource.getRepository(Color);
-    const flavorRepository: Repository<Flavor> =
-      AppDataSource.getRepository(Flavor);
     const fillingRepository: Repository<Filling> =
       AppDataSource.getRepository(Filling);
     const frostingRepository: Repository<Frosting> =
@@ -263,12 +252,6 @@ async function runSeeds() {
 
     const createColorUseCase = new CreateColorUseCase(colorRepository);
     const findAllColorsUseCase = new FindAllColorsUseCase(colorRepository);
-
-    const createFlavorUseCase = new CreateFlavorUseCase(flavorRepository);
-    const findAllFlavorsUseCase = new FindAllFlavorsUseCase(flavorRepository);
-    const findOneFlavorUseCase = new FindOneFlavorUseCase(flavorRepository);
-    const updateFlavorUseCase = new UpdateFlavorUseCase(flavorRepository);
-    const removeFlavorUseCase = new RemoveFlavorUseCase(flavorRepository);
 
     const createFillingUseCase = new CreateFillingUseCase(fillingRepository);
     const findAllFillingsUseCase = new FindAllFillingsUseCase(
@@ -393,14 +376,6 @@ async function runSeeds() {
     const colorsService = new ColorsService(
       createColorUseCase,
       findAllColorsUseCase,
-    );
-
-    const flavorsService = new FlavorsService(
-      createFlavorUseCase,
-      findAllFlavorsUseCase,
-      findOneFlavorUseCase,
-      updateFlavorUseCase,
-      removeFlavorUseCase,
     );
 
     const fillingsService = new FillingsService(
@@ -578,7 +553,6 @@ async function runSeeds() {
     await seedColors(colorsService, colorRepository);
 
     // 7. Ingredientes y opciones (todos necesitan usuarios)
-    await seedFlavors(flavorsService, userRepository, flavorRepository);
     await seedFillings(fillingsService, userRepository, fillingRepository);
     await seedFrostings(frostingsService, userRepository, frostingRepository);
     await seedFlowers(flowersService, userRepository, flowerRepository);
@@ -607,7 +581,6 @@ async function runSeeds() {
       branchRepository,
       productRepository,
       userRepository,
-      flavorRepository,
       fillingRepository,
       frostingRepository,
       styleRepository,

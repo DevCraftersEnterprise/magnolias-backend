@@ -28,7 +28,6 @@ export class FindOneOrderUseCase {
           style: true,
           filling: true,
           color: true,
-          flavor: true,
           referenceImages: true,
         },
         orderFlowers: {

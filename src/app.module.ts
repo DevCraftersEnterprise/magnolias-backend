@@ -12,7 +12,6 @@ import { CustomThrottlerModule } from './custom-throttler/custom-throttler.modul
 import { CustomersModule } from './customers/customers.module';
 import { DatabaseModule } from './database/database.module';
 import { FillingsModule } from './fillings/fillings.module';
-import { FlavorsModule } from './flavors/flavors.module';
 import { FlowersModule } from './flowers/flowers.module';
 import { FormatsModule } from './formats/formats.module';
 import { FrostingsModule } from './frostings/frostings.module';
@@ -38,7 +37,6 @@ import { UsersModule } from './users/users.module';
     CustomersModule,
     BreadTypesModule,
     FillingsModule,
-    FlavorsModule,
     FrostingsModule,
     StylesModule,
     FlowersModule,

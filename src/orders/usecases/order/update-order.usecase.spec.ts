@@ -274,7 +274,7 @@ describe('UpdateOrderUseCase', () => {
             quantity: 1,
             price: 50,
             breadType: { id: 'bt-old' },
-            filling: {}, flavor: {}, frosting: {}, style: {}, color: {},
+            filling: {}, frosting: {}, style: {}, color: {},
         };
         mocks.orderRepository.findOne.mockResolvedValue(
             baseOrder({ details: [existingDetail] }),
@@ -423,7 +423,7 @@ describe('UpdateOrderUseCase', () => {
             product: { id: 'product-1' },
             quantity: 1,
             price: 50,
-            breadType: {}, filling: {}, flavor: {}, frosting: {}, style: {}, color: {},
+            breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
         };
         mocks.orderRepository.findOne.mockResolvedValue(
             baseOrder({ details: [existingDetail] }),
@@ -477,7 +477,7 @@ describe('UpdateOrderUseCase', () => {
             product: { id: 'product-1' },
             quantity: 1,
             price: 50,
-            breadType: {}, filling: {}, flavor: {}, frosting: {}, style: {}, color: {},
+            breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
         };
         mocks.orderRepository.findOne.mockResolvedValue(
             baseOrder({ details: [existingDetail] }),

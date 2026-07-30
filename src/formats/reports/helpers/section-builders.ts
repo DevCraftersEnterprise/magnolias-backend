@@ -670,7 +670,7 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
       [
         labelCell('SABOR DE PAN', { border: [true, true, true, true] }),
         valueCell(
-          toUpperSafe(detail?.flavor?.name ?? detail?.breadType?.name),
+          toUpperSafe(detail?.breadType?.name),
           { border: [true, true, true, true] },
         ),
         labelCell('TIPO DE CUBIERTA', { border: [true, true, true, true] }),
@@ -1358,7 +1358,7 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
         ],
         [
           labelCell('SABOR DE PAN'),
-          valueCell(toUpperSafe(detail.flavor?.name ?? detail.breadType?.name)),
+          valueCell(toUpperSafe(detail.breadType?.name)),
           labelCell('UBICACIÓN DEL ESCRITO'),
           valueCell(detail.writingLocation ?? ''),
         ],

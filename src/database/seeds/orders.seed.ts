@@ -10,7 +10,6 @@ import { ProductSize } from '../../common/enums/product-size.enum';
 import { WritingLocation } from '../../common/enums/writing-location.enum';
 import { Customer } from '../../customers/entities/customer.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
-import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
 import { CreateOrderDto } from '../../orders/dto/create-order.dto';
@@ -27,7 +26,6 @@ export async function seedOrders(
   branchRepository: Repository<Branch>,
   productRepository: Repository<Product>,
   userRepository: Repository<User>,
-  flavorRepository: Repository<Flavor>,
   fillingRepository: Repository<Filling>,
   frostingRepository: Repository<Frosting>,
   styleRepository: Repository<Style>,
@@ -48,7 +46,6 @@ export async function seedOrders(
   });
   const branches = await branchRepository.find();
   const products = await productRepository.find();
-  const flavors = await flavorRepository.find();
   const fillings = await fillingRepository.find();
   const frostings = await frostingRepository.find();
   const styles = await styleRepository.find();
@@ -78,9 +75,9 @@ export async function seedOrders(
     return;
   }
 
-  if (flavors.length === 0 || fillings.length === 0 || frostings.length === 0) {
+  if (fillings.length === 0 || frostings.length === 0) {
     console.log(
-      '⚠️ No se encontraron catálogos básicos (sabores, rellenos, glaseados), omitiendo seed de pedidos',
+      '⚠️ No se encontraron catálogos básicos (rellenos, glaseados), omitiendo seed de pedidos',
     );
     return;
   }
@@ -135,7 +132,6 @@ export async function seedOrders(
           breadTypeId: breadTypes[0].id,
           colorId: colors[0].id,
           fillingId: fillings[0].id,
-          flavorId: flavors[0].id,
           frostingId: frostings[0].id,
           styleId: styles[0].id,
         },
@@ -233,7 +229,7 @@ export async function seedOrders(
           pipingLocation: PipingLocation.FULL_BORDER,
           notes: 'Pastel liso sin decoración especial',
           productId: products[1].id,
-          flavorId: flavors[6].id,
+          breadTypeId: breadTypes[6].id,
           fillingId: fillings[10].id,
           frostingId: frostings[4].id,
         },
@@ -308,7 +304,6 @@ export async function seedOrders(
           pipingLocation: PipingLocation.FULL_BORDER,
           notes: 'Pastel principal de 4 pisos, diseño clásico elegante',
           productId: products[5].id,
-          flavorId: flavors[2].id,
           fillingId: fillings[5].id,
           frostingId: frostings[3].id,
           styleId: styles[4].id,
@@ -321,7 +316,7 @@ export async function seedOrders(
           hasWriting: false,
           notes: 'Cupcakes decorados con iniciales A&C',
           productId: products[8].id,
-          flavorId: flavors[4].id,
+          breadTypeId: breadTypes[4].id,
           fillingId: fillings[7].id,
           frostingId: frostings[2].id,
           colorId: colors[5].id,
@@ -411,7 +406,7 @@ export async function seedOrders(
           writingLocation: WritingLocation.CENTER,
           notes: 'Diseño corporativo con logo impreso en oblea',
           productId: products[0].id,
-          flavorId: flavors[0].id,
+          breadTypeId: breadTypes[1].id,
           fillingId: fillings[4].id,
           frostingId: frostings[4].id,
           styleId: styles[0].id,

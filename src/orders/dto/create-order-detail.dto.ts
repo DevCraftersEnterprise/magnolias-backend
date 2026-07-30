@@ -91,14 +91,6 @@ export class CreateOrderDetailDto {
   fillingId?: string;
 
   @ApiProperty({
-    description: 'ID of the flavor',
-    required: false,
-  })
-  @IsOptional()
-  @IsUUID('4', { message: 'Flavor ID must be a valid UUID' })
-  flavorId?: string;
-
-  @ApiProperty({
     description: 'ID of the frosting',
     required: false,
   })
