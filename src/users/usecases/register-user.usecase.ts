@@ -40,7 +40,7 @@ export class RegisterUserUseCase {
       );
     }
 
-    const userRolesRequiredBranch = [UserRoles.EMPLOYEE, UserRoles.ASSISTANT];
+    const userRolesRequiredBranch = [UserRoles.EMPLOYEE];
 
     if (userRolesRequiredBranch.includes(role) && !branchId) {
       this.logger.warn(`Users with role ${role} must be assigned to a branch`);

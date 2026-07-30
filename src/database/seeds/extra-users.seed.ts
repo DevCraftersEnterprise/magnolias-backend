@@ -115,7 +115,7 @@ export async function seedExtraUsers(
       lastname: 'García',
       username: 'pedrogarcia',
       userkey: '456789',
-      role: UserRoles.ASSISTANT,
+      role: UserRoles.EMPLOYEE,
       branchId: branches[0].id,
     },
     {
@@ -123,7 +123,7 @@ export async function seedExtraUsers(
       lastname: 'Rodríguez',
       username: 'mariarodriguez',
       userkey: '567890',
-      role: UserRoles.ASSISTANT,
+      role: UserRoles.EMPLOYEE,
       branchId: branches[1].id,
     },
     {
