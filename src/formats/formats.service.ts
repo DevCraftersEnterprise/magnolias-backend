@@ -61,13 +61,15 @@ export class FormatsService {
 
   private async processOrderImages(order: Order): Promise<void> {
     for (const detail of order.details) {
-      if (detail.referenceImageUrl) {
-        try {
-          detail.referenceImageUrl = await imageUrlToBase64(detail.referenceImageUrl);
-        } catch (e) {
-          throw new Error(`Error al convertir la imagen a base64: ${e}`);
-        }
+      const firstImage = detail.referenceImages?.[0];
+      if (!firstImage) continue;
+
+      try {
+        firstImage.imageUrl = await imageUrlToBase64(firstImage.imageUrl);
+      } catch (e) {
+        throw new Error(`Error al convertir la imagen a base64: ${e}`);
       }
     }
   }
+
 }

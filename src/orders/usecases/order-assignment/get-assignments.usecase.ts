@@ -44,6 +44,7 @@ export class GetAssignmentsUseCase {
           branch: true,
           details: {
             product: true,
+            referenceImages: true,
           },
         },
         createdBy: true,
@@ -83,7 +84,10 @@ export class GetAssignmentsUseCase {
             },
             productSize: true,
             quantity: true,
-            referenceImageUrl: true,
+            referenceImages: {
+              id: true,
+              imageUrl: true,
+            },
             style: true,
             writingLocation: true,
             writingText: true,

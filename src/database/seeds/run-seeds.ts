@@ -33,6 +33,7 @@ import { Frosting } from '../../frostings/entities/frosting.entity';
 import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
 import { OrderCancellation } from '../../orders/entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
+import { OrderDetailReferenceImage } from '../../orders/entities/order-detail-reference-image.entity';
 import { OrderDetail } from '../../orders/entities/order-detail.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { OrderPayment } from '../../orders/entities/order-payment.entity';
@@ -134,6 +135,7 @@ import { FindOneOrderUseCase } from '../../orders/usecases/order/find-one-order.
 import { GetOrderStatsUseCase } from '../../orders/usecases/order/get-order-stats.usecase';
 import { SetPickupPersonUseCase } from '../../orders/usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from '../../orders/usecases/order/update-order.usecase';
+import { HideOrderDetailReferenceImageUseCase } from '../../orders/usecases/order/hide-order-detail-reference-image.usecase';
 // Utils
 import { CheckForDuplicateAddressUtil } from '../../addresses/utils/check-for-duplicate-address.util';
 // Seeds
@@ -199,6 +201,8 @@ async function runSeeds() {
       AppDataSource.getRepository(OrderDeliveryAddress);
     const orderDetailRepository: Repository<OrderDetail> =
       AppDataSource.getRepository(OrderDetail);
+    const orderDetailReferenceImageRepository: Repository<OrderDetailReferenceImage> =
+      AppDataSource.getRepository(OrderDetailReferenceImage);
     const orderFlowerRepository: Repository<OrderFlower> =
       AppDataSource.getRepository(OrderFlower);
     const orderCancellationRepository: Repository<OrderCancellation> =
@@ -485,6 +489,7 @@ async function runSeeds() {
       orderRepository,
       orderDeliveryAddressRepository,
       orderDetailRepository,
+      orderDetailReferenceImageRepository,
       orderFlowerRepository,
       orderPaymentsRepository,
       customersService,
@@ -502,6 +507,7 @@ async function runSeeds() {
       orderDetailRepository,
       orderFlowerRepository,
       orderPaymentsRepository,
+      orderDetailReferenceImageRepository,
       addressesService,
       productsService,
       flowersService,
@@ -528,6 +534,9 @@ async function runSeeds() {
       orderAssignmentRepository,
     );
 
+    const hideOrderDetailReferenceImageUseCase =
+      new HideOrderDetailReferenceImageUseCase(orderDetailReferenceImageRepository);
+
     const ordersService = new OrdersService(
       createOrderUseCase,
       setPickupPersonUseCase,
@@ -539,6 +548,7 @@ async function runSeeds() {
       assignOrderUseCase,
       getAssignmentsUseCase,
       updateAssignOrderUseCase,
+      hideOrderDetailReferenceImageUseCase,
     );
 
     console.log('✅ Conexión establecida\n');

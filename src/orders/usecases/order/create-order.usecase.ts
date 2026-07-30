@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
@@ -24,6 +24,9 @@ import { OrderFlower } from '../../entities/order-flower.entity';
 import { Order } from '../../entities/order.entity';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { OrderPayment } from '../../entities/order-payment.entity';
+import { OrderDetailReferenceImage } from '../../entities/order-detail-reference-image.entity';
+
+const MAX_REFERENCE_IMAGES_PER_DETAIL = 10;
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -36,6 +39,8 @@ export class CreateOrderUseCase {
     private readonly orderDeliveryAddressRepository: Repository<OrderDeliveryAddress>,
     @InjectRepository(OrderDetail)
     private readonly orderDetailRepository: Repository<OrderDetail>,
+    @InjectRepository(OrderDetailReferenceImage)
+    private readonly orderDetailReferenceImageRepository: Repository<OrderDetailReferenceImage>,
     @InjectRepository(OrderFlower)
     private readonly orderFlowerRepository: Repository<OrderFlower>,
     @InjectRepository(OrderPayment)
@@ -60,6 +65,7 @@ export class CreateOrderUseCase {
       deliveryAddress,
       flowers,
       isCustomerPickup,
+      referenceImageDetailIndex,
       ...orderDto
     } = createOrderDto;
 
@@ -98,7 +104,7 @@ export class CreateOrderUseCase {
       await this.handleFlowerForOrder(flowers, order, user);
     }
 
-    await this.calculateOrderTotal(details, savedOrder, user, referenceImages);
+    await this.calculateOrderTotal(details, savedOrder, user, referenceImages, referenceImageDetailIndex);
 
     return savedOrder;
   }
@@ -293,6 +299,7 @@ export class CreateOrderUseCase {
     order: Order,
     user: User,
     referenceImages?: Express.Multer.File[],
+    referenceImageDetailIndex?: number[],
   ): Promise<void> {
     let totalAmount = 0;
 
@@ -303,31 +310,22 @@ export class CreateOrderUseCase {
     const products = await Promise.all(productsPromises);
 
     const orderDatails: OrderDetail[] = [];
+    const pendingReferenceFiles: {
+      detail: OrderDetail;
+      files: Express.Multer.File[];
+    }[] = [];
 
     let folder = '';
 
     switch (process.env.NODE_ENV) {
       case 'production': folder = 'magnolias/orders/reference-images'; break;
-      case 'development': folder = 'development/magnolias/orders/reference-images'; break;
       case 'staging': folder = 'staging/magnolias/orders/reference-images'; break;
+      default: folder = 'development/magnolias/orders/reference-images'; break;
     }
 
     for (let i = 0; i < details.length; i++) {
       const detailDto = details[i];
       const product = products[i];
-      if (!product) continue;
-
-      let referenceImageUrl: string | undefined;
-
-      if (referenceImages && referenceImages[i]) {
-        const file = referenceImages[i];
-        const fileName = `${order.orderCode}-detail-${i + 1}-${Date.now()}`;
-        referenceImageUrl = await uploadPictureToCloudinary(
-          file.buffer,
-          folder,
-          fileName,
-        );
-      }
 
       const orderDetail = this.orderDetailRepository.create({
         ...detailDto,
@@ -339,16 +337,53 @@ export class CreateOrderUseCase {
         color: { id: detailDto.colorId },
         order,
         product,
-        referenceImageUrl,
         createdBy: user,
         updatedBy: user,
       });
 
       orderDatails.push(orderDetail);
       totalAmount += orderDetail.price * detailDto.quantity;
+
+      const filesForDetail = (referenceImages ?? []).filter(
+        (_, fileIndex) => referenceImageDetailIndex?.[fileIndex] === i,
+      );
+
+      if (filesForDetail.length > MAX_REFERENCE_IMAGES_PER_DETAIL) {
+        throw new BadRequestException(
+          `A product can have at most ${MAX_REFERENCE_IMAGES_PER_DETAIL} reference images`,
+        );
+      }
+
+      if (filesForDetail.length > 0) {
+        pendingReferenceFiles.push({ detail: orderDetail, files: filesForDetail });
+      }
     }
 
     await this.orderDetailRepository.save(orderDatails);
+
+    for (const { detail, files } of pendingReferenceFiles) {
+      const images: OrderDetailReferenceImage[] = [];
+
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+        const fileName = `${order.orderCode}-detail-${detail.id}-${fileIndex + 1}-${Date.now()}`;
+        const imageUrl = await uploadPictureToCloudinary(
+          files[fileIndex].buffer,
+          folder,
+          fileName,
+        );
+
+        images.push(
+          this.orderDetailReferenceImageRepository.create({
+            imageUrl,
+            orderDetail: detail,
+            createdBy: user,
+            updatedBy: user,
+          }),
+        );
+      }
+
+      await this.orderDetailReferenceImageRepository.save(images);
+    }
 
     order.dessertsTotal = totalAmount;
 
@@ -371,6 +406,7 @@ export class CreateOrderUseCase {
 
     await this.orderPaymentRepository.save(orderPayment);
   }
+
 
   private buildDeliveryAddressDto(source: any): NewAddressDataDto {
     return {

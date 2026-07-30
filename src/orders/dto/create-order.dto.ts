@@ -307,6 +307,30 @@ export class CreateOrderDto {
   details: CreateOrderDetailDto[];
 
   @ApiPropertyOptional({
+    description:
+      'Maps each uploaded reference image (by position in the file array) to its order detail index. Example: [0, 0, 1] means the first two files belong to details[0] and the third to details[1].',
+    example: [0, 0, 1],
+    type: [Number],
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    }
+    return value;
+  })
+  @IsArray({ message: 'referenceImageDetailIndex must be an array' })
+  @IsInt({
+    each: true,
+    message: 'Each referenceImageDetailIndex entry must be an integer',
+  })
+  referenceImageDetailIndex?: number[];
+
+  @ApiPropertyOptional({
     description: 'Flowers for the order (required for FLOR type)',
     type: [AddFlowerToOrderDto],
   })
