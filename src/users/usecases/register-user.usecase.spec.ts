@@ -52,7 +52,7 @@ describe('RegisterUserUseCase', () => {
         ).rejects.toThrow(BadRequestException);
     });
 
-    it('lanza BadRequestException si el rol requiere sucursal (EMPLOYEE/ASSISTANT) y no trae branchId', async () => {
+    it('lanza BadRequestException si el rol requiere sucursal (EMPLOYEE) y no trae branchId', async () => {
         const mocks = createMocks();
         mocks.userRepository.findOne.mockResolvedValue(null);
 
@@ -97,6 +97,40 @@ describe('RegisterUserUseCase', () => {
         expect(mocks.userRepository.create).toHaveBeenCalledWith(
             expect.objectContaining({ branch }),
         );
+    });
+
+    it('lanza BadRequestException si la sucursal ya tiene un EMPLOYEE activo', async () => {
+        const mocks = createMocks();
+        const branch = { id: 'branch-1', name: 'Centro' };
+        mocks.userRepository.findOne
+            .mockResolvedValueOnce(null) // username check
+            .mockResolvedValueOnce({ id: 'existing-employee', username: 'sucursal-centro' }); // active EMPLOYEE check
+        mocks.branchRepository.findOne.mockResolvedValue(branch);
+
+        await expect(
+            mocks.useCase.execute(
+                baseDto({ role: UserRoles.EMPLOYEE, branchId: 'branch-1' }),
+            ),
+        ).rejects.toThrow(BadRequestException);
+
+        expect(mocks.userRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('permite crear un EMPLOYEE si la sucursal no tiene ningún EMPLOYEE activo', async () => {
+        const mocks = createMocks();
+        const branch = { id: 'branch-1', name: 'Centro' };
+        mocks.userRepository.findOne
+            .mockResolvedValueOnce(null) // username check
+            .mockResolvedValueOnce(null); // no active EMPLOYEE for this branch
+        mocks.branchRepository.findOne.mockResolvedValue(branch);
+
+        await expect(
+            mocks.useCase.execute(
+                baseDto({ role: UserRoles.EMPLOYEE, branchId: 'branch-1' }),
+            ),
+        ).resolves.toBeDefined();
+
+        expect(mocks.userRepository.create).toHaveBeenCalled();
     });
 
     it('asigna las sucursales cuando branchIds son todos válidos (rol BAKER)', async () => {

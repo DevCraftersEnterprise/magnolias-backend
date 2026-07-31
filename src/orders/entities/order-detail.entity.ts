@@ -15,7 +15,6 @@ import { PipingLocation } from '../../common/enums/piping-location.enum';
 import { ProductSize } from '../../common/enums/product-size.enum';
 import { WritingLocation } from '../../common/enums/writing-location.enum';
 import { Filling } from '../../fillings/entities/filling.entity';
-import { Flavor } from '../../flavors/entities/flavor.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Style } from '../../styles/entities/style.entity';
@@ -127,10 +126,31 @@ export class OrderDetail {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @ApiProperty({
+    description: 'Discount percentage applied to this line, authorized by an admin/super',
+    example: 10,
+    default: 0,
+  })
+  @Column({ type: 'numeric', precision: 5, scale: 2, default: 0 })
+  discountPercent: number;
+
+  @ApiProperty({
+    description: 'Timestamp when the discount was authorized',
+    example: '2023-01-01T12:00:00Z',
+    required: false,
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  discountAuthorizedAt?: Date;
+
   @ApiHideProperty()
   @ManyToOne(() => Product, { nullable: false })
   @JoinColumn({ name: 'productId' })
   product: Product;
+
+  @ApiHideProperty()
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'discountAuthorizedBy' })
+  discountAuthorizedBy?: User;
 
   @ApiHideProperty()
   @ManyToOne(() => Order, { nullable: false })
@@ -151,11 +171,6 @@ export class OrderDetail {
   @ManyToOne(() => Filling, { nullable: true })
   @JoinColumn({ name: 'fillingId' })
   filling?: Filling;
-
-  @ApiHideProperty()
-  @ManyToOne(() => Flavor, { nullable: true })
-  @JoinColumn({ name: 'flavorId' })
-  flavor?: Flavor;
 
   @ApiHideProperty()
   @ManyToOne(() => Frosting, { nullable: true })

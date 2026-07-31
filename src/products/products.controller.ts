@@ -231,7 +231,7 @@ export class ProductsController {
 
   // Product Pictures
   @Post('picture/:id')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.ASSISTANT])
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @UseInterceptors(FilesInterceptor('files'))
   @ApiBearerAuth('access-token')
   @ApiConsumes('multipart/form-data')
@@ -255,7 +255,7 @@ export class ProductsController {
   }
 
   @Delete('picture/:id')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.ASSISTANT])
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Hide product picture',

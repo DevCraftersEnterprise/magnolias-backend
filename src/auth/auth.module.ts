@@ -6,6 +6,7 @@ import { LoginThrottleGuard } from '../auth/guards/login-throttle.guard';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { LoginUseCase } from '../auth/usecases/login.usecase';
 import { RefreshTokenUseCase } from '../auth/usecases/refresh-token.usecase';
+import { VerifyDiscountAuthorizationUseCase } from '../auth/usecases/verify-discount-authorization.usecase';
 import { CommonModule } from '../common/common.module';
 import { CustomJwtModule } from '../custom-jwt/custom-jwt.module';
 import { CustomPassportModule } from '../custom-passport/custom-passport.module';
@@ -23,6 +24,7 @@ import { UsersModule } from '../users/users.module';
     // Use Cases
     LoginUseCase,
     RefreshTokenUseCase,
+    VerifyDiscountAuthorizationUseCase,
   ],
   imports: [
     ConfigModule,

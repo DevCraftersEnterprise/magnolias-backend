@@ -23,6 +23,10 @@ export async function seedBreadTypes(
     return;
   }
 
+  // Catálogo fusionado con el antiguo "sabores" (cliente #2): el negocio
+  // entiende "tipo de pan" como el sabor del pan, así que absorbe también
+  // los valores que antes vivían en el catálogo de sabores (deduplicados
+  // por nombre, ej. "Chocolate" ya no existe por duplicado en dos listas).
   const breadTypes: CreateBreadTypeDto[] = [
     {
       name: 'Vainilla',
@@ -37,6 +41,14 @@ export async function seedBreadTypes(
     { name: 'Naranja', description: 'Pan con sabor a naranja natural' },
     { name: 'Nuez', description: 'Pan de vainilla con nueces' },
     { name: 'Almendra', description: 'Pan con esencia y hojuelas de almendra' },
+    { name: 'Tres Leches', description: 'Mezcla tradicional de tres leches' },
+    { name: 'Café', description: 'Café expreso de grano' },
+    { name: 'Nutella', description: 'Crema de avellanas con chocolate' },
+    { name: 'Cajeta', description: 'Dulce de leche tradicional mexicano' },
+    { name: 'Moka', description: 'Combinación de café y chocolate' },
+    { name: 'Coco', description: 'Coco natural rallado' },
+    { name: 'Plátano', description: 'Plátano maduro natural' },
+    { name: 'Matcha', description: 'Té verde matcha japonés' },
   ];
 
   let createdCount = 0;

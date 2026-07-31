@@ -28,8 +28,8 @@ export class FindOneOrderUseCase {
           style: true,
           filling: true,
           color: true,
-          flavor: true,
           referenceImages: true,
+          discountAuthorizedBy: true,
         },
         orderFlowers: {
           flower: true,

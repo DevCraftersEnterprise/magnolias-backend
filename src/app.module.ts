@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AddressesModule } from './addresses/addresses.module';
 import { AuthModule } from './auth/auth.module';
+import { BranchEmployeesModule } from './branch-employees/branch-employees.module';
 import { BranchesModule } from './branches/branches.module';
 import { BreadTypesModule } from './bread-types/bread-types.module';
 import { CategoriesModule } from './categories/categories.module';
@@ -12,7 +13,6 @@ import { CustomThrottlerModule } from './custom-throttler/custom-throttler.modul
 import { CustomersModule } from './customers/customers.module';
 import { DatabaseModule } from './database/database.module';
 import { FillingsModule } from './fillings/fillings.module';
-import { FlavorsModule } from './flavors/flavors.module';
 import { FlowersModule } from './flowers/flowers.module';
 import { FormatsModule } from './formats/formats.module';
 import { FrostingsModule } from './frostings/frostings.module';
@@ -33,12 +33,12 @@ import { UsersModule } from './users/users.module';
     OrdersModule,
     UsersModule,
     BranchesModule,
+    BranchEmployeesModule,
     ProductsModule,
     ColorsModule,
     CustomersModule,
     BreadTypesModule,
     FillingsModule,
-    FlavorsModule,
     FrostingsModule,
     StylesModule,
     FlowersModule,

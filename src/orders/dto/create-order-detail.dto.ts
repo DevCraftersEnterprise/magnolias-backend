@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
   Min,
   ValidateIf,
@@ -91,14 +92,6 @@ export class CreateOrderDetailDto {
   fillingId?: string;
 
   @ApiProperty({
-    description: 'ID of the flavor',
-    required: false,
-  })
-  @IsOptional()
-  @IsUUID('4', { message: 'Flavor ID must be a valid UUID' })
-  flavorId?: string;
-
-  @ApiProperty({
     description: 'ID of the frosting',
     required: false,
   })
@@ -173,4 +166,16 @@ export class CreateOrderDetailDto {
   @IsOptional()
   @IsString({ message: 'Notes must be a string' })
   notes?: string;
+
+  @ApiProperty({
+    description:
+      'Discount percentage applied to this line (requires a valid discountAuthToken on the order)',
+    example: 10,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'Discount percent must be a number' })
+  @Min(0, { message: 'Discount percent must be at least 0' })
+  @Max(100, { message: 'Discount percent must not exceed 100' })
+  discountPercent?: number;
 }

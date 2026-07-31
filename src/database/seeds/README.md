@@ -59,16 +59,7 @@ Agrega **20 colores** para decoración:
 - Colores intensos (Rosa Fuerte, Rojo Intenso, etc.)
 - Colores clásicos (Blanco, Negro, Dorado, Plateado)
 
-### 6. Flavors Seed (`flavors.seed.ts`)
-
-Crea **15 sabores** disponibles:
-
-- Chocolate, Vainilla, Fresa
-- Tres Leches, Red Velvet
-- Cajeta, Nutella, Matcha
-- Y más...
-
-### 7. Fillings Seed (`fillings.seed.ts`)
+### 6. Fillings Seed (`fillings.seed.ts`)
 
 Agrega **14 tipos de rellenos**:
 
@@ -110,7 +101,7 @@ Crea **12 estilos de decoración**:
 
 ### 11. Bread Types Seed (`bread-types.seed.ts`)
 
-Agrega **10 tipos de pan**:
+Agrega **18 tipos de pan** (catálogo fusionado con el antiguo de sabores — cliente #2):
 
 - Blanco, Integral, Centeno
 - Brioche, Multigrano
@@ -171,7 +162,7 @@ Los seeds se ejecutan automáticamente en el siguiente orden para respetar las d
 3. ✅ Usuarios adicionales
 4. ✅ Categorías
 5. ✅ Colores
-6. ✅ Sabores, Rellenos, Glaseados, Flores, Estilos, Tipos de Pan
+6. ✅ Rellenos, Glaseados, Flores, Estilos, Tipos de Pan (incluye sabores fusionados)
 7. ✅ Pasteleros
 8. ✅ Clientes
 9. ✅ Productos
@@ -184,12 +175,11 @@ Al ejecutar todos los seeds, obtendrás:
 - **4 sucursales** en CDMX
 - **6 categorías** de productos
 - **20 colores** para decoración
-- **15 sabores**
 - **14 rellenos**
 - **12 glaseados**
 - **14 flores**
 - **12 estilos**
-- **10 tipos de pan**
+- **18 tipos de pan** (incluye los antiguos sabores)
 - **8 pasteleros** especializados
 - **12 clientes**
 - **27 productos**

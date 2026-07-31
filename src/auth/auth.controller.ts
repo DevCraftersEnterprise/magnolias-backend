@@ -19,6 +19,8 @@ import { LoginThrottleGuard } from '../auth/guards/login-throttle.guard';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
 import { LoginResponse } from '../auth/responses/login.response';
 import { RefreshTokenResponse } from '../auth/responses/refresh-token.response';
+import { VerifyDiscountAuthorizationDto } from '../auth/dto/verify-discount-authorization.dto';
+import { VerifyDiscountAuthorizationResponse } from '../auth/responses/verify-discount-authorization.response';
 import { User } from '../users/entities/user.entity';
 import { sanitizeUser } from '../users/utils/sanitized-user.util';
 @ApiTags('Authentication')
@@ -56,6 +58,45 @@ export class AuthController {
   ): Promise<LoginResponse> {
     try {
       const result = await this.authService.login(loginUserDto, ip);
+      this.loginThrottleGuard.clearFailedAttempts(ip);
+      return result;
+    } catch (error) {
+      this.loginThrottleGuard.recordFailedAttempt(ip);
+      throw error;
+    }
+  }
+
+  @Post('verify-discount-authorization')
+  @UseGuards(LoginThrottleGuard)
+  @ApiOperation({
+    summary: 'Verify admin/super credentials to authorize a product discount',
+    description:
+      'Validates the credentials of an ADMIN or SUPER user and returns a short-lived token that authorizes applying product discounts on the order currently being created or edited.',
+  })
+  @ApiBody({
+    type: VerifyDiscountAuthorizationDto,
+    description: 'Credentials of the admin/super authorizing the discount',
+  })
+  @ApiCreatedResponse({
+    description: 'Discount authorization granted',
+    type: VerifyDiscountAuthorizationResponse,
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'Unauthorized - Invalid credentials or user is not ADMIN/SUPER',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too Many Requests - Attempts exceeded',
+  })
+  async verifyDiscountAuthorization(
+    @Ip() ip: string,
+    @Body() verifyDiscountAuthorizationDto: VerifyDiscountAuthorizationDto,
+  ): Promise<VerifyDiscountAuthorizationResponse> {
+    try {
+      const result = await this.authService.verifyDiscountAuthorization(
+        verifyDiscountAuthorizationDto,
+        ip,
+      );
       this.loginThrottleGuard.clearFailedAttempts(ip);
       return result;
     } catch (error) {

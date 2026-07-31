@@ -29,7 +29,6 @@ export async function cleanDatabase(dataSource: DataSource): Promise<void> {
       'flowers',
       'frostings',
       'fillings',
-      'flavors',
       'categories',
       'colors',
       // Sucursales y usuarios
