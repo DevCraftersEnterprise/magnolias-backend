@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AddressesModule } from './addresses/addresses.module';
 import { AuthModule } from './auth/auth.module';
+import { BranchEmployeesModule } from './branch-employees/branch-employees.module';
 import { BranchesModule } from './branches/branches.module';
 import { BreadTypesModule } from './bread-types/bread-types.module';
 import { CategoriesModule } from './categories/categories.module';
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     OrdersModule,
     UsersModule,
     BranchesModule,
+    BranchEmployeesModule,
     ProductsModule,
     ColorsModule,
     CustomersModule,

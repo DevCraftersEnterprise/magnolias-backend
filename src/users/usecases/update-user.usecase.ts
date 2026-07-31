@@ -32,7 +32,10 @@ export class UpdateUserUseCase {
 
     this.logger.log(`Updating user with ID ${id} by user: ${currentUser.id}`);
 
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: { branch: true },
+    });
 
     if (!user) {
       this.logger.warn(`User with ID ${id} not found for update`);
@@ -104,6 +107,25 @@ export class UpdateUserUseCase {
     }
 
     Object.assign(user, updateUserDto, { updatedBy: currentUser });
+
+    if (user.role === UserRoles.EMPLOYEE && user.isActive && user.branch) {
+      const existingActiveEmployee = await this.userRepository.findOne({
+        where: {
+          role: UserRoles.EMPLOYEE,
+          branch: { id: user.branch.id },
+          isActive: true,
+        },
+      });
+
+      if (existingActiveEmployee && existingActiveEmployee.id !== user.id) {
+        this.logger.warn(
+          `Branch ${user.branch.id} already has an active EMPLOYEE account (${existingActiveEmployee.username})`,
+        );
+        throw new BadRequestException(
+          `This branch already has an active shared EMPLOYEE account (${existingActiveEmployee.username}). Deactivate it before activating another one.`,
+        );
+      }
+    }
 
     const updatedUser = await this.userRepository.save(user);
 

@@ -4,14 +4,26 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Order } from '../../entities/order.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderCancellation } from '../../entities/order-cancellation.entity';
+import { OrderEmployeeAction } from '../../entities/order-employee-action.entity';
+import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
 import { UpdateOrderDto } from '../../dto/update-order.dto';
 import { OrderStatus } from '../../enums/order-status.enum';
 import { User } from '../../../users/entities/user.entity';
+import { UserRoles } from '../../../users/enums/user-role';
+import { verifyEmployeeActionToken } from '../../../branch-employees/utils/verify-employee-action-token.util';
 import { CancelOrderDto } from '../../dto/cancel-order.dto';
+
+const EMPLOYEE_ACTION_BY_STATUS: Partial<
+  Record<OrderStatus, OrderEmployeeActionType>
+> = {
+  [OrderStatus.DELIVERED]: OrderEmployeeActionType.DELIVERED,
+  [OrderStatus.CANCELED]: OrderEmployeeActionType.CANCELED,
+};
 
 @Injectable()
 export class ChangeOrderStatusUseCase {
@@ -22,6 +34,9 @@ export class ChangeOrderStatusUseCase {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderCancellation)
     private readonly cancellationRepository: Repository<OrderCancellation>,
+    @InjectRepository(OrderEmployeeAction)
+    private readonly orderEmployeeActionRepository: Repository<OrderEmployeeAction>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async execute(
@@ -31,6 +46,20 @@ export class ChangeOrderStatusUseCase {
     cancelOrderDto?: CancelOrderDto,
   ): Promise<Order> {
     const { id } = updateOrderDto;
+
+    const employeeActionType = EMPLOYEE_ACTION_BY_STATUS[orderStatus];
+    let employeeId: string | undefined;
+
+    if (employeeActionType && user.role === UserRoles.EMPLOYEE) {
+      const employeeActionToken =
+        cancelOrderDto?.employeeActionToken ??
+        updateOrderDto.employeeActionToken;
+
+      employeeId = verifyEmployeeActionToken(
+        this.jwtService,
+        employeeActionToken,
+      );
+    }
 
     const order = await this.orderRepository.findOne({ where: { id } });
 
@@ -63,6 +92,16 @@ export class ChangeOrderStatusUseCase {
         `Creating cancellation record for order ID ${id} by user ${user.id}`,
       );
       await this.handleCancellation(cancelOrderDto, user, order);
+    }
+
+    if (employeeActionType && employeeId) {
+      const orderEmployeeAction = this.orderEmployeeActionRepository.create({
+        order: updatedOrder,
+        employee: { id: employeeId },
+        action: employeeActionType,
+      });
+
+      await this.orderEmployeeActionRepository.save(orderEmployeeAction);
     }
 
     return updatedOrder;

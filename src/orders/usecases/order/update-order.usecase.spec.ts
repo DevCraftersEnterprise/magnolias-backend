@@ -39,6 +39,10 @@ function createMocks() {
         save: jest.fn((entities) => Promise.resolve(entities)),
         count: jest.fn().mockResolvedValue(0),
     };
+    const orderEmployeeActionRepository = {
+        create: jest.fn((data) => ({ ...data })),
+        save: jest.fn((entity) => Promise.resolve(entity)),
+    };
 
 
     const addressesService = {
@@ -63,6 +67,7 @@ function createMocks() {
         orderFlowerRepository as never,
         orderPaymentRepository as never,
         orderDetailReferenceImageRepository as never,
+        orderEmployeeActionRepository as never,
         addressesService as never,
         productsService as never,
         flowersService as never,
@@ -79,6 +84,7 @@ function createMocks() {
         orderFlowerRepository,
         orderPaymentRepository,
         orderDetailReferenceImageRepository,
+        orderEmployeeActionRepository,
         addressesService,
         productsService,
         flowersService,
@@ -89,6 +95,7 @@ function createMocks() {
 }
 
 const user = { id: 'user-1' } as User;
+const employeeUser = { id: 'user-1', role: 'EMPLOYEE' } as User;
 
 function baseOrder(overrides: Record<string, unknown> = {}) {
     return {
@@ -655,6 +662,76 @@ describe('UpdateOrderUseCase', () => {
                 files as never,
             ),
         ).rejects.toThrow(BadRequestException);
+    });
+
+    describe('autoría de empleado (cuenta compartida de sucursal)', () => {
+        it('lanza BadRequestException si una cuenta EMPLOYEE edita un pedido sin employeeActionToken', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+            mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+            await expect(
+                mocks.useCase.execute(
+                    baseDto({
+                        details: [{ productId: 'product-1', price: 100, quantity: 1 }] as never,
+                    }),
+                    employeeUser,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('registra el OrderEmployeeAction UPDATED cuando el employeeActionToken es válido', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+            mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+            mocks.jwtService.verify.mockReturnValue({
+                employeeId: 'employee-1',
+                type: 'employee-action',
+            });
+
+            await mocks.useCase.execute(
+                baseDto({
+                    details: [{ productId: 'product-1', price: 100, quantity: 1 }] as never,
+                    employeeActionToken: 'valid-token',
+                } as never),
+                employeeUser,
+            );
+
+            expect(mocks.orderEmployeeActionRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    employee: { id: 'employee-1' },
+                    action: 'UPDATED',
+                }),
+            );
+            expect(mocks.orderEmployeeActionRepository.save).toHaveBeenCalled();
+        });
+
+        it('exige employeeActionToken incluso si el cambio no toca los detalles del pedido', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+
+            await expect(
+                mocks.useCase.execute(
+                    baseDto({ setupServiceCost: 50 }),
+                    employeeUser,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('no exige employeeActionToken ni registra auditoría para roles distintos de EMPLOYEE', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+            mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+            await mocks.useCase.execute(
+                baseDto({
+                    details: [{ productId: 'product-1', price: 100, quantity: 1 }] as never,
+                }),
+                user,
+            );
+
+            expect(mocks.orderEmployeeActionRepository.create).not.toHaveBeenCalled();
+        });
     });
 
 });

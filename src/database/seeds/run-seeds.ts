@@ -34,6 +34,7 @@ import { OrderCancellation } from '../../orders/entities/order-cancellation.enti
 import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
 import { OrderDetailReferenceImage } from '../../orders/entities/order-detail-reference-image.entity';
 import { OrderDetail } from '../../orders/entities/order-detail.entity';
+import { OrderEmployeeAction } from '../../orders/entities/order-employee-action.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { OrderPayment } from '../../orders/entities/order-payment.entity';
 import { Order } from '../../orders/entities/order.entity';
@@ -201,6 +202,8 @@ async function runSeeds() {
       AppDataSource.getRepository(OrderAssignment);
     const orderPaymentsRepository: Repository<OrderPayment> =
       AppDataSource.getRepository(OrderPayment);
+    const orderEmployeeActionRepository: Repository<OrderEmployeeAction> =
+      AppDataSource.getRepository(OrderEmployeeAction);
 
     const registerUserUseCase = new RegisterUserUseCase(
       userRepository,
@@ -470,6 +473,7 @@ async function runSeeds() {
       orderDetailReferenceImageRepository,
       orderFlowerRepository,
       orderPaymentsRepository,
+      orderEmployeeActionRepository,
       customersService,
       branchesService,
       addressesService,
@@ -487,6 +491,7 @@ async function runSeeds() {
       orderFlowerRepository,
       orderPaymentsRepository,
       orderDetailReferenceImageRepository,
+      orderEmployeeActionRepository,
       addressesService,
       productsService,
       flowersService,
@@ -497,6 +502,8 @@ async function runSeeds() {
     const changeOrderStatusUseCase = new ChangeOrderStatusUseCase(
       orderRepository,
       orderCancellationRepository,
+      orderEmployeeActionRepository,
+      seedJwtService,
     );
     const getOrderStatsUseCase = new GetOrderStatsUseCase(orderRepository);
     const assignOrderUseCase = new AssignOrderUseCase(
