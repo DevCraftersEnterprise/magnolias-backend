@@ -34,11 +34,15 @@ Crea **4 sucursales** de Magnolias en diferentes ubicaciones de CDMX:
 
 ### 3. Extra Users Seed (`extra-users.seed.ts`)
 
-Agrega **6 usuarios adicionales** con diferentes roles:
+Agrega usuarios adicionales:
 
-- 3 Empleados (asignados a diferentes sucursales)
-- 2 Asistentes (asignados a diferentes sucursales)
+- 7 Pasteleros (BAKER, asignados a diferentes sucursales)
+- 1 cuenta `EMPLOYEE` compartida por sucursal (cliente #13 — ya no son usuarios individuales, ver seed de empleados abajo)
 - 1 Administrador adicional
+
+### 3.1. Branch Employees Seed (`branch-employees.seed.ts`)
+
+Registra empleados individuales (nombre + PIN) dentro de las cuentas `EMPLOYEE` compartidas de cada sucursal, para autoría de pedidos (cliente #13).
 
 ### 4. Categories Seed (`categories.seed.ts`)
 
@@ -160,6 +164,7 @@ Los seeds se ejecutan automáticamente en el siguiente orden para respetar las d
 1. ✅ Usuarios iniciales
 2. ✅ Sucursales
 3. ✅ Usuarios adicionales
+3.1. ✅ Empleados por sucursal (PIN individual)
 4. ✅ Categorías
 5. ✅ Colores
 6. ✅ Rellenos, Glaseados, Flores, Estilos, Tipos de Pan (incluye sabores fusionados)
