@@ -1,3 +1,4 @@
+import { JwtService } from '@nestjs/jwt';
 import { config } from 'dotenv';
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../data-source';
@@ -460,6 +461,8 @@ async function runSeeds() {
       hideProductPictureUseCase,
     );
 
+    const seedJwtService = new JwtService();
+
     const createOrderUseCase = new CreateOrderUseCase(
       orderRepository,
       orderDeliveryAddressRepository,
@@ -472,6 +475,7 @@ async function runSeeds() {
       addressesService,
       productsService,
       flowersService,
+      seedJwtService,
     );
     const setPickupPersonUseCase = new SetPickupPersonUseCase(orderRepository);
     const findAllOrdersUseCase = new FindAllOrdersUseCase(orderRepository);
@@ -488,6 +492,7 @@ async function runSeeds() {
       flowersService,
       customersService,
       branchesService,
+      seedJwtService,
     );
     const changeOrderStatusUseCase = new ChangeOrderStatusUseCase(
       orderRepository,

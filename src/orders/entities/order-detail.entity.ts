@@ -126,10 +126,31 @@ export class OrderDetail {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @ApiProperty({
+    description: 'Discount percentage applied to this line, authorized by an admin/super',
+    example: 10,
+    default: 0,
+  })
+  @Column({ type: 'numeric', precision: 5, scale: 2, default: 0 })
+  discountPercent: number;
+
+  @ApiProperty({
+    description: 'Timestamp when the discount was authorized',
+    example: '2023-01-01T12:00:00Z',
+    required: false,
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  discountAuthorizedAt?: Date;
+
   @ApiHideProperty()
   @ManyToOne(() => Product, { nullable: false })
   @JoinColumn({ name: 'productId' })
   product: Product;
+
+  @ApiHideProperty()
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'discountAuthorizedBy' })
+  discountAuthorizedBy?: User;
 
   @ApiHideProperty()
   @ManyToOne(() => Order, { nullable: false })

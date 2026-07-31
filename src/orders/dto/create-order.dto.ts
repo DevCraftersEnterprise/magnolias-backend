@@ -374,4 +374,13 @@ export class CreateOrderDto {
   @IsNumber({}, { message: 'Setup service cost must be a number' })
   @Min(0, { message: 'Setup service cost must be at least 0' })
   setupServiceCost?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Short-lived token obtained from POST /auth/verify-discount-authorization, required when any detail has discountPercent > 0',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  @IsOptional()
+  @IsString({ message: 'Discount authorization token must be a string' })
+  discountAuthToken?: string;
 }

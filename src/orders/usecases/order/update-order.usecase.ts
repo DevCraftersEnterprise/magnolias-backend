@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
@@ -27,6 +28,7 @@ import { OrderPayment } from '../../entities/order-payment.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderStatus } from '../../enums/order-status.enum';
 import { parseCurrency } from '../../utils/parse-currency.util';
+import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
 import { BranchesService } from '../../../branches/branches.service';
 import { Branch } from '../../../branches/entities/branch.entity';
 import { OrderDetailReferenceImage } from '../../entities/order-detail-reference-image.entity';
@@ -56,6 +58,7 @@ export class UpdateOrderUseCase {
     private readonly flowersService: FlowersService,
     private readonly customersService: CustomersService,
     private readonly branchesService: BranchesService,
+    private readonly jwtService: JwtService,
   ) { }
 
   async execute(
@@ -75,6 +78,7 @@ export class UpdateOrderUseCase {
       branchId,
       isCustomerPickup,
       referenceImageDetailIndex,
+      discountAuthToken,
       ...dto
     } = updateOrderDto;
 
@@ -141,12 +145,37 @@ export class UpdateOrderUseCase {
 
     if (details && details.length > 0) {
       this.logger.log(`Updating order details for order ${id}`);
+
+      const existingDetails = order.details || [];
+
+      const discountIsChanging = details.some((detailDto) => {
+        const existingDetail = existingDetails.find(
+          (d) => d.product.id === detailDto.productId,
+        );
+        const incomingPercent = detailDto.discountPercent ?? 0;
+        const existingPercent = existingDetail
+          ? Number(existingDetail.discountPercent) || 0
+          : 0;
+
+        return incomingPercent !== existingPercent;
+      });
+
+      let discountAuthorizedById: string | undefined;
+
+      if (discountIsChanging) {
+        discountAuthorizedById = verifyDiscountAuthToken(
+          this.jwtService,
+          discountAuthToken,
+        );
+      }
+
       totalAmount = await this.handleOrderDetails(
         details,
         order,
         user,
         referenceImages,
-        referenceImageDetailIndex
+        referenceImageDetailIndex,
+        discountAuthorizedById,
       );
     }
 
@@ -402,6 +431,7 @@ export class UpdateOrderUseCase {
     user: User,
     referenceImages?: Express.Multer.File[],
     referenceImageDetailIndex?: number[],
+    discountAuthorizedById?: string,
   ): Promise<number> {
     let totalAmount = 0;
 
@@ -432,8 +462,13 @@ export class UpdateOrderUseCase {
       );
 
       let detail: OrderDetail;
+      const incomingPercent = detailDto.discountPercent ?? 0;
+      const hasDiscount = incomingPercent > 0;
 
       if (existingDetail) {
+        const existingPercent = Number(existingDetail.discountPercent) || 0;
+        const discountChanged = incomingPercent !== existingPercent;
+
         existingDetail.quantity = detailDto.quantity;
         existingDetail.price = detailDto.price;
         existingDetail.breadType = {
@@ -452,6 +487,19 @@ export class UpdateOrderUseCase {
           id: detailDto.colorId ?? existingDetail.color?.id,
         } as any;
         existingDetail.updatedBy = user;
+        existingDetail.discountPercent = incomingPercent;
+
+        if (discountChanged) {
+          if (hasDiscount) {
+            existingDetail.discountAuthorizedBy = {
+              id: discountAuthorizedById,
+            } as User;
+            existingDetail.discountAuthorizedAt = new Date();
+          } else {
+            existingDetail.discountAuthorizedBy = null as any;
+            existingDetail.discountAuthorizedAt = undefined;
+          }
+        }
 
         detailsToUpdate.push(existingDetail);
         detail = existingDetail;
@@ -467,6 +515,10 @@ export class UpdateOrderUseCase {
           product,
           createdBy: user,
           updatedBy: user,
+          ...(hasDiscount && {
+            discountAuthorizedBy: { id: discountAuthorizedById } as User,
+            discountAuthorizedAt: new Date(),
+          }),
         });
 
         detailsToCreate.push(newDetail);
@@ -474,7 +526,11 @@ export class UpdateOrderUseCase {
       }
 
       orderedDetails.push(detail);
-      totalAmount += detailDto.price * detailDto.quantity;
+
+      const lineTotal = detailDto.price * detailDto.quantity;
+      totalAmount += hasDiscount
+        ? lineTotal * (1 - detailDto.discountPercent! / 100)
+        : lineTotal;
     }
 
     if (detailsToUpdate.length > 0)
@@ -620,10 +676,17 @@ export class UpdateOrderUseCase {
     let total = 0;
 
     if (order.details) {
-      total += order.details.reduce(
-        (sum, detail) => sum + parseCurrency(detail.price) * detail.quantity,
-        0,
-      );
+      total += order.details.reduce((sum, detail) => {
+        const lineTotal = parseCurrency(detail.price) * detail.quantity;
+        const discountPercent = Number(detail.discountPercent) || 0;
+
+        return (
+          sum +
+          (discountPercent > 0
+            ? lineTotal * (1 - discountPercent / 100)
+            : lineTotal)
+        );
+      }, 0);
     }
 
     return total;
