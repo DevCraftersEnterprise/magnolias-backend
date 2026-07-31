@@ -47,6 +47,10 @@ function createMocks() {
     };
     const productsService = { findProductByTerm: jest.fn() };
     const flowersService = { findOne: jest.fn() };
+    const jwtService = {
+        sign: jest.fn().mockReturnValue('signed-token'),
+        verify: jest.fn().mockReturnValue({ id: 'admin-1', type: 'discount-authorization' }),
+    };
 
     const useCase = new CreateOrderUseCase(
         orderRepository as never,
@@ -60,6 +64,7 @@ function createMocks() {
         addressesService as never,
         productsService as never,
         flowersService as never,
+        jwtService as never,
     );
 
     return {
@@ -75,6 +80,7 @@ function createMocks() {
         addressesService,
         productsService,
         flowersService,
+        jwtService,
     };
 
 }
@@ -607,6 +613,84 @@ describe('CreateOrderUseCase', () => {
             expect(
                 mocks.orderDetailReferenceImageRepository.save,
             ).toHaveBeenCalledTimes(1);
+        });
+
+        it('lanza BadRequestException si hay descuento pero no se envía discountAuthToken', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await expect(
+                mocks.useCase.execute(
+                    baseOrderDto({
+                        details: [baseDetail({ price: 100, quantity: 2, discountPercent: 10 } as never)],
+                    }),
+                    user,
+                ),
+            ).rejects.toThrow(BadRequestException);
+
+            expect(mocks.orderDetailRepository.save).not.toHaveBeenCalled();
+        });
+
+        it('lanza BadRequestException si el discountAuthToken es inválido', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+            mocks.jwtService.verify.mockImplementation(() => {
+                throw new Error('invalid token');
+            });
+
+            await expect(
+                mocks.useCase.execute(
+                    baseOrderDto({
+                        details: [baseDetail({ price: 100, quantity: 2, discountPercent: 10 } as never)],
+                        discountAuthToken: 'bad-token',
+                    } as never),
+                    user,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('aplica el descuento al total cuando el discountAuthToken es válido', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await mocks.useCase.execute(
+                baseOrderDto({
+                    details: [baseDetail({ price: 100, quantity: 2, discountPercent: 10 } as never)],
+                    discountAuthToken: 'valid-token',
+                } as never),
+                user,
+            );
+
+            const savedOrderCalls = mocks.orderRepository.save.mock.calls;
+            const finalOrder = savedOrderCalls[savedOrderCalls.length - 1][0];
+
+            expect(finalOrder.totalAmount).toBe(180);
+
+            const savedDetails = mocks.orderDetailRepository.save.mock.calls[0][0];
+            expect(savedDetails[0].discountAuthorizedBy).toEqual({ id: 'admin-1' });
+            expect(savedDetails[0].discountAuthorizedAt).toBeInstanceOf(Date);
+        });
+
+        it('no requiere discountAuthToken cuando ningún detalle tiene descuento', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await mocks.useCase.execute(
+                baseOrderDto({
+                    details: [baseDetail({ price: 100, quantity: 2 })],
+                }),
+                user,
+            );
+
+            expect(mocks.jwtService.verify).not.toHaveBeenCalled();
         });
 
         it('lanza BadRequestException si un detalle recibe más de 10 imágenes de referencia', async () => {

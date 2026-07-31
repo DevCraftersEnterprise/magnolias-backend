@@ -51,6 +51,10 @@ function createMocks() {
     const flowersService = { findOne: jest.fn() };
     const customersService = { findOne: jest.fn() };
     const branchesService = { findBranchByTerm: jest.fn() };
+    const jwtService = {
+        sign: jest.fn().mockReturnValue('signed-token'),
+        verify: jest.fn().mockReturnValue({ id: 'admin-1', type: 'discount-authorization' }),
+    };
 
     const useCase = new UpdateOrderUseCase(
         orderRepository as never,
@@ -64,6 +68,7 @@ function createMocks() {
         flowersService as never,
         customersService as never,
         branchesService as never,
+        jwtService as never,
     );
 
     return {
@@ -79,6 +84,7 @@ function createMocks() {
         flowersService,
         customersService,
         branchesService,
+        jwtService,
     };
 }
 
@@ -468,6 +474,155 @@ describe('UpdateOrderUseCase', () => {
 
         expect(uploadPictureToCloudinaryMock).not.toHaveBeenCalled();
         expect(mocks.orderDetailReferenceImageRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('lanza BadRequestException si un detalle trae descuento sin discountAuthToken', async () => {
+        const mocks = createMocks();
+        mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        await expect(
+            mocks.useCase.execute(
+                baseDto({
+                    details: [
+                        { productId: 'product-1', price: 100, quantity: 2, discountPercent: 10 },
+                    ] as never,
+                }),
+                user,
+            ),
+        ).rejects.toThrow(BadRequestException);
+    });
+
+    it('aplica el descuento a un detalle nuevo cuando el discountAuthToken es válido', async () => {
+        const mocks = createMocks();
+        mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        const result = await mocks.useCase.execute(
+            baseDto({
+                details: [
+                    { productId: 'product-1', price: 100, quantity: 2, discountPercent: 10 },
+                ] as never,
+                discountAuthToken: 'valid-token',
+            } as never),
+            user,
+        );
+
+        expect(result.totalAmount).toBe(180);
+
+        const createdDetails = mocks.orderDetailRepository.save.mock.calls.flatMap(
+            (c) => c[0],
+        );
+        const discountedDetail = createdDetails.find(
+            (d: never) => (d as { product: { id: string } }).product.id === 'product-1',
+        );
+        expect((discountedDetail as { discountAuthorizedBy: { id: string } }).discountAuthorizedBy).toEqual({
+            id: 'admin-1',
+        });
+    });
+
+    it('lanza BadRequestException si se intenta quitar un descuento existente sin discountAuthToken', async () => {
+        const mocks = createMocks();
+        const existingDetail = {
+            product: { id: 'product-1' },
+            quantity: 2,
+            price: 100,
+            discountPercent: 10,
+            discountAuthorizedBy: { id: 'admin-1' },
+            discountAuthorizedAt: new Date('2026-01-01'),
+            breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
+        };
+        mocks.orderRepository.findOne.mockResolvedValue(
+            baseOrder({ details: [existingDetail] }),
+        );
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        await expect(
+            mocks.useCase.execute(
+                baseDto({
+                    details: [
+                        { productId: 'product-1', price: 100, quantity: 2, discountPercent: 0 },
+                    ] as never,
+                }),
+                user,
+            ),
+        ).rejects.toThrow(BadRequestException);
+    });
+
+    it('quita el descuento y su autorización cuando se reenvía discountPercent en 0 con un discountAuthToken válido', async () => {
+        const mocks = createMocks();
+        const existingDetail = {
+            product: { id: 'product-1' },
+            quantity: 2,
+            price: 100,
+            discountPercent: 10,
+            discountAuthorizedBy: { id: 'admin-1' },
+            discountAuthorizedAt: new Date('2026-01-01'),
+            breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
+        };
+        mocks.orderRepository.findOne.mockResolvedValue(
+            baseOrder({ details: [existingDetail] }),
+        );
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        const result = await mocks.useCase.execute(
+            baseDto({
+                details: [
+                    { productId: 'product-1', price: 100, quantity: 2, discountPercent: 0 },
+                ] as never,
+                discountAuthToken: 'valid-token',
+            } as never),
+            user,
+        );
+
+        expect(result.totalAmount).toBe(200);
+        expect(existingDetail.discountAuthorizedBy).toBeNull();
+        expect(existingDetail.discountAuthorizedAt).toBeUndefined();
+    });
+
+    it('no requiere discountAuthToken al re-guardar un descuento existente sin cambios', async () => {
+        const mocks = createMocks();
+        const existingDetail = {
+            product: { id: 'product-1' },
+            quantity: 2,
+            price: 100,
+            discountPercent: 10,
+            discountAuthorizedBy: { id: 'admin-1' },
+            discountAuthorizedAt: new Date('2026-01-01'),
+            breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
+        };
+        mocks.orderRepository.findOne.mockResolvedValue(
+            baseOrder({ details: [existingDetail] }),
+        );
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        const result = await mocks.useCase.execute(
+            baseDto({
+                details: [
+                    { productId: 'product-1', price: 100, quantity: 2, discountPercent: 10 },
+                ] as never,
+            }),
+            user,
+        );
+
+        expect(mocks.jwtService.verify).not.toHaveBeenCalled();
+        expect(result.totalAmount).toBe(180);
+        expect(existingDetail.discountAuthorizedBy).toEqual({ id: 'admin-1' });
+    });
+
+    it('no requiere discountAuthToken si ningún detalle enviado tiene descuento', async () => {
+        const mocks = createMocks();
+        mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
+        mocks.productsService.findProductByTerm.mockResolvedValue({ id: 'product-1' });
+
+        await mocks.useCase.execute(
+            baseDto({
+                details: [{ productId: 'product-1', price: 100, quantity: 2 }] as never,
+            }),
+            user,
+        );
+
+        expect(mocks.jwtService.verify).not.toHaveBeenCalled();
     });
 
     it('handleOrderDetails: lanza BadRequestException si al sumar fotos existentes y nuevas se supera el máximo', async () => {

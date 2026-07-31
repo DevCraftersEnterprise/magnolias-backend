@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
@@ -23,6 +24,7 @@ import { OrderDetail } from '../../entities/order-detail.entity';
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { Order } from '../../entities/order.entity';
 import { parseCurrency } from '../../utils/parse-currency.util';
+import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
 import { OrderPayment } from '../../entities/order-payment.entity';
 import { OrderDetailReferenceImage } from '../../entities/order-detail-reference-image.entity';
 
@@ -50,6 +52,7 @@ export class CreateOrderUseCase {
     private readonly addressesService: AddressesService,
     private readonly productsService: ProductsService,
     private readonly flowersService: FlowersService,
+    private readonly jwtService: JwtService,
   ) { }
 
   async execute(
@@ -66,8 +69,18 @@ export class CreateOrderUseCase {
       flowers,
       isCustomerPickup,
       referenceImageDetailIndex,
+      discountAuthToken,
       ...orderDto
     } = createOrderDto;
+
+    let discountAuthorizedById: string | undefined;
+
+    if (details.some((detail) => (detail.discountPercent ?? 0) > 0)) {
+      discountAuthorizedById = verifyDiscountAuthToken(
+        this.jwtService,
+        discountAuthToken,
+      );
+    }
 
     this.logger.log(`Processing order by user ${user.id}`);
 
@@ -104,7 +117,14 @@ export class CreateOrderUseCase {
       await this.handleFlowerForOrder(flowers, order, user);
     }
 
-    await this.calculateOrderTotal(details, savedOrder, user, referenceImages, referenceImageDetailIndex);
+    await this.calculateOrderTotal(
+      details,
+      savedOrder,
+      user,
+      referenceImages,
+      referenceImageDetailIndex,
+      discountAuthorizedById,
+    );
 
     return savedOrder;
   }
@@ -300,6 +320,7 @@ export class CreateOrderUseCase {
     user: User,
     referenceImages?: Express.Multer.File[],
     referenceImageDetailIndex?: number[],
+    discountAuthorizedById?: string,
   ): Promise<void> {
     let totalAmount = 0;
 
@@ -327,6 +348,8 @@ export class CreateOrderUseCase {
       const detailDto = details[i];
       const product = products[i];
 
+      const hasDiscount = (detailDto.discountPercent ?? 0) > 0;
+
       const orderDetail = this.orderDetailRepository.create({
         ...detailDto,
         breadType: { id: detailDto.breadTypeId },
@@ -338,10 +361,20 @@ export class CreateOrderUseCase {
         product,
         createdBy: user,
         updatedBy: user,
+        ...(hasDiscount && {
+          discountAuthorizedBy: { id: discountAuthorizedById } as User,
+          discountAuthorizedAt: new Date(),
+        }),
       });
 
       orderDatails.push(orderDetail);
-      totalAmount += orderDetail.price * detailDto.quantity;
+
+      const lineTotal = orderDetail.price * detailDto.quantity;
+      const discountedLineTotal = hasDiscount
+        ? lineTotal * (1 - detailDto.discountPercent! / 100)
+        : lineTotal;
+
+      totalAmount += discountedLineTotal;
 
       const filesForDetail = (referenceImages ?? []).filter(
         (_, fileIndex) => referenceImageDetailIndex?.[fileIndex] === i,
