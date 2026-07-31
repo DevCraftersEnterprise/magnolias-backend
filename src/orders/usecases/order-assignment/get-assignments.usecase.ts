@@ -70,7 +70,6 @@ export class GetAssignmentsUseCase {
             customSize: true,
             decorationNotes: true,
             filling: true,
-            flavor: true,
             frosting: true,
             hasWriting: true,
             notes: true,

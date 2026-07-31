@@ -331,7 +331,6 @@ export class CreateOrderUseCase {
         ...detailDto,
         breadType: { id: detailDto.breadTypeId },
         filling: { id: detailDto.fillingId },
-        flavor: { id: detailDto.flavorId },
         frosting: { id: detailDto.frostingId },
         style: { id: detailDto.styleId },
         color: { id: detailDto.colorId },

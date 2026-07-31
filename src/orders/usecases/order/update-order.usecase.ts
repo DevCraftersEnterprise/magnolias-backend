@@ -442,9 +442,6 @@ export class UpdateOrderUseCase {
         existingDetail.filling = {
           id: detailDto.fillingId ?? existingDetail.filling?.id,
         } as any;
-        existingDetail.flavor = {
-          id: detailDto.flavorId ?? existingDetail.flavor?.id,
-        } as any;
         existingDetail.frosting = {
           id: detailDto.frostingId ?? existingDetail.frosting?.id,
         } as any;
@@ -463,7 +460,6 @@ export class UpdateOrderUseCase {
           ...detailDto,
           breadType: { id: detailDto.breadTypeId },
           filling: { id: detailDto.fillingId },
-          flavor: { id: detailDto.flavorId },
           frosting: { id: detailDto.frostingId },
           style: { id: detailDto.styleId },
           color: { id: detailDto.colorId },
