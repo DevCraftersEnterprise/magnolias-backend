@@ -67,6 +67,25 @@ export class RegisterUserUseCase {
         );
       }
 
+      if (role === UserRoles.EMPLOYEE) {
+        const existingActiveEmployee = await this.userRepository.findOne({
+          where: {
+            role: UserRoles.EMPLOYEE,
+            branch: { id: branchId },
+            isActive: true,
+          },
+        });
+
+        if (existingActiveEmployee) {
+          this.logger.warn(
+            `Branch ${branchId} already has an active EMPLOYEE account (${existingActiveEmployee.username})`,
+          );
+          throw new BadRequestException(
+            `This branch already has an active shared EMPLOYEE account (${existingActiveEmployee.username}). Deactivate it before creating a new one.`,
+          );
+        }
+      }
+
       userData.branch = branch;
     }
 

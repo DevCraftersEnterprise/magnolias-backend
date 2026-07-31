@@ -38,6 +38,10 @@ function createMocks() {
         create: jest.fn((data) => ({ ...data })),
         save: jest.fn((entity) => Promise.resolve(entity)),
     };
+    const orderEmployeeActionRepository = {
+        create: jest.fn((data) => ({ ...data })),
+        save: jest.fn((entity) => Promise.resolve(entity)),
+    };
     const customerService = { findOne: jest.fn() };
     const branchesService = { findBranchByTerm: jest.fn() };
     const addressesService = {
@@ -59,6 +63,7 @@ function createMocks() {
         orderDetailReferenceImageRepository as never,
         orderFlowerRepository as never,
         orderPaymentRepository as never,
+        orderEmployeeActionRepository as never,
         customerService as never,
         branchesService as never,
         addressesService as never,
@@ -75,6 +80,7 @@ function createMocks() {
         orderDetailReferenceImageRepository,
         orderFlowerRepository,
         orderPaymentRepository,
+        orderEmployeeActionRepository,
         customerService,
         branchesService,
         addressesService,
@@ -86,6 +92,7 @@ function createMocks() {
 }
 
 const user = { id: 'user-1' } as User;
+const employeeUser = { id: 'user-1', role: 'EMPLOYEE' } as User;
 const branch = { id: 'branch-1', name: 'Navarrete' };
 const customerWithoutAddress = { id: 'customer-1', address: null };
 const product = { id: 'product-1' };
@@ -691,6 +698,52 @@ describe('CreateOrderUseCase', () => {
             );
 
             expect(mocks.jwtService.verify).not.toHaveBeenCalled();
+        });
+
+        it('lanza BadRequestException si una cuenta EMPLOYEE crea un pedido sin employeeActionToken', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await expect(
+                mocks.useCase.execute(baseOrderDto(), employeeUser),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('registra el OrderEmployeeAction CREATED cuando el employeeActionToken es válido', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+            mocks.jwtService.verify.mockReturnValue({
+                employeeId: 'employee-1',
+                type: 'employee-action',
+            });
+
+            await mocks.useCase.execute(
+                baseOrderDto({ employeeActionToken: 'valid-token' } as never),
+                employeeUser,
+            );
+
+            expect(mocks.orderEmployeeActionRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    employee: { id: 'employee-1' },
+                    action: 'CREATED',
+                }),
+            );
+            expect(mocks.orderEmployeeActionRepository.save).toHaveBeenCalled();
+        });
+
+        it('no exige employeeActionToken ni registra auditoría para roles distintos de EMPLOYEE', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await mocks.useCase.execute(baseOrderDto(), user);
+
+            expect(mocks.orderEmployeeActionRepository.create).not.toHaveBeenCalled();
         });
 
         it('lanza BadRequestException si un detalle recibe más de 10 imágenes de referencia', async () => {

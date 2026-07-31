@@ -146,6 +146,42 @@ describe('UpdateUserUseCase', () => {
         expect(result.branches).toEqual([]);
     });
 
+    it('lanza BadRequestException al reactivar un EMPLOYEE si la sucursal ya tiene otro EMPLOYEE activo', async () => {
+        const mocks = createMocks();
+        const targetUser = baseTargetUser({
+            branch: { id: 'branch-1' },
+            isActive: false,
+        });
+        mocks.userRepository.findOne
+            .mockResolvedValueOnce(targetUser) // initial fetch
+            .mockResolvedValueOnce({ id: 'other-employee', username: 'sucursal-centro' }); // duplicate check
+
+        await expect(
+            mocks.useCase.execute(
+                { id: 'u1', isActive: true } as UpdateUserDto,
+                admin,
+            ),
+        ).rejects.toThrow(BadRequestException);
+    });
+
+    it('permite reactivar un EMPLOYEE si el único EMPLOYEE activo de la sucursal es él mismo', async () => {
+        const mocks = createMocks();
+        const targetUser = baseTargetUser({
+            branch: { id: 'branch-1' },
+            isActive: false,
+        });
+        mocks.userRepository.findOne
+            .mockResolvedValueOnce(targetUser) // initial fetch
+            .mockResolvedValueOnce(targetUser); // duplicate check finds itself
+
+        await expect(
+            mocks.useCase.execute(
+                { id: 'u1', isActive: true } as UpdateUserDto,
+                admin,
+            ),
+        ).resolves.toBeDefined();
+    });
+
     it('retorna el usuario saneado sin exponer userkey', async () => {
         const mocks = createMocks();
         mocks.userRepository.findOne.mockResolvedValue(

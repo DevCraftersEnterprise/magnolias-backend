@@ -29,6 +29,7 @@ import { GetOrderStatsUseCase } from './usecases/order/get-order-stats.usecase';
 import { SetPickupPersonUseCase } from './usecases/order/set-pickup-person.usecase';
 import { UpdateOrderUseCase } from './usecases/order/update-order.usecase';
 import { OrderDetailReferenceImage } from './entities/order-detail-reference-image.entity';
+import { OrderEmployeeAction } from './entities/order-employee-action.entity';
 import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-order-detail-reference-image.usecase';
 
 
@@ -60,6 +61,7 @@ import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-orde
       OrderAssignment,
       OrderFlower,
       OrderPayment,
+      OrderEmployeeAction,
     ]),
     CommonModule,
     CustomJwtModule,

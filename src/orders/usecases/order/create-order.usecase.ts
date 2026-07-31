@@ -13,6 +13,8 @@ import { AddFlowerToOrderDto } from '../../../flowers/dto/add-flower-to-order.dt
 import { FlowersService } from '../../../flowers/flowers.service';
 import { ProductsService } from '../../../products/products.service';
 import { User } from '../../../users/entities/user.entity';
+import { UserRoles } from '../../../users/enums/user-role';
+import { verifyEmployeeActionToken } from '../../../branch-employees/utils/verify-employee-action-token.util';
 import {
   CreateOrderDeliveryAddressDto,
   NewAddressDataDto,
@@ -21,8 +23,10 @@ import { CreateOrderDetailDto } from '../../dto/create-order-detail.dto';
 import { CreateOrderDto } from '../../dto/create-order.dto';
 import { OrderDeliveryAddress } from '../../entities/order-delivery-address.entity';
 import { OrderDetail } from '../../entities/order-detail.entity';
+import { OrderEmployeeAction } from '../../entities/order-employee-action.entity';
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { Order } from '../../entities/order.entity';
+import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
 import { OrderPayment } from '../../entities/order-payment.entity';
@@ -47,6 +51,8 @@ export class CreateOrderUseCase {
     private readonly orderFlowerRepository: Repository<OrderFlower>,
     @InjectRepository(OrderPayment)
     private readonly orderPaymentRepository: Repository<OrderPayment>,
+    @InjectRepository(OrderEmployeeAction)
+    private readonly orderEmployeeActionRepository: Repository<OrderEmployeeAction>,
     private readonly customerService: CustomersService,
     private readonly branchesService: BranchesService,
     private readonly addressesService: AddressesService,
@@ -70,6 +76,7 @@ export class CreateOrderUseCase {
       isCustomerPickup,
       referenceImageDetailIndex,
       discountAuthToken,
+      employeeActionToken,
       ...orderDto
     } = createOrderDto;
 
@@ -79,6 +86,15 @@ export class CreateOrderUseCase {
       discountAuthorizedById = verifyDiscountAuthToken(
         this.jwtService,
         discountAuthToken,
+      );
+    }
+
+    let employeeId: string | undefined;
+
+    if (user.role === UserRoles.EMPLOYEE) {
+      employeeId = verifyEmployeeActionToken(
+        this.jwtService,
+        employeeActionToken,
       );
     }
 
@@ -100,6 +116,16 @@ export class CreateOrderUseCase {
     });
 
     const savedOrder = await this.orderRepository.save(order);
+
+    if (employeeId) {
+      const orderEmployeeAction = this.orderEmployeeActionRepository.create({
+        order: savedOrder,
+        employee: { id: employeeId },
+        action: OrderEmployeeActionType.CREATED,
+      });
+
+      await this.orderEmployeeActionRepository.save(orderEmployeeAction);
+    }
 
     if (
       !isCustomerPickup &&

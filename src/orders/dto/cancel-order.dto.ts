@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsUUID, IsString } from 'class-validator';
 
 export class CancelOrderDto {
   @ApiProperty({
@@ -16,4 +16,13 @@ export class CancelOrderDto {
   @IsString()
   @IsNotEmpty()
   reason: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Short-lived token obtained from POST /branch-employees/verify-pin, required when the current session is a shared branch EMPLOYEE account',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  @IsOptional()
+  @IsString({ message: 'Employee action token must be a string' })
+  employeeActionToken?: string;
 }
