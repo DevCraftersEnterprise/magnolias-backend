@@ -86,46 +86,18 @@ export async function seedExtraUsers(
       branchIds: [...branches.map((b) => b.id)],
       specialty: 'Especialista en decoración con manga',
     },
-    {
-      name: 'Ana',
-      lastname: 'Martínez',
-      username: 'anamartinez',
-      userkey: '123456',
+    // Cliente #13: EMPLOYEE es ahora una cuenta compartida por sucursal (no
+    // usuarios individuales) — una sola cuenta por sucursal, nombrada por la
+    // sucursal misma. Los empleados individuales se registran aparte en
+    // branch-employees.seed.ts (nombre + PIN), no como usuarios de login.
+    ...branches.map((branch, index) => ({
+      name: 'Sucursal',
+      lastname: branch.name,
+      username: `sucursal.${branch.name.toLowerCase().replace(/\s+/g, '-')}`,
+      userkey: `10000${index + 1}`,
       role: UserRoles.EMPLOYEE,
-      branchId: branches[0].id,
-    },
-    {
-      name: 'Luis',
-      lastname: 'Hernández',
-      username: 'luishernandez',
-      userkey: '234567',
-      role: UserRoles.EMPLOYEE,
-      branchId: branches[1].id,
-    },
-    {
-      name: 'Carmen',
-      lastname: 'López',
-      username: 'carmenlopez',
-      userkey: '345678',
-      role: UserRoles.EMPLOYEE,
-      branchId: branches[2].id,
-    },
-    {
-      name: 'Pedro',
-      lastname: 'García',
-      username: 'pedrogarcia',
-      userkey: '456789',
-      role: UserRoles.EMPLOYEE,
-      branchId: branches[0].id,
-    },
-    {
-      name: 'María',
-      lastname: 'Rodríguez',
-      username: 'mariarodriguez',
-      userkey: '567890',
-      role: UserRoles.EMPLOYEE,
-      branchId: branches[1].id,
-    },
+      branchId: branch.id,
+    })),
     {
       name: 'Roberto',
       lastname: 'Sánchez',

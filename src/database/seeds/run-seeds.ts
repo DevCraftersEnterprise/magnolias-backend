@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { AppDataSource } from '../data-source';
 // Services
 import { AddressesService } from '../../addresses/addresses.service';
+import { BranchEmployeesService } from '../../branch-employees/branch-employees.service';
 import { BranchesService } from '../../branches/branches.service';
 import { BreadTypesService } from '../../bread-types/bread-types.service';
 import { CategoriesService } from '../../categories/categories.service';
@@ -19,6 +20,7 @@ import { StylesService } from '../../styles/styles.service';
 import { UsersService } from '../../users/users.service';
 // Entities
 import { CommonAddress } from '../../addresses/entities/common-address.entity';
+import { BranchEmployee } from '../../branch-employees/entities/branch-employee.entity';
 import { Branch } from '../../branches/entities/branch.entity';
 import { Phone } from '../../branches/entities/phone.entity';
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
@@ -113,6 +115,13 @@ import { UpdateFavoriteProductStatusUseCase } from '../../products/usecases/upda
 import { UpdateProductUseCase } from '../../products/usecases/update-product.usecase';
 import { UploadPicturesForProductUseCase } from '../../products/usecases/upload-pictures-for-product.usecase';
 
+import { CreateBranchEmployeeUseCase } from '../../branch-employees/usecases/create-branch-employee.usecase';
+import { FindAllBranchEmployeesUseCase } from '../../branch-employees/usecases/find-all-branch-employees.usecase';
+import { RegenerateBranchEmployeePinUseCase } from '../../branch-employees/usecases/regenerate-branch-employee-pin.usecase';
+import { RemoveBranchEmployeeUseCase } from '../../branch-employees/usecases/remove-branch-employee.usecase';
+import { UpdateBranchEmployeeUseCase } from '../../branch-employees/usecases/update-branch-employee.usecase';
+import { VerifyEmployeePinUseCase } from '../../branch-employees/usecases/verify-employee-pin.usecase';
+
 import { CreateCommonAddressUseCase } from '../../addresses/usecases/create-common-address.usecase';
 import { FindAllCommonAddressesUseCase } from '../../addresses/usecases/find-all-common-addresses.usecase';
 import { FindOneCommonAddressUseCase } from '../../addresses/usecases/find-one-common-address.usecase';
@@ -134,6 +143,7 @@ import { HideOrderDetailReferenceImageUseCase } from '../../orders/usecases/orde
 import { CheckForDuplicateAddressUtil } from '../../addresses/utils/check-for-duplicate-address.util';
 // Seeds
 import { ConfigService } from '@nestjs/config';
+import { seedBranchEmployees } from './branch-employees.seed';
 import { seedBranches } from './branches.seed';
 import { seedBreadTypes } from './bread-types.seed';
 import { seedCategories } from './categories.seed';
@@ -204,6 +214,8 @@ async function runSeeds() {
       AppDataSource.getRepository(OrderPayment);
     const orderEmployeeActionRepository: Repository<OrderEmployeeAction> =
       AppDataSource.getRepository(OrderEmployeeAction);
+    const branchEmployeeRepository: Repository<BranchEmployee> =
+      AppDataSource.getRepository(BranchEmployee);
 
     const registerUserUseCase = new RegisterUserUseCase(
       userRepository,
@@ -466,6 +478,36 @@ async function runSeeds() {
 
     const seedJwtService = new JwtService();
 
+    const createBranchEmployeeUseCase = new CreateBranchEmployeeUseCase(
+      branchEmployeeRepository,
+      branchesService,
+    );
+    const findAllBranchEmployeesUseCase = new FindAllBranchEmployeesUseCase(
+      branchEmployeeRepository,
+    );
+    const updateBranchEmployeeUseCase = new UpdateBranchEmployeeUseCase(
+      branchEmployeeRepository,
+    );
+    const removeBranchEmployeeUseCase = new RemoveBranchEmployeeUseCase(
+      branchEmployeeRepository,
+    );
+    const verifyEmployeePinUseCase = new VerifyEmployeePinUseCase(
+      branchEmployeeRepository,
+      seedJwtService,
+      configService,
+    );
+    const regenerateBranchEmployeePinUseCase =
+      new RegenerateBranchEmployeePinUseCase(branchEmployeeRepository);
+
+    const branchEmployeesService = new BranchEmployeesService(
+      createBranchEmployeeUseCase,
+      findAllBranchEmployeesUseCase,
+      updateBranchEmployeeUseCase,
+      removeBranchEmployeeUseCase,
+      verifyEmployeePinUseCase,
+      regenerateBranchEmployeePinUseCase,
+    );
+
     const createOrderUseCase = new CreateOrderUseCase(
       orderRepository,
       orderDeliveryAddressRepository,
@@ -557,6 +599,14 @@ async function runSeeds() {
 
     // 4. Usuarios adicionales (necesita sucursales para empleados)
     await seedExtraUsers(usersService, userRepository, branchRepository);
+
+    // 4.1 Empleados individuales por sucursal (nombre + PIN, Cliente #13)
+    await seedBranchEmployees(
+      branchEmployeesService,
+      branchEmployeeRepository,
+      userRepository,
+      branchRepository,
+    );
 
     // 5. Categorías (necesita usuarios)
     await seedCategories(categoriesService, userRepository);
