@@ -40,6 +40,10 @@ jobs:
         run: npm run build
 
       - name: SonarQube Scan
+        # El plan Free de SonarQube Cloud solo analiza la rama principal (dev)
+        # y PRs cuya base sea esa rama - "Analyze feature branches" (staging/prod
+        # como base) requiere plan Team, asi que se omite en esos casos.
+        if: github.event_name == 'push' || github.base_ref == 'dev'
         uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
