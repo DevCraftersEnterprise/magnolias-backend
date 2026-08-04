@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
 import { CustomersService } from '../../../customers/customers.service';
 import { Customer } from '../../../customers/entities/customer.entity';
@@ -30,10 +30,10 @@ import { OrderPayment } from '../../entities/order-payment.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
 import { OrderStatus } from '../../enums/order-status.enum';
+import { generateOrderCode } from '../../utils/generate-order-code.util';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
 import { BranchesService } from '../../../branches/branches.service';
-import { Branch } from '../../../branches/entities/branch.entity';
 import { OrderDetailReferenceImage } from '../../entities/order-detail-reference-image.entity';
 import { uploadPictureToCloudinary } from '../../../common/utils/upload-to-cloudinary';
 
@@ -134,7 +134,8 @@ export class UpdateOrderUseCase {
 
       order.branch = newBranch;
 
-      order.orderCode = await this.generateOrderCode(
+      order.orderCode = await generateOrderCode(
+        this.orderRepository,
         { isEvento: order.isEvento, isEnTienda: order.isEnTienda },
         newBranch,
       );
@@ -729,41 +730,4 @@ export class UpdateOrderUseCase {
     };
   }
 
-  private async generateOrderCode(
-    flags: { isEvento: boolean; isEnTienda: boolean },
-    branch: Branch,
-  ): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = flags.isEvento ? 'EVE' : flags.isEnTienda ? 'VIT' : 'DOM';
-
-    const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
-    const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
-
-    const lastOrder = await this.orderRepository.findOne({
-      where: {
-        isEvento: flags.isEvento,
-        isEnTienda: flags.isEnTienda,
-        branch: { id: branch.id },
-        createdAt: Between(startOfYear, endOfYear),
-      },
-      order: { createdAt: 'DESC' },
-      select: {
-        id: true,
-        orderCode: true,
-        createdAt: true,
-      },
-    });
-
-    let sequence = 1;
-
-    if (lastOrder?.orderCode) {
-      const parts = lastOrder.orderCode.split('-');
-      if (parts.length === 4) {
-        const lastSequence = parseInt(parts[3], 10);
-        if (!Number.isNaN(lastSequence)) sequence = lastSequence + 1;
-      }
-    }
-
-    return `${prefix.slice(0, 3)}-${branch.name.toUpperCase().replace(' ', '-')}-${year}-${sequence.toString().padStart(4, '0')}`;
-  }
 }

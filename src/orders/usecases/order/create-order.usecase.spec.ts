@@ -126,23 +126,10 @@ describe('CreateOrderUseCase', () => {
     });
 
     describe('generateOrderCode (vía execute)', () => {
-        it('genera secuencia 0001 cuando no hay pedidos previos ese año/tipo/sucursal', async () => {
-            const mocks = createMocks();
-            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
-            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
-            mocks.orderRepository.findOne.mockResolvedValue(null);
-            mocks.productsService.findProductByTerm.mockResolvedValue(product);
-
-            await mocks.useCase.execute(
-                baseOrderDto({ isEnTienda: false, isCustomerPickup: true }),
-                user,
-            );
-
-            const createdOrder = mocks.orderRepository.create.mock.calls[0][0];
-            expect(createdOrder.orderCode).toBe('DOM-NAVARRETE-' + new Date().getFullYear() + '-0001');
-        });
-
-        it('incrementa la secuencia a partir del último código encontrado', async () => {
+        // La lógica de secuencia/prefijo en sí está cubierta a fondo en
+        // generate-order-code.util.spec.ts; aquí solo se confirma el cableado:
+        // el usecase usa el resultado de generateOrderCode como orderCode.
+        it('asigna a la orden el código devuelto por generateOrderCode', async () => {
             const mocks = createMocks();
             mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
             mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
@@ -158,24 +145,6 @@ describe('CreateOrderUseCase', () => {
 
             const createdOrder = mocks.orderRepository.create.mock.calls[0][0];
             expect(createdOrder.orderCode).toBe('DOM-NAVARRETE-' + new Date().getFullYear() + '-0008');
-        });
-
-        it('reinicia a la secuencia 1 si el último código está malformado', async () => {
-            const mocks = createMocks();
-            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
-            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
-            mocks.orderRepository.findOne.mockResolvedValue({
-                orderCode: 'CODIGO-INVALIDO',
-            });
-            mocks.productsService.findProductByTerm.mockResolvedValue(product);
-
-            await mocks.useCase.execute(
-                baseOrderDto({ isEnTienda: false, isCustomerPickup: true }),
-                user,
-            );
-
-            const createdOrder = mocks.orderRepository.create.mock.calls[0][0];
-            expect(createdOrder.orderCode).toBe('DOM-NAVARRETE-' + new Date().getFullYear() + '-0001');
         });
     });
 
