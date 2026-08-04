@@ -371,6 +371,7 @@ export async function seedOrders(
     // ═══════════════════════════════════════════════════════════════════════
     const createCustomOrder1: CreateOrderDto = {
       includesFlowers: true,
+      deliveryRound: DeliveryRound.ROUND_1,
       deliveryDate: getFutureDate(6),
       deliveryTime: '14:00',
       readyTime: '11:00',

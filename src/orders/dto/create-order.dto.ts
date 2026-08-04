@@ -82,7 +82,6 @@ export class CreateOrderDto {
   @ValidateIf((o) => !o.isEnTienda && !o.isEvento)
   @IsNotEmpty({ message: 'Delivery round is required for delivery orders' })
   @IsEnum(DeliveryRound, { message: 'Invalid delivery round' })
-  @IsOptional()
   deliveryRound?: DeliveryRound;
 
   @ApiProperty({
@@ -287,7 +286,7 @@ export class CreateOrderDto {
 
   @ApiPropertyOptional({
     description:
-      'Delivery address information (required unless the order is picked up in-store)',
+      'Delivery address information (validated when provided, unless the order is picked up in-store)',
     type: CreateOrderDeliveryAddressDto,
   })
   @ValidateIf((o) => !o.isEnTienda)
@@ -377,8 +376,7 @@ export class CreateOrderDto {
   @IsArray({ message: 'Flowers must be an array' })
   @ValidateNested({ each: true })
   @Type(() => AddFlowerToOrderDto)
-  @IsNotEmpty({ message: 'At least one flower is required for FLOR orders' })
-  @IsOptional()
+  @IsNotEmpty({ message: 'At least one flower is required when includesFlowers is true' })
   flowers?: AddFlowerToOrderDto[];
 
   @ApiPropertyOptional({
