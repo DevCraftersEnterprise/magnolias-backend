@@ -1,7 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UpdateOrderUseCase } from './update-order.usecase';
 import { OrderStatus } from '../../enums/order-status.enum';
-import { OrderType } from '../../../common/enums/order-type.enum';
 import type { User } from '../../../users/entities/user.entity';
 import type { UpdateOrderDto } from '../../dto/update-order.dto';
 import * as cloudinaryUtil from '../../../common/utils/upload-to-cloudinary';
@@ -101,7 +100,9 @@ function baseOrder(overrides: Record<string, unknown> = {}) {
     return {
         id: 'order-1',
         status: OrderStatus.CREATED,
-        orderType: OrderType.DOMICILIO,
+        isEvento: false,
+        isEnTienda: false,
+        includesFlowers: false,
         branch: { id: 'branch-1', name: 'Navarrete' },
         customer: { id: 'customer-1', address: null },
         details: [],
@@ -337,10 +338,10 @@ describe('UpdateOrderUseCase', () => {
         ).rejects.toThrow('Product with term no-existe not found');
     });
 
-    it('handleOrderFlowers: solo se procesa si el pedido es de tipo FLOR', async () => {
+    it('handleOrderFlowers: solo se procesa si el pedido tiene includesFlowers', async () => {
         const mocks = createMocks();
         mocks.orderRepository.findOne.mockResolvedValue(
-            baseOrder({ orderType: OrderType.DOMICILIO }),
+            baseOrder({ includesFlowers: false }),
         );
 
         await mocks.useCase.execute(

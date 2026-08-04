@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
-import { OrderType } from '../../../common/enums/order-type.enum';
 import { CustomersService } from '../../../customers/customers.service';
 import { Customer } from '../../../customers/entities/customer.entity';
 import { AddFlowerToOrderDto } from '../../../flowers/dto/add-flower-to-order.dto';
@@ -136,7 +135,7 @@ export class UpdateOrderUseCase {
       order.branch = newBranch;
 
       order.orderCode = await this.generateOrderCode(
-        order.orderType,
+        { isEvento: order.isEvento, isEnTienda: order.isEnTienda },
         newBranch,
       );
     }
@@ -195,7 +194,7 @@ export class UpdateOrderUseCase {
       );
     }
 
-    if (flowers && flowers.length > 0 && order.orderType === OrderType.FLOR) {
+    if (flowers && flowers.length > 0 && order.includesFlowers) {
       this.logger.log(`Updating order flowers for order ${id}`);
       await this.handleOrderFlowers(flowers, order, user);
     }
@@ -731,18 +730,19 @@ export class UpdateOrderUseCase {
   }
 
   private async generateOrderCode(
-    orderType: OrderType,
+    flags: { isEvento: boolean; isEnTienda: boolean },
     branch: Branch,
   ): Promise<string> {
     const year = new Date().getFullYear();
-    const prefix = orderType;
+    const prefix = flags.isEvento ? 'EVE' : flags.isEnTienda ? 'VIT' : 'DOM';
 
     const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
     const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
 
     const lastOrder = await this.orderRepository.findOne({
       where: {
-        orderType,
+        isEvento: flags.isEvento,
+        isEnTienda: flags.isEnTienda,
         branch: { id: branch.id },
         createdAt: Between(startOfYear, endOfYear),
       },

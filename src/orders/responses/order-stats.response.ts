@@ -7,8 +7,8 @@ export class OrderStatsResponse {
     delivered: number;
     cancelled: number;
     order_type_counts: {
-      personalizado: number;
-      vitrina: number;
+      conFlores: number;
+      enTienda: number;
       evento: number;
       domicilio: number;
     };

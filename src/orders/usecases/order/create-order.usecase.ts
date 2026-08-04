@@ -5,7 +5,6 @@ import { Between, Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
 import { BranchesService } from '../../../branches/branches.service';
 import { Branch } from '../../../branches/entities/branch.entity';
-import { OrderType } from '../../../common/enums/order-type.enum';
 import { uploadPictureToCloudinary } from '../../../common/utils/upload-to-cloudinary';
 import { CustomersService } from '../../../customers/customers.service';
 import { Customer } from '../../../customers/entities/customer.entity';
@@ -69,7 +68,9 @@ export class CreateOrderUseCase {
     const {
       customerId,
       branchId,
-      orderType,
+      isEvento,
+      isEnTienda,
+      includesFlowers,
       details,
       deliveryAddress,
       flowers,
@@ -102,11 +103,16 @@ export class CreateOrderUseCase {
 
     const customer = await this.customerService.findOne(customerId);
     const branch = await this.branchesService.findBranchByTerm(branchId);
-    const orderCode = await this.generateOrderCode(orderType, branch);
+    const orderCode = await this.generateOrderCode(
+      { isEvento: !!isEvento, isEnTienda: !!isEnTienda },
+      branch,
+    );
 
     const order = this.orderRepository.create({
       ...orderDto,
-      orderType,
+      isEvento: !!isEvento,
+      isEnTienda: !!isEnTienda,
+      includesFlowers: !!includesFlowers,
       orderCode,
       isCustomerPickup,
       customer,
@@ -127,14 +133,8 @@ export class CreateOrderUseCase {
       await this.orderEmployeeActionRepository.save(orderEmployeeAction);
     }
 
-    if (
-      !isCustomerPickup &&
-      deliveryAddress &&
-      (orderType === OrderType.DOMICILIO ||
-        orderType === OrderType.FLOR ||
-        orderType === OrderType.EVENTO)
-    ) {
-      this.logger.log(`Handling delivery address for ${orderType} order`);
+    if (!isCustomerPickup && deliveryAddress && !isEnTienda) {
+      this.logger.log('Handling delivery address for order');
       await this.handleDeliveryAddress(deliveryAddress, order, user, customer);
     }
 
@@ -156,18 +156,19 @@ export class CreateOrderUseCase {
   }
 
   private async generateOrderCode(
-    orderType: OrderType,
+    flags: { isEvento: boolean; isEnTienda: boolean },
     branch: Branch,
   ): Promise<string> {
     const year = new Date().getFullYear();
-    const prefix = orderType;
+    const prefix = flags.isEvento ? 'EVE' : flags.isEnTienda ? 'VIT' : 'DOM';
 
     const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
     const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
 
     const lastOrder = await this.orderRepository.findOne({
       where: {
-        orderType,
+        isEvento: flags.isEvento,
+        isEnTienda: flags.isEnTienda,
         branch: { id: branch.id },
         createdAt: Between(startOfYear, endOfYear),
       },
@@ -445,7 +446,7 @@ export class CreateOrderUseCase {
 
     order.dessertsTotal = totalAmount;
 
-    if (order.orderType !== OrderType.VITRINA && order.setupServiceCost) {
+    if (!order.isEnTienda && order.setupServiceCost) {
       totalAmount += parseCurrency(order.setupServiceCost);
     }
 
