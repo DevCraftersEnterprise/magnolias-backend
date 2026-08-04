@@ -18,21 +18,53 @@ import {
 } from 'class-validator';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { EventServiceType } from '../../common/enums/event-service-type.enum';
-import { OrderType } from '../../common/enums/order-type.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { AddFlowerToOrderDto } from '../../flowers/dto/add-flower-to-order.dto';
 import { CreateOrderDeliveryAddressDto } from './create-order-delivery-address.dto';
 import { CreateOrderDetailDto } from './create-order-detail.dto';
 
 export class CreateOrderDto {
-  @ApiProperty({
-    description: 'Type of order',
-    example: OrderType.DOMICILIO,
-    enum: OrderType,
+  @ApiPropertyOptional({
+    description: 'Whether the order is for an event',
+    example: false,
+    default: false,
   })
-  @IsNotEmpty({ message: 'Order type is required' })
-  @IsEnum(OrderType, { message: 'Invalid order type' })
-  orderType: OrderType;
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  @IsBoolean({ message: 'isEvento must be a boolean' })
+  isEvento?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Whether the order is picked up in-store',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  @IsBoolean({ message: 'isEnTienda must be a boolean' })
+  isEnTienda?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Whether the order includes flowers',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  @IsBoolean({ message: 'includesFlowers must be a boolean' })
+  includesFlowers?: boolean;
 
   @ApiProperty({
     description: 'ID of the customer placing the order',
@@ -43,16 +75,13 @@ export class CreateOrderDto {
   customerId: string;
 
   @ApiPropertyOptional({
-    description: 'Delivery round (required for DOM and FLOR orders)',
+    description: 'Delivery round (required for home delivery orders)',
     example: DeliveryRound.ROUND_1,
     enum: DeliveryRound,
   })
-  @ValidateIf((o) =>
-    [OrderType.DOMICILIO, OrderType.FLOR].includes(o.orderType),
-  )
+  @ValidateIf((o) => !o.isEnTienda && !o.isEvento)
   @IsNotEmpty({ message: 'Delivery round is required for delivery orders' })
   @IsEnum(DeliveryRound, { message: 'Invalid delivery round' })
-  @IsOptional()
   deliveryRound?: DeliveryRound;
 
   @ApiProperty({
@@ -257,14 +286,10 @@ export class CreateOrderDto {
 
   @ApiPropertyOptional({
     description:
-      'Delivery address information (required for DOM and FLOR orders)',
+      'Delivery address information (validated when provided, unless the order is picked up in-store)',
     type: CreateOrderDeliveryAddressDto,
   })
-  @ValidateIf((o) =>
-    [OrderType.DOMICILIO, OrderType.FLOR, OrderType.EVENTO].includes(
-      o.orderType,
-    ),
-  )
+  @ValidateIf((o) => !o.isEnTienda)
   @Transform(({ value }) => {
     if (typeof value === 'string') {
       try {
@@ -331,10 +356,10 @@ export class CreateOrderDto {
   referenceImageDetailIndex?: number[];
 
   @ApiPropertyOptional({
-    description: 'Flowers for the order (required for FLOR type)',
+    description: 'Flowers for the order (required when includesFlowers is true)',
     type: [AddFlowerToOrderDto],
   })
-  @ValidateIf((o) => o.orderType === OrderType.FLOR)
+  @ValidateIf((o) => o.includesFlowers === true)
   @Transform(({ value }) => {
     if (typeof value === 'string') {
       try {
@@ -351,8 +376,7 @@ export class CreateOrderDto {
   @IsArray({ message: 'Flowers must be an array' })
   @ValidateNested({ each: true })
   @Type(() => AddFlowerToOrderDto)
-  @IsNotEmpty({ message: 'At least one flower is required for FLOR orders' })
-  @IsOptional()
+  @IsNotEmpty({ message: 'At least one flower is required when includesFlowers is true' })
   flowers?: AddFlowerToOrderDto[];
 
   @ApiPropertyOptional({

@@ -3,7 +3,6 @@ import { Branch } from '../../branches/entities/branch.entity';
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { Color } from '../../colors/entities/color.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
-import { OrderType } from '../../common/enums/order-type.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { PipingLocation } from '../../common/enums/piping-location.enum';
 import { ProductSize } from '../../common/enums/product-size.enum';
@@ -96,7 +95,7 @@ export async function seedOrders(
     // PEDIDO 1: DOMICILIO - ★★★ COMPLETO - TODOS LOS CAMPOS ★★★
     // ═══════════════════════════════════════════════════════════════════════
     const createOrderDom1: CreateOrderDto = {
-      orderType: OrderType.DOMICILIO,
+      includesFlowers: true,
       deliveryRound: DeliveryRound.ROUND_1,
       deliveryDate: getFutureDate(3),
       deliveryTime: '14:00',
@@ -170,7 +169,7 @@ export async function seedOrders(
     // PEDIDO 2: VITRINA - ★☆☆ MÍNIMO - SOLO CAMPOS REQUERIDOS ★☆☆
     // ═══════════════════════════════════════════════════════════════════════
     const createOrderVit1: CreateOrderDto = {
-      orderType: OrderType.VITRINA,
+      isEnTienda: true,
       deliveryDate: getFutureDate(1),
       advancePayment: 225,
       customerId: customers[1].id,
@@ -195,7 +194,6 @@ export async function seedOrders(
     // PEDIDO 3: DOMICILIO - ★★☆ SIN FLORES NI ESCRITURA ★★☆
     // ═══════════════════════════════════════════════════════════════════════
     const createOrderDom2: CreateOrderDto = {
-      orderType: OrderType.DOMICILIO,
       deliveryRound: DeliveryRound.ROUND_2,
       deliveryDate: getFutureDate(4),
       deliveryTime: '16:00',
@@ -250,7 +248,8 @@ export async function seedOrders(
     // PEDIDO 4: EVENTO - ★★★ COMPLETO CON MÚLTIPLES DETALLES ★★★
     // ═══════════════════════════════════════════════════════════════════════
     const createOrderEvt1: CreateOrderDto = {
-      orderType: OrderType.EVENTO,
+      isEvento: true,
+      includesFlowers: true,
       deliveryRound: DeliveryRound.ROUND_1,
       deliveryDate: getFutureDate(10),
       deliveryTime: '15:00',
@@ -368,10 +367,11 @@ export async function seedOrders(
     console.log(`✅ Pedido EVENTO COMPLETO: ${order4.orderCode}`);
     createdCount++;
     // ═══════════════════════════════════════════════════════════════════════
-    // PEDIDO 5: PERSONALIZADO - ★★☆ CON ESCRITURA PERO SIN PIPING ★★☆
+    // PEDIDO 5: DOMICILIO + FLORES - ★★☆ CON ESCRITURA PERO SIN PIPING ★★☆
     // ═══════════════════════════════════════════════════════════════════════
     const createCustomOrder1: CreateOrderDto = {
-      orderType: OrderType.PERSONALIZADO,
+      includesFlowers: true,
+      deliveryRound: DeliveryRound.ROUND_1,
       deliveryDate: getFutureDate(6),
       deliveryTime: '14:00',
       readyTime: '11:00',
@@ -423,7 +423,7 @@ export async function seedOrders(
 
     // await ordersService.assignOrder(bakers[4].id, { orderId: order5.id, assignedDate: new Date() }, adminUser);
 
-    console.log(`✅ Pedido PERSONALIZADO: ${order5.orderCode}`);
+    console.log(`✅ Pedido DOMICILIO + FLORES: ${order5.orderCode}`);
     createdCount++;
   } catch (error) {
     console.error('❌ Error al crear pedidos:', error);

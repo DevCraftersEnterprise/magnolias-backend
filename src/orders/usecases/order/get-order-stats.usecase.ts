@@ -6,7 +6,6 @@ import { UserRoles } from '../../../users/enums/user-role';
 import { Order } from '../../entities/order.entity';
 import { OrderStatus } from '../../enums/order-status.enum';
 import { OrderStatsResponse } from '../../responses/order-stats.response';
-import { OrderType } from '../../../common/enums/order-type.enum';
 
 @Injectable()
 export class GetOrderStatsUseCase {
@@ -63,16 +62,11 @@ export class GetOrderStatsUseCase {
         ).length,
         order_type_counts: {
           domicilio: orders.filter(
-            (order) => order.orderType === OrderType.DOMICILIO,
+            (order) => !order.isEvento && !order.isEnTienda,
           ).length,
-          evento: orders.filter((order) => order.orderType === OrderType.EVENTO)
-            .length,
-          personalizado: orders.filter(
-            (order) => order.orderType === OrderType.FLOR,
-          ).length,
-          vitrina: orders.filter(
-            (order) => order.orderType === OrderType.VITRINA,
-          ).length,
+          evento: orders.filter((order) => order.isEvento).length,
+          enTienda: orders.filter((order) => order.isEnTienda).length,
+          conFlores: orders.filter((order) => order.includesFlowers).length,
         },
       },
     };

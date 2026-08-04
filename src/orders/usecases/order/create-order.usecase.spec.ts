@@ -1,5 +1,4 @@
 import { CreateOrderUseCase } from './create-order.usecase';
-import { OrderType } from '../../../common/enums/order-type.enum';
 import * as cloudinaryUtil from '../../../common/utils/upload-to-cloudinary';
 import type { User } from '../../../users/entities/user.entity';
 import type { CreateOrderDto } from '../../dto/create-order.dto';
@@ -110,7 +109,7 @@ function baseOrderDto(
     overrides: Partial<CreateOrderDto> = {},
 ): CreateOrderDto {
     return {
-        orderType: OrderType.VITRINA,
+        isEnTienda: true,
         customerId: 'customer-1',
         branchId: 'branch-1',
         advancePayment: 0,
@@ -127,23 +126,10 @@ describe('CreateOrderUseCase', () => {
     });
 
     describe('generateOrderCode (vía execute)', () => {
-        it('genera secuencia 0001 cuando no hay pedidos previos ese año/tipo/sucursal', async () => {
-            const mocks = createMocks();
-            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
-            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
-            mocks.orderRepository.findOne.mockResolvedValue(null);
-            mocks.productsService.findProductByTerm.mockResolvedValue(product);
-
-            await mocks.useCase.execute(
-                baseOrderDto({ orderType: OrderType.DOMICILIO, isCustomerPickup: true }),
-                user,
-            );
-
-            const createdOrder = mocks.orderRepository.create.mock.calls[0][0];
-            expect(createdOrder.orderCode).toBe('DOM-NAVARRETE-' + new Date().getFullYear() + '-0001');
-        });
-
-        it('incrementa la secuencia a partir del último código encontrado', async () => {
+        // La lógica de secuencia/prefijo en sí está cubierta a fondo en
+        // generate-order-code.util.spec.ts; aquí solo se confirma el cableado:
+        // el usecase usa el resultado de generateOrderCode como orderCode.
+        it('asigna a la orden el código devuelto por generateOrderCode', async () => {
             const mocks = createMocks();
             mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
             mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
@@ -153,30 +139,12 @@ describe('CreateOrderUseCase', () => {
             mocks.productsService.findProductByTerm.mockResolvedValue(product);
 
             await mocks.useCase.execute(
-                baseOrderDto({ orderType: OrderType.DOMICILIO, isCustomerPickup: true }),
+                baseOrderDto({ isEnTienda: false, isCustomerPickup: true }),
                 user,
             );
 
             const createdOrder = mocks.orderRepository.create.mock.calls[0][0];
             expect(createdOrder.orderCode).toBe('DOM-NAVARRETE-' + new Date().getFullYear() + '-0008');
-        });
-
-        it('reinicia a la secuencia 1 si el último código está malformado', async () => {
-            const mocks = createMocks();
-            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
-            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
-            mocks.orderRepository.findOne.mockResolvedValue({
-                orderCode: 'CODIGO-INVALIDO',
-            });
-            mocks.productsService.findProductByTerm.mockResolvedValue(product);
-
-            await mocks.useCase.execute(
-                baseOrderDto({ orderType: OrderType.DOMICILIO, isCustomerPickup: true }),
-                user,
-            );
-
-            const createdOrder = mocks.orderRepository.create.mock.calls[0][0];
-            expect(createdOrder.orderCode).toBe('DOM-NAVARRETE-' + new Date().getFullYear() + '-0001');
         });
     });
 
@@ -189,7 +157,7 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.DOMICILIO,
+                    isEnTienda: false,
                     isCustomerPickup: true,
                     deliveryAddress: { useCustomerAddress: true } as never,
                 }),
@@ -199,7 +167,7 @@ describe('CreateOrderUseCase', () => {
             expect(mocks.orderDeliveryAddressRepository.create).not.toHaveBeenCalled();
         });
 
-        it('no procesa dirección para pedidos VITRINA aunque venga deliveryAddress', async () => {
+        it('no procesa dirección para pedidos en tienda aunque venga deliveryAddress', async () => {
             const mocks = createMocks();
             mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
             mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
@@ -207,7 +175,7 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.VITRINA,
+                    isEnTienda: true,
                     isCustomerPickup: false,
                     deliveryAddress: { useCustomerAddress: true } as never,
                 }),
@@ -237,7 +205,7 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.DOMICILIO,
+                    isEnTienda: false,
                     isCustomerPickup: false,
                     deliveryAddress: {
                         useCustomerAddress: true,
@@ -266,7 +234,7 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.DOMICILIO,
+                    isEnTienda: false,
                     isCustomerPickup: false,
                     deliveryAddress: { useCustomerAddress: true } as never,
                 }),
@@ -292,7 +260,8 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.EVENTO,
+                    isEnTienda: false,
+                    isEvento: true,
                     isCustomerPickup: false,
                     deliveryAddress: {
                         useCommonAddress: true,
@@ -319,7 +288,8 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.EVENTO,
+                    isEnTienda: false,
+                    isEvento: true,
                     isCustomerPickup: false,
                     deliveryAddress: {
                         useCommonAddress: true,
@@ -340,7 +310,7 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.DOMICILIO,
+                    isEnTienda: false,
                     isCustomerPickup: false,
                     deliveryAddress: {
                         newAddress: {
@@ -369,7 +339,8 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.EVENTO,
+                    isEnTienda: false,
+                    isEvento: true,
                     isCustomerPickup: false,
                     deliveryAddress: {
                         newAddress: {
@@ -404,7 +375,8 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.EVENTO,
+                    isEnTienda: false,
+                    isEvento: true,
                     isCustomerPickup: false,
                     deliveryAddress: {
                         newAddress: { street: 'X', number: '1', neighborhood: 'Y' },
@@ -429,7 +401,8 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.FLOR,
+                    isEnTienda: false,
+                    includesFlowers: true,
                     isCustomerPickup: true,
                     flowers: [
                         { flowerId: 'flower-1', colorId: 'color-1', quantity: 3 },
@@ -467,7 +440,7 @@ describe('CreateOrderUseCase', () => {
             process.env.NODE_ENV = originalNodeEnv;
         });
 
-        it('VITRINA no suma el costo de montaje al total', async () => {
+        it('en tienda no suma el costo de montaje al total', async () => {
             const mocks = createMocks();
             mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
             mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
@@ -475,7 +448,7 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.VITRINA,
+                    isEnTienda: true,
                     advancePayment: 50,
                     setupServiceCost: 30,
                     details: [baseDetail({ price: 100, quantity: 2 })],
@@ -492,7 +465,7 @@ describe('CreateOrderUseCase', () => {
             expect(finalOrder.paidAmount).toBe(50);
         });
 
-        it('DOMICILIO sí suma el costo de montaje al total', async () => {
+        it('domicilio sí suma el costo de montaje al total', async () => {
             const mocks = createMocks();
             mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
             mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
@@ -500,7 +473,7 @@ describe('CreateOrderUseCase', () => {
 
             await mocks.useCase.execute(
                 baseOrderDto({
-                    orderType: OrderType.DOMICILIO,
+                    isEnTienda: false,
                     isCustomerPickup: true,
                     advancePayment: 100,
                     setupServiceCost: 30,
