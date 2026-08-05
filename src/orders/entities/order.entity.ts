@@ -336,4 +336,21 @@ export class Order {
   @ApiHideProperty()
   @OneToMany(() => OrderAssignment, (assignment) => assignment.order)
   assignments: OrderAssignment[];
+
+  // Campos calculados (no persistidos): resumen liviano de asignación de
+  // reposteros por línea, usado por el listado paginado para no pagar el
+  // costo de un eager-load completo de details.assignments.baker por pedido.
+  @ApiProperty({
+    description: 'Number of order details with a baker assigned',
+    example: 2,
+    required: false,
+  })
+  assignedBakersCount?: number;
+
+  @ApiProperty({
+    description: 'Total number of order details (product lines)',
+    example: 3,
+    required: false,
+  })
+  totalLinesCount?: number;
 }

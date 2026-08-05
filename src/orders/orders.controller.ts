@@ -30,13 +30,15 @@ import { PaginationResponse } from '../common/responses/pagination.response';
 import { FileValidator } from '../common/utils/file-validator';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
-import { AssignOrderDto } from './dto/assign-order.dto';
+import { AssignOrderDetailDto } from './dto/assign-order-detail.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { OrderAssignment } from './entities/order-assignment.entity';
+import { UpdateProductionStatusDto } from './dto/update-production-status.dto';
+import { OrderDetailAssignment } from './entities/order-detail-assignment.entity';
+import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { OrderStatsResponse } from './responses/order-stats.response';
@@ -269,11 +271,15 @@ export class OrdersController {
   }
 
   @Patch('in-process')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
-    summary: 'Mark order as in process',
-    description: 'Updates the order status to IN_PROCESS.',
+    summary: 'Mark order as in process (manual override)',
+    description:
+      'Manually overrides the order status to IN_PROCESS. Under normal use the status ' +
+      'is derived automatically from the production status of its order details ' +
+      '(see PATCH /orders/details/:detailId/production-status) - this override is only ' +
+      'for edge cases (e.g. an order with no lines, or correcting a stuck state).',
   })
   @ApiOkResponse({
     description: 'Order status successfully updated to IN_PROCESS.',
@@ -289,11 +295,13 @@ export class OrdersController {
   }
 
   @Patch('done')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
   @ApiBearerAuth('access-token')
   @ApiOperation({
-    summary: 'Mark order as done',
-    description: 'Updates the order status to DONE.',
+    summary: 'Mark order as done (manual override)',
+    description:
+      'Manually overrides the order status to DONE. Under normal use the status is ' +
+      'derived automatically once every order detail reaches DONE production status.',
   })
   @ApiOkResponse({
     description: 'Order status successfully updated to DONE.',
@@ -399,89 +407,101 @@ export class OrdersController {
   }
 
 
-  // Assign Orders
-  @Post(':id/assign-order')
+  // Assign bakers per order detail (product line)
+  @Post('details/:detailId/assign')
   @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
   @ApiBearerAuth('access-token')
   @ApiOperation({
-    summary: 'Assign order to baker',
-    description: 'Assigns an order to a specific baker.',
+    summary: 'Assign (or reassign) a baker to an order detail',
+    description:
+      'Assigns a baker to a specific order detail (product line). If the line already ' +
+      'has an assignment, it is updated in place (reassign).',
   })
   @ApiParam({
-    name: 'id',
-    description: 'UUID of the baker',
+    name: 'detailId',
+    description: 'UUID of the order detail',
     type: 'string',
     format: 'uuid',
   })
   @ApiOkResponse({
-    description: 'Order successfully assigned.',
-    type: OrderAssignment,
+    description: 'Order detail successfully assigned.',
+    type: OrderDetailAssignment,
   })
   @ApiBadRequestResponse({
-    description: 'Invalid data or order already assigned.',
+    description: 'Invalid data, order detail not found, or order is closed.',
   })
-  @ApiNotFoundResponse({ description: 'Baker or Order not found.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  assignOrder(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() assignOrderDto: AssignOrderDto,
+  assignOrderDetail(
+    @Param('detailId', ParseUUIDPipe) detailId: string,
+    @Body() assignOrderDetailDto: AssignOrderDetailDto,
     @CurrentUser() user: User,
-  ): Promise<OrderAssignment> {
-    return this.ordersService.assignOrder(id, assignOrderDto, user);
+  ): Promise<OrderDetailAssignment> {
+    return this.ordersService.assignOrderDetail(
+      detailId,
+      assignOrderDetailDto,
+      user,
+    );
   }
 
-  @Get(':id/assignments')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @Get('details/assignments/:bakerId')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
   @ApiOperation({
-    summary: 'Get baker assignments',
-    description: 'Retrieves all order assignments for a specific baker.',
+    summary: 'Get order-detail assignments for a baker',
+    description:
+      'Retrieves all order-detail (product line) assignments for a specific baker.',
   })
   @ApiParam({
-    name: 'id',
+    name: 'bakerId',
     description: 'UUID of the baker',
     type: 'string',
     format: 'uuid',
   })
   @ApiOkResponse({
-    description: 'List of assignments.',
-    type: [OrderAssignment],
+    description: 'List of order-detail assignments.',
+    type: [OrderDetailAssignment],
   })
   @ApiNotFoundResponse({ description: 'Baker not found.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  getAssignments(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<OrderAssignment[]> {
-    return this.ordersService.getAssignments(id);
+  getBakerDetailAssignments(
+    @Param('bakerId', ParseUUIDPipe) bakerId: string,
+  ): Promise<OrderDetailAssignment[]> {
+    return this.ordersService.getBakerDetailAssignments(bakerId);
   }
 
-  @Patch(':id/reassign-order')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN])
+  @Patch('details/:detailId/production-status')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.BAKER])
   @ApiBearerAuth('access-token')
   @ApiOperation({
-    summary: 'Reassign order to another baker',
-    description: 'Reassigns an order to a different baker.',
+    summary: 'Advance the production status of an order detail',
+    description:
+      'Sets the production status (PENDING/IN_PROCESS/DONE) of a single order detail. ' +
+      "Only the baker assigned to the line (or any branch baker if it's unassigned) or " +
+      "SUPER/ADMIN can do this. The parent order's status is re-derived automatically.",
   })
   @ApiParam({
-    name: 'id',
-    description: 'UUID of the new baker',
+    name: 'detailId',
+    description: 'UUID of the order detail',
     type: 'string',
     format: 'uuid',
   })
   @ApiOkResponse({
-    description: 'Order successfully reassigned.',
-    type: OrderAssignment,
+    description: 'Production status successfully updated.',
+    type: OrderDetail,
   })
   @ApiBadRequestResponse({
-    description: 'Invalid data or order cannot be reassigned.',
+    description: 'Order detail not found or order is closed.',
   })
-  @ApiNotFoundResponse({ description: 'Baker or Order not found.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
-  reassignOrder(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() assignOrderDto: AssignOrderDto,
+  updateProductionStatus(
+    @Param('detailId', ParseUUIDPipe) detailId: string,
+    @Body() updateProductionStatusDto: UpdateProductionStatusDto,
     @CurrentUser() user: User,
-  ): Promise<OrderAssignment> {
-    return this.ordersService.reassignOrder(id, assignOrderDto, user);
+  ): Promise<OrderDetail> {
+    return this.ordersService.updateProductionStatus(
+      detailId,
+      updateProductionStatusDto,
+      user,
+    );
   }
 }

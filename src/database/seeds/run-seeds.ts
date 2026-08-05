@@ -31,7 +31,7 @@ import { Customer } from '../../customers/entities/customer.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
-import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
+import { OrderDetailAssignment } from '../../orders/entities/order-detail-assignment.entity';
 import { OrderCancellation } from '../../orders/entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
 import { OrderDetailReferenceImage } from '../../orders/entities/order-detail-reference-image.entity';
@@ -129,9 +129,9 @@ import { FindOneCommonAddressUseCase } from '../../addresses/usecases/find-one-c
 import { RemoveCommonAddressUseCase } from '../../addresses/usecases/remove-common-address.usecase';
 import { UpdateCommonAddressUseCase } from '../../addresses/usecases/update-common-address.usecase';
 
-import { AssignOrderUseCase } from '../../orders/usecases/order-assignment/assign-order.usecase';
-import { GetAssignmentsUseCase } from '../../orders/usecases/order-assignment/get-assignments.usecase';
-import { UpdateAssignOrderUseCase } from '../../orders/usecases/order-assignment/update-assign-order.usecase';
+import { AssignOrderDetailUseCase } from '../../orders/usecases/order-detail-assignment/assign-order-detail.usecase';
+import { GetBakerDetailAssignmentsUseCase } from '../../orders/usecases/order-detail-assignment/get-baker-detail-assignments.usecase';
+import { UpdateProductionStatusUseCase } from '../../orders/usecases/order-detail-assignment/update-production-status.usecase';
 import { ChangeOrderStatusUseCase } from '../../orders/usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from '../../orders/usecases/order/create-order.usecase';
 import { FindAllOrdersUseCase } from '../../orders/usecases/order/find-all-orders.usecase';
@@ -211,8 +211,8 @@ async function runSeeds() {
       AppDataSource.getRepository(OrderFlower);
     const orderCancellationRepository: Repository<OrderCancellation> =
       AppDataSource.getRepository(OrderCancellation);
-    const orderAssignmentRepository: Repository<OrderAssignment> =
-      AppDataSource.getRepository(OrderAssignment);
+    const orderDetailAssignmentRepository: Repository<OrderDetailAssignment> =
+      AppDataSource.getRepository(OrderDetailAssignment);
     const orderPaymentsRepository: Repository<OrderPayment> =
       AppDataSource.getRepository(OrderPayment);
     const orderEmployeeActionRepository: Repository<OrderEmployeeAction> =
@@ -552,19 +552,20 @@ async function runSeeds() {
       seedJwtService,
     );
     const getOrderStatsUseCase = new GetOrderStatsUseCase(orderRepository);
-    const assignOrderUseCase = new AssignOrderUseCase(
+    const assignOrderDetailUseCase = new AssignOrderDetailUseCase(
       userRepository,
-      orderRepository,
-      orderAssignmentRepository,
+      orderDetailRepository,
+      orderDetailAssignmentRepository,
     );
-    const getAssignmentsUseCase = new GetAssignmentsUseCase(
+    const getBakerDetailAssignmentsUseCase = new GetBakerDetailAssignmentsUseCase(
       userRepository,
-      orderAssignmentRepository,
+      orderDetailAssignmentRepository,
     );
 
-    const updateAssignOrderUseCase = new UpdateAssignOrderUseCase(
+    const updateProductionStatusUseCase = new UpdateProductionStatusUseCase(
+      orderDetailRepository,
+      orderRepository,
       userRepository,
-      orderAssignmentRepository,
     );
 
     const hideOrderDetailReferenceImageUseCase =
@@ -578,9 +579,9 @@ async function runSeeds() {
       updateOrderUseCase,
       changeOrderStatusUseCase,
       getOrderStatsUseCase,
-      assignOrderUseCase,
-      getAssignmentsUseCase,
-      updateAssignOrderUseCase,
+      assignOrderDetailUseCase,
+      getBakerDetailAssignmentsUseCase,
+      updateProductionStatusUseCase,
       hideOrderDetailReferenceImageUseCase,
     );
 

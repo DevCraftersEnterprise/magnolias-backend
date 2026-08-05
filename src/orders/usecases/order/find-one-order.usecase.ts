@@ -36,15 +36,15 @@ export class FindOneOrderUseCase {
             frosting: true,
             color: true,
           },
+          assignments: {
+            baker: true,
+          },
         },
         orderFlowers: {
           flower: true,
           color: true,
         },
         payments: true,
-        assignments: {
-          baker: true,
-        },
         createdBy: true,
         updatedBy: true,
       },

@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
-import { AssignOrderDto } from './dto/assign-order.dto';
+import { AssignOrderDetailDto } from './dto/assign-order-detail.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { OrderAssignment } from './entities/order-assignment.entity';
+import { UpdateProductionStatusDto } from './dto/update-production-status.dto';
+import { OrderDetailAssignment } from './entities/order-detail-assignment.entity';
+import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
 import { OrderStatsResponse } from './responses/order-stats.response';
-import { AssignOrderUseCase } from './usecases/order-assignment/assign-order.usecase';
-import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignments.usecase';
-import { UpdateAssignOrderUseCase } from './usecases/order-assignment/update-assign-order.usecase';
+import { AssignOrderDetailUseCase } from './usecases/order-detail-assignment/assign-order-detail.usecase';
+import { GetBakerDetailAssignmentsUseCase } from './usecases/order-detail-assignment/get-baker-detail-assignments.usecase';
+import { UpdateProductionStatusUseCase } from './usecases/order-detail-assignment/update-production-status.usecase';
 import { ChangeOrderStatusUseCase } from './usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from './usecases/order/create-order.usecase';
 import { FindAllOrdersUseCase } from './usecases/order/find-all-orders.usecase';
@@ -33,9 +35,9 @@ export class OrdersService {
     private readonly updateOrderUseCase: UpdateOrderUseCase,
     private readonly changeOrderStatusUseCase: ChangeOrderStatusUseCase,
     private readonly getOrderStatsUseCase: GetOrderStatsUseCase,
-    private readonly assignOrderUseCase: AssignOrderUseCase,
-    private readonly getAssignmentsUseCase: GetAssignmentsUseCase,
-    private readonly updateAssignOrderUseCase: UpdateAssignOrderUseCase,
+    private readonly assignOrderDetailUseCase: AssignOrderDetailUseCase,
+    private readonly getBakerDetailAssignmentsUseCase: GetBakerDetailAssignmentsUseCase,
+    private readonly updateProductionStatusUseCase: UpdateProductionStatusUseCase,
     private readonly hideOrderDetailReferenceImageUseCase: HideOrderDetailReferenceImageUseCase,
   ) { }
 
@@ -119,26 +121,32 @@ export class OrdersService {
     return await this.getOrderStatsUseCase.execute(user, branchId);
   }
 
-  async assignOrder(
-    bakerId: string,
-    assignOrderDto: AssignOrderDto,
+  async assignOrderDetail(
+    orderDetailId: string,
+    assignOrderDetailDto: AssignOrderDetailDto,
     user: User,
-  ): Promise<OrderAssignment> {
-    return await this.assignOrderUseCase.execute(bakerId, assignOrderDto, user);
+  ): Promise<OrderDetailAssignment> {
+    return await this.assignOrderDetailUseCase.execute(
+      orderDetailId,
+      assignOrderDetailDto,
+      user,
+    );
   }
 
-  async getAssignments(bakerId: string): Promise<OrderAssignment[]> {
-    return await this.getAssignmentsUseCase.execute(bakerId);
+  async getBakerDetailAssignments(
+    bakerId: string,
+  ): Promise<OrderDetailAssignment[]> {
+    return await this.getBakerDetailAssignmentsUseCase.execute(bakerId);
   }
 
-  async reassignOrder(
-    bakerId: string,
-    assignOrderDto: AssignOrderDto,
+  async updateProductionStatus(
+    orderDetailId: string,
+    updateProductionStatusDto: UpdateProductionStatusDto,
     user: User,
-  ): Promise<OrderAssignment> {
-    return await this.updateAssignOrderUseCase.execute(
-      bakerId,
-      assignOrderDto,
+  ): Promise<OrderDetail> {
+    return await this.updateProductionStatusUseCase.execute(
+      orderDetailId,
+      updateProductionStatusDto,
       user,
     );
   }

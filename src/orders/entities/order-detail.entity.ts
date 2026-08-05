@@ -19,9 +19,11 @@ import { Frosting } from '../../frostings/entities/frosting.entity';
 import { Product } from '../../products/entities/product.entity';
 import { Style } from '../../styles/entities/style.entity';
 import { User } from '../../users/entities/user.entity';
+import { OrderDetailAssignment } from './order-detail-assignment.entity';
 import { OrderDetailReferenceImage } from './order-detail-reference-image.entity';
 import { OrderDetailTier } from './order-detail-tier.entity';
 import { Order } from './order.entity';
+import { OrderDetailProductionStatus } from '../enums/order-detail-production-status.enum';
 
 @Entity({ name: 'order_details' })
 export class OrderDetail {
@@ -125,6 +127,22 @@ export class OrderDetail {
   })
   tiers?: OrderDetailTier[];
 
+  @ApiHideProperty()
+  @OneToMany(() => OrderDetailAssignment, (a) => a.orderDetail)
+  assignments?: OrderDetailAssignment[];
+
+  @ApiProperty({
+    description: 'Production status of this line (per-baker tracking)',
+    example: OrderDetailProductionStatus.PENDING,
+    enum: OrderDetailProductionStatus,
+    default: OrderDetailProductionStatus.PENDING,
+  })
+  @Column({
+    type: 'enum',
+    enum: OrderDetailProductionStatus,
+    default: OrderDetailProductionStatus.PENDING,
+  })
+  productionStatus: OrderDetailProductionStatus;
 
   @ApiProperty({
     description: 'Indicates if the order detail is active',
