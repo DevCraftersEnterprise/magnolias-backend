@@ -25,6 +25,7 @@ import { OrderEmployeeAction } from '../../entities/order-employee-action.entity
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
+import { buildOrderDetailData } from '../../utils/build-order-detail-data.util';
 import { generateOrderCode } from '../../utils/generate-order-code.util';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
@@ -340,33 +341,15 @@ export class CreateOrderUseCase {
 
       const hasDiscount = (detailDto.discountPercent ?? 0) > 0;
 
-      const orderDetail = this.orderDetailRepository.create({
-        ...detailDto,
-        breadType: { id: detailDto.breadTypeId },
-        filling: { id: detailDto.fillingId },
-        frosting: { id: detailDto.frostingId },
-        style: { id: detailDto.styleId },
-        color: { id: detailDto.colorId },
-        tiers: detailDto.tiers?.map((tier) => ({
-          position: tier.position,
-          productSize: tier.productSize,
-          customSize: tier.customSize,
-          breadType: { id: tier.breadTypeId },
-          filling: { id: tier.fillingId },
-          frosting: { id: tier.frostingId },
-          color: { id: tier.colorId },
-          createdBy: user,
-          updatedBy: user,
-        })),
-        order,
-        product,
-        createdBy: user,
-        updatedBy: user,
-        ...(hasDiscount && {
-          discountAuthorizedBy: { id: discountAuthorizedById } as User,
-          discountAuthorizedAt: new Date(),
-        }),
-      });
+      const orderDetail = this.orderDetailRepository.create(
+        buildOrderDetailData(
+          detailDto,
+          order,
+          product,
+          user,
+          discountAuthorizedById,
+        ),
+      );
 
       orderDatails.push(orderDetail);
 

@@ -32,6 +32,10 @@ import { OrderPayment } from '../../entities/order-payment.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
 import { OrderStatus } from '../../enums/order-status.enum';
+import {
+  buildOrderDetailData,
+  mapOrderDetailTierData,
+} from '../../utils/build-order-detail-data.util';
 import { generateOrderCode } from '../../utils/generate-order-code.util';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
@@ -539,33 +543,15 @@ export class UpdateOrderUseCase {
         detail = existingDetail;
         tiersToSync.push({ detail: existingDetail, tiers: detailDto.tiers });
       } else {
-        const newDetail = this.orderDetailRepository.create({
-          ...detailDto,
-          breadType: { id: detailDto.breadTypeId },
-          filling: { id: detailDto.fillingId },
-          frosting: { id: detailDto.frostingId },
-          style: { id: detailDto.styleId },
-          color: { id: detailDto.colorId },
-          tiers: detailDto.tiers?.map((tier) => ({
-            position: tier.position,
-            productSize: tier.productSize,
-            customSize: tier.customSize,
-            breadType: { id: tier.breadTypeId },
-            filling: { id: tier.fillingId },
-            frosting: { id: tier.frostingId },
-            color: { id: tier.colorId },
-            createdBy: user,
-            updatedBy: user,
-          })),
-          order,
-          product,
-          createdBy: user,
-          updatedBy: user,
-          ...(hasDiscount && {
-            discountAuthorizedBy: { id: discountAuthorizedById } as User,
-            discountAuthorizedAt: new Date(),
-          }),
-        });
+        const newDetail = this.orderDetailRepository.create(
+          buildOrderDetailData(
+            detailDto,
+            order,
+            product,
+            user,
+            discountAuthorizedById,
+          ),
+        );
 
         detailsToCreate.push(newDetail);
         detail = newDetail;
@@ -614,16 +600,8 @@ export class UpdateOrderUseCase {
 
     const tiers = tiersDto.map((tier) =>
       this.orderDetailTierRepository.create({
-        position: tier.position,
-        productSize: tier.productSize,
-        customSize: tier.customSize,
-        breadType: { id: tier.breadTypeId } as any,
-        filling: { id: tier.fillingId } as any,
-        frosting: { id: tier.frostingId } as any,
-        color: { id: tier.colorId } as any,
+        ...mapOrderDetailTierData(tier, user),
         orderDetail,
-        createdBy: user,
-        updatedBy: user,
       }),
     );
 
