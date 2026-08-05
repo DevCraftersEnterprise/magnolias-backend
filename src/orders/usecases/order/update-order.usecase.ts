@@ -20,10 +20,12 @@ import {
   CreateOrderDeliveryAddressDto,
   NewAddressDataDto,
 } from '../../dto/create-order-delivery-address.dto';
+import { CreateOrderDetailTierDto } from '../../dto/create-order-detail-tier.dto';
 import { CreateOrderDetailDto } from '../../dto/create-order-detail.dto';
 import { UpdateOrderDto } from '../../dto/update-order.dto';
 import { OrderDeliveryAddress } from '../../entities/order-delivery-address.entity';
 import { OrderDetail } from '../../entities/order-detail.entity';
+import { OrderDetailTier } from '../../entities/order-detail-tier.entity';
 import { OrderEmployeeAction } from '../../entities/order-employee-action.entity';
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { OrderPayment } from '../../entities/order-payment.entity';
@@ -50,6 +52,8 @@ export class UpdateOrderUseCase {
     private readonly orderDeliveryAddressRepository: Repository<OrderDeliveryAddress>,
     @InjectRepository(OrderDetail)
     private readonly orderDetailRepository: Repository<OrderDetail>,
+    @InjectRepository(OrderDetailTier)
+    private readonly orderDetailTierRepository: Repository<OrderDetailTier>,
     @InjectRepository(OrderFlower)
     private readonly orderFlowerRepository: Repository<OrderFlower>,
     @InjectRepository(OrderPayment)
@@ -470,6 +474,10 @@ export class UpdateOrderUseCase {
     const detailsToUpdate: OrderDetail[] = [];
     const detailsToCreate: OrderDetail[] = [];
     const orderedDetails: (OrderDetail | undefined)[] = [];
+    const tiersToSync: {
+      detail: OrderDetail;
+      tiers: CreateOrderDetailTierDto[] | undefined;
+    }[] = [];
 
     for (let i = 0; i < details.length; i++) {
       const detailDto = details[i];
@@ -529,6 +537,7 @@ export class UpdateOrderUseCase {
 
         detailsToUpdate.push(existingDetail);
         detail = existingDetail;
+        tiersToSync.push({ detail: existingDetail, tiers: detailDto.tiers });
       } else {
         const newDetail = this.orderDetailRepository.create({
           ...detailDto,
@@ -537,6 +546,17 @@ export class UpdateOrderUseCase {
           frosting: { id: detailDto.frostingId },
           style: { id: detailDto.styleId },
           color: { id: detailDto.colorId },
+          tiers: detailDto.tiers?.map((tier) => ({
+            position: tier.position,
+            productSize: tier.productSize,
+            customSize: tier.customSize,
+            breadType: { id: tier.breadTypeId },
+            filling: { id: tier.fillingId },
+            frosting: { id: tier.frostingId },
+            color: { id: tier.colorId },
+            createdBy: user,
+            updatedBy: user,
+          })),
           order,
           product,
           createdBy: user,
@@ -564,6 +584,10 @@ export class UpdateOrderUseCase {
     if (detailsToCreate.length > 0)
       await this.orderDetailRepository.save(detailsToCreate);
 
+    for (const { detail, tiers } of tiersToSync) {
+      await this.replaceOrderDetailTiers(detail, tiers, user);
+    }
+
     if (referenceImages?.length) {
       await this.handleReferenceImages(
         referenceImages,
@@ -575,6 +599,35 @@ export class UpdateOrderUseCase {
     }
 
     return totalAmount;
+  }
+
+  private async replaceOrderDetailTiers(
+    orderDetail: OrderDetail,
+    tiersDto: CreateOrderDetailTierDto[] | undefined,
+    user: User,
+  ): Promise<void> {
+    await this.orderDetailTierRepository.delete({
+      orderDetail: { id: orderDetail.id },
+    });
+
+    if (!tiersDto || tiersDto.length === 0) return;
+
+    const tiers = tiersDto.map((tier) =>
+      this.orderDetailTierRepository.create({
+        position: tier.position,
+        productSize: tier.productSize,
+        customSize: tier.customSize,
+        breadType: { id: tier.breadTypeId } as any,
+        filling: { id: tier.fillingId } as any,
+        frosting: { id: tier.frostingId } as any,
+        color: { id: tier.colorId } as any,
+        orderDetail,
+        createdBy: user,
+        updatedBy: user,
+      }),
+    );
+
+    await this.orderDetailTierRepository.save(tiers);
   }
 
   private async handleReferenceImages(

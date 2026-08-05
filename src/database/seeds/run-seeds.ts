@@ -36,6 +36,7 @@ import { OrderCancellation } from '../../orders/entities/order-cancellation.enti
 import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
 import { OrderDetailReferenceImage } from '../../orders/entities/order-detail-reference-image.entity';
 import { OrderDetail } from '../../orders/entities/order-detail.entity';
+import { OrderDetailTier } from '../../orders/entities/order-detail-tier.entity';
 import { OrderEmployeeAction } from '../../orders/entities/order-employee-action.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { OrderPayment } from '../../orders/entities/order-payment.entity';
@@ -202,6 +203,8 @@ async function runSeeds() {
       AppDataSource.getRepository(OrderDeliveryAddress);
     const orderDetailRepository: Repository<OrderDetail> =
       AppDataSource.getRepository(OrderDetail);
+    const orderDetailTierRepository: Repository<OrderDetailTier> =
+      AppDataSource.getRepository(OrderDetailTier);
     const orderDetailReferenceImageRepository: Repository<OrderDetailReferenceImage> =
       AppDataSource.getRepository(OrderDetailReferenceImage);
     const orderFlowerRepository: Repository<OrderFlower> =
@@ -530,6 +533,7 @@ async function runSeeds() {
       orderRepository,
       orderDeliveryAddressRepository,
       orderDetailRepository,
+      orderDetailTierRepository,
       orderFlowerRepository,
       orderPaymentsRepository,
       orderDetailReferenceImageRepository,

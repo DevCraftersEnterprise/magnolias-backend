@@ -649,11 +649,61 @@ export const getDetailSectionTitle = (customTitle?: string): Content => ({
   margin: [0, 0, 0, 0],
 });
 
+/** Filas de tamaño/sabor por piso, para pasteles de 2+ pisos */
+const getTierRows = (
+  tiers: NonNullable<OrderDetail['tiers']>,
+): TextTableCell[][] =>
+  tiers
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((tier) => [
+      labelCell(`PISO ${tier.position} - TAMAÑO`, {
+        border: [true, true, true, true],
+      }),
+      valueCell(
+        tier.customSize
+          ? `${tier.productSize} - ${tier.customSize}`
+          : tier.productSize,
+        { border: [true, true, true, true] },
+      ),
+      labelCell('SABOR / RELLENO / CUBIERTA / COLOR', {
+        border: [true, true, true, true],
+      }),
+      valueCell(
+        toUpperSafe(
+          [
+            tier.breadType?.name,
+            tier.filling?.name,
+            tier.frosting?.name,
+            tier.color?.name,
+          ]
+            .filter(Boolean)
+            .join(' / '),
+        ),
+        { border: [true, true, true, true] },
+      ),
+    ]);
+
 /** Tabla de descripción del pedido/detalle */
-export const getDetailTable = (detail: OrderDetail | null): Content => ({
-  table: {
-    widths: ['20%', '30%', '20%', '30%'],
-    body: [
+export const getDetailTable = (detail: OrderDetail | null): Content => {
+  const hasTiers = !!detail?.tiers?.length;
+  const escritoValue = detail?.hasWriting
+    ? detail.writingText?.toUpperCase()
+    : 'SIN ESCRITO';
+
+  const sizeAndFlavorRows: TextTableCell[][] = hasTiers
+    ? [
+      ...getTierRows(detail!.tiers!),
+      [
+        labelCell('"ESCRITO"', { border: [true, true, true, true] }),
+        valueCell(escritoValue, { border: [true, true, true, true] }),
+        labelCell('CANTIDAD DE PISOS', { border: [true, true, true, true] }),
+        valueCell(String(detail!.tiers!.length), {
+          border: [true, true, true, true],
+        }),
+      ],
+    ]
+    : [
       [
         labelCell('TAMAÑO', { border: [true, true, true, true] }),
         valueCell(
@@ -684,62 +734,65 @@ export const getDetailTable = (detail: OrderDetail | null): Content => ({
           border: [true, true, true, true],
         }),
         labelCell('"ESCRITO"', { border: [true, true, true, true] }),
-        valueCell(
-          detail?.hasWriting
-            ? detail.writingText?.toUpperCase()
-            : 'SIN ESCRITO',
-          { border: [true, true, true, true] },
-        ),
+        valueCell(escritoValue, { border: [true, true, true, true] }),
       ],
-      [
-        labelCell('FORMA Y COLOR DEL ESCRITO', {
-          border: [true, true, true, true],
-        }),
-        valueCell(
-          toUpperSafe(
-            `${detail?.style?.name ?? ''}\n ${detail?.color?.name ?? ''}`,
+    ];
+
+  return {
+    table: {
+      widths: ['20%', '30%', '20%', '30%'],
+      body: [
+        ...sizeAndFlavorRows,
+        [
+          labelCell('FORMA Y COLOR DEL ESCRITO', {
+            border: [true, true, true, true],
+          }),
+          valueCell(
+            toUpperSafe(
+              `${detail?.style?.name ?? ''}\n ${detail?.color?.name ?? ''}`,
+            ),
+            { border: [true, true, true, true] },
           ),
-          { border: [true, true, true, true] },
-        ),
-        labelCell('UBICACIÓN DEL ESCRITO', {
-          border: [true, true, true, true],
-        }),
-        valueCell(
-          detail?.writingLocation
-            ? EnumTransformer.translateWritingLocation(
-              detail.writingLocation,
-            ).toUpperCase()
-            : '',
-          { border: [true, true, true, true] },
-        ),
-      ],
-      [
-        labelCell('FORMA Y COLOR DE POMPEADO', {
-          border: [true, true, true, false],
-        }),
-        valueCell(
-          toUpperSafe(
-            `${detail?.style?.name ?? ''}\n${detail?.color?.name ?? ''}`,
+          labelCell('UBICACIÓN DEL ESCRITO', {
+            border: [true, true, true, true],
+          }),
+          valueCell(
+            detail?.writingLocation
+              ? EnumTransformer.translateWritingLocation(
+                detail.writingLocation,
+              ).toUpperCase()
+              : '',
+            { border: [true, true, true, true] },
           ),
-          {
+        ],
+        [
+          labelCell('FORMA Y COLOR DE POMPEADO', {
             border: [true, true, true, false],
-          },
-        ),
-        labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
-        valueCell(
-          detail?.pipingLocation
-            ? EnumTransformer.translatePipingLocation(
-              detail.pipingLocation,
-            ).toUpperCase()
-            : '',
-          {
-            border: [true, true, true, false],
-          },
-        ),
+          }),
+          valueCell(
+            toUpperSafe(
+              `${detail?.style?.name ?? ''}\n${detail?.color?.name ?? ''}`,
+            ),
+            {
+              border: [true, true, true, false],
+            },
+          ),
+          labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
+          valueCell(
+            detail?.pipingLocation
+              ? EnumTransformer.translatePipingLocation(
+                detail.pipingLocation,
+              ).toUpperCase()
+              : '',
+            {
+              border: [true, true, true, false],
+            },
+          ),
+        ],
       ],
-    ],
-  },
-});
+    },
+  };
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SECCIÓN DE DECORACIÓN Y NOTAS

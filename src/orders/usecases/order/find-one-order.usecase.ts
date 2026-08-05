@@ -30,6 +30,12 @@ export class FindOneOrderUseCase {
           color: true,
           referenceImages: true,
           discountAuthorizedBy: true,
+          tiers: {
+            breadType: true,
+            filling: true,
+            frosting: true,
+            color: true,
+          },
         },
         orderFlowers: {
           flower: true,
