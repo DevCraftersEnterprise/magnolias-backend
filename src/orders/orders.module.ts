@@ -13,6 +13,7 @@ import { OrderAssignment } from './entities/order-assignment.entity';
 import { OrderCancellation } from './entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
 import { OrderDetail } from './entities/order-detail.entity';
+import { OrderDetailTier } from './entities/order-detail-tier.entity';
 import { OrderFlower } from './entities/order-flower.entity';
 import { OrderPayment } from './entities/order-payment.entity';
 import { Order } from './entities/order.entity';
@@ -55,6 +56,7 @@ import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-orde
     TypeOrmModule.forFeature([
       Order,
       OrderDetail,
+      OrderDetailTier,
       OrderDetailReferenceImage,
       OrderCancellation,
       OrderDeliveryAddress,

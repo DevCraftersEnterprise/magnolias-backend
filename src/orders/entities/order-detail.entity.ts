@@ -20,6 +20,7 @@ import { Product } from '../../products/entities/product.entity';
 import { Style } from '../../styles/entities/style.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderDetailReferenceImage } from './order-detail-reference-image.entity';
+import { OrderDetailTier } from './order-detail-tier.entity';
 import { Order } from './order.entity';
 
 @Entity({ name: 'order_details' })
@@ -117,6 +118,12 @@ export class OrderDetail {
     (image) => image.orderDetail,
   )
   referenceImages: OrderDetailReferenceImage[];
+
+  @ApiHideProperty()
+  @OneToMany(() => OrderDetailTier, (tier) => tier.orderDetail, {
+    cascade: true,
+  })
+  tiers?: OrderDetailTier[];
 
 
   @ApiProperty({

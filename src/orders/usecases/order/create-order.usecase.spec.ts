@@ -433,6 +433,59 @@ describe('CreateOrderUseCase', () => {
         });
     });
 
+    describe('manejo de pisos (pasteles de 2+ pisos)', () => {
+        it('mapea tiers del DTO a la relación tiers del OrderDetail', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await mocks.useCase.execute(
+                baseOrderDto({
+                    details: [
+                        baseDetail({
+                            tiers: [
+                                { position: 1, productSize: '30P', breadTypeId: 'bread-1' },
+                                { position: 2, productSize: '20P', colorId: 'color-1' },
+                            ],
+                        }),
+                    ] as never,
+                }),
+                user,
+            );
+
+            expect(mocks.orderDetailRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    tiers: [
+                        expect.objectContaining({
+                            position: 1,
+                            productSize: '30P',
+                            breadType: { id: 'bread-1' },
+                        }),
+                        expect.objectContaining({
+                            position: 2,
+                            productSize: '20P',
+                            color: { id: 'color-1' },
+                        }),
+                    ],
+                }),
+            );
+        });
+
+        it('no envía tiers cuando el detalle es un pastel simple', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await mocks.useCase.execute(baseOrderDto(), user);
+
+            expect(mocks.orderDetailRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({ tiers: undefined }),
+            );
+        });
+    });
+
     describe('calculateOrderTotal', () => {
         const originalNodeEnv = process.env.NODE_ENV;
 
