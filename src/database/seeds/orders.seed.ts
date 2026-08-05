@@ -152,11 +152,12 @@ export async function seedOrders(
     };
 
     const order1 = await ordersService.createOrder(createOrderDom1, adminUser);
+    const fullOrder1 = await ordersService.getOrderByTerm(order1.id);
 
-    await ordersService.assignOrder(
-      bakers[0].id,
+    await ordersService.assignOrderDetail(
+      fullOrder1.details[0].id,
       {
-        orderId: order1.id,
+        bakerId: bakers[0].id,
         assignedDate: new Date(),
         notes: 'Pedido completo - prioridad alta',
       },
@@ -235,10 +236,11 @@ export async function seedOrders(
     };
 
     const order3 = await ordersService.createOrder(createOrderDom2, adminUser);
+    const fullOrder3 = await ordersService.getOrderByTerm(order3.id);
 
-    await ordersService.assignOrder(
-      bakers[0].id,
-      { orderId: order3.id, assignedDate: new Date() },
+    await ordersService.assignOrderDetail(
+      fullOrder3.details[0].id,
+      { bakerId: bakers[0].id, assignedDate: new Date() },
       adminUser,
     );
 
@@ -357,10 +359,11 @@ export async function seedOrders(
     };
 
     const order4 = await ordersService.createOrder(createOrderEvt1, adminUser);
+    const fullOrder4 = await ordersService.getOrderByTerm(order4.id);
 
-    await ordersService.assignOrder(
-      bakers[4].id,
-      { orderId: order4.id, assignedDate: new Date() },
+    await ordersService.assignOrderDetail(
+      fullOrder4.details[0].id,
+      { bakerId: bakers[4].id, assignedDate: new Date() },
       adminUser,
     );
 
@@ -421,7 +424,7 @@ export async function seedOrders(
       adminUser,
     );
 
-    // await ordersService.assignOrder(bakers[4].id, { orderId: order5.id, assignedDate: new Date() }, adminUser);
+    // await ordersService.assignOrderDetail(order5Detail.id, { bakerId: bakers[4].id, assignedDate: new Date() }, adminUser);
 
     console.log(`✅ Pedido DOMICILIO + FLORES: ${order5.orderCode}`);
     createdCount++;

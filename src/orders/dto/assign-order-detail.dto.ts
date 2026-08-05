@@ -8,14 +8,14 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class AssignOrderDto {
+export class AssignOrderDetailDto {
   @ApiProperty({
-    description: 'ID of the order to assign',
+    description: 'ID of the baker to assign to this order detail',
     example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
   })
-  @IsNotEmpty({ message: 'Order ID is required' })
-  @IsUUID('4', { message: 'Order ID must be a valid UUID' })
-  orderId: string;
+  @IsNotEmpty({ message: 'Baker ID is required' })
+  @IsUUID('4', { message: 'Baker ID must be a valid UUID' })
+  bakerId: string;
 
   @ApiProperty({
     description: 'Assignment date',

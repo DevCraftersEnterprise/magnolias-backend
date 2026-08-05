@@ -33,6 +33,19 @@ function endOfUtcDay(date: Date): Date {
   );
 }
 
+/**
+ * Resumen liviano de asignación de reposteros por línea, para no cargar el
+ * baker completo por cada detalle en un listado paginado.
+ */
+function attachAssignmentRollup(orders: Order[]): void {
+  for (const order of orders) {
+    order.totalLinesCount = order.details?.length ?? 0;
+    order.assignedBakersCount =
+      order.details?.filter((d) => (d.assignments?.length ?? 0) > 0)
+        .length ?? 0;
+  }
+}
+
 @Injectable()
 export class FindAllOrdersUseCase {
   private readonly logger = new Logger(FindAllOrdersUseCase.name);
@@ -101,8 +114,8 @@ export class FindAllOrdersUseCase {
         deliveryAddress: true,
         createdBy: true,
         updatedBy: true,
-        assignments: {
-          baker: true,
+        details: {
+          assignments: true,
         },
       },
       select: {
@@ -131,16 +144,10 @@ export class FindAllOrdersUseCase {
           fullName: true,
           phone: true,
         },
-        assignments: {
+        details: {
           id: true,
-          assignedDate: true,
-          notes: true,
-          baker: {
+          assignments: {
             id: true,
-            name: true,
-            lastname: true,
-            role: true,
-            area: true,
           },
         },
         createdBy: {
@@ -157,6 +164,7 @@ export class FindAllOrdersUseCase {
       order: { deliveryDate: 'DESC' },
     });
 
+    attachAssignmentRollup(orders);
 
     if (limit !== undefined && offset !== undefined) {
       this.logger.log(`Found ${total} orders matching filters with pagination`);
