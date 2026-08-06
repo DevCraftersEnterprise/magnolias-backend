@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { CreateCustomerDto } from '../dto/create-customer.dto';
 import { User } from '../../users/entities/user.entity';
 import { CreateCustomerAddressDto } from '../dto/create-customer-address.dto';
+import { buildPhoneIndexFields, hashPhone } from '../../common/utils/phone-hash.util';
 
 @Injectable()
 export class CreateCustomerUseCase {
@@ -25,7 +26,7 @@ export class CreateCustomerUseCase {
     const { address, ...customerDto } = createCustomerDto;
 
     const existingCustomer = await this.customerRepository.findOne({
-      where: { phone: customerDto.phone },
+      where: { phoneHash: hashPhone(customerDto.phone) },
     });
 
     if (existingCustomer) {
@@ -41,6 +42,7 @@ export class CreateCustomerUseCase {
 
     const customer = this.customerRepository.create({
       ...customerDto,
+      ...buildPhoneIndexFields(customerDto.phone),
       createdBy: user,
       updatedBy: user,
     });

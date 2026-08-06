@@ -1,5 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { UpdateCustomerUseCase } from './update-customer.usecase';
+import { hashPhone } from '../../common/utils/phone-hash.util';
 import type { UpdateCustomerDto } from '../dto/update-customer.dto';
 import type { User } from '../../users/entities/user.entity';
 
@@ -34,6 +35,16 @@ function baseCustomer(overrides: Record<string, unknown> = {}) {
 }
 
 describe('UpdateCustomerUseCase', () => {
+    const ORIGINAL_ENV = process.env;
+
+    beforeEach(() => {
+        process.env = { ...ORIGINAL_ENV, PHONE_HASH_SECRET: 'test-secret' };
+    });
+
+    afterAll(() => {
+        process.env = ORIGINAL_ENV;
+    });
+
     it('lanza NotFoundException si el cliente no existe', async () => {
         const mocks = createMocks();
         mocks.customerRepository.findOne.mockResolvedValue(null);
@@ -56,6 +67,43 @@ describe('UpdateCustomerUseCase', () => {
                 user,
             ),
         ).rejects.toThrow(ConflictException);
+    });
+
+    it('busca el duplicado por phoneHash, no por phone en texto plano', async () => {
+        const mocks = createMocks();
+        mocks.customerRepository.findOne
+            .mockResolvedValueOnce(baseCustomer())
+            .mockResolvedValueOnce(null);
+
+        await mocks.useCase.execute(
+            'id-1',
+            { phone: '5599999999' } as UpdateCustomerDto,
+            user,
+        );
+
+        expect(mocks.customerRepository.findOne).toHaveBeenNthCalledWith(2, {
+            where: { phoneHash: hashPhone('5599999999') },
+        });
+    });
+
+    it('recalcula phoneHash/phoneLast4 cuando el teléfono cambia', async () => {
+        const mocks = createMocks();
+        mocks.customerRepository.findOne
+            .mockResolvedValueOnce(baseCustomer())
+            .mockResolvedValueOnce(null);
+
+        const result = await mocks.useCase.execute(
+            'id-1',
+            { phone: '5599999999' } as UpdateCustomerDto,
+            user,
+        );
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                phoneHash: hashPhone('5599999999'),
+                phoneLast4: '9999',
+            }),
+        );
     });
 
     it('no lanza conflicto si el "duplicado" encontrado es el mismo cliente', async () => {
