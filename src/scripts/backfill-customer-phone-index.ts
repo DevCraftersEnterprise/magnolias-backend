@@ -19,6 +19,7 @@ import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { decrypt, isEncrypted } from '../common/utils/encryption.util';
 import { buildPhoneIndexFields } from '../common/utils/phone-hash.util';
+import { buildScriptDataSource, runScript } from './utils/script-datasource.util';
 
 config();
 
@@ -119,36 +120,13 @@ export async function main(): Promise<void> {
 
   validateEnvironment();
 
-  const dataSource = new DataSource({
-    type: 'postgres',
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    ssl: true,
-    extra: {
-      ssl: { rejectUnauthorized: false },
-    },
-  });
+  const dataSource = buildScriptDataSource();
 
-  try {
-    console.log('\n🔌 Connecting to database...');
-    await dataSource.initialize();
-    console.log('✅ Connected!');
-
+  await runScript(dataSource, async () => {
     const stats = await backfillCustomerPhoneIndex(dataSource);
 
     printStats(stats);
-  } catch (error) {
-    console.error('\n❌ Fatal error:', error);
-    process.exit(1);
-  } finally {
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-      console.log('\n🔌 Database connection closed.');
-    }
-  }
+  });
 }
 
 if (require.main === module) {
