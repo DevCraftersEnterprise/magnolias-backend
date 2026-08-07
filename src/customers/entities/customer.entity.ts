@@ -43,6 +43,14 @@ export class Customer {
   })
   phone: string;
 
+  @ApiHideProperty()
+  @Column({ type: 'varchar', length: 64, nullable: true, unique: true })
+  phoneHash?: string;
+
+  @ApiHideProperty()
+  @Column({ type: 'varchar', length: 4, nullable: true })
+  phoneLast4?: string;
+
   @ApiProperty({
     description: 'Alternative phone number of the customer',
     example: '+1-555-987-6543',
