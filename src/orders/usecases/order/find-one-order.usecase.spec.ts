@@ -29,4 +29,42 @@ describe('FindOneOrderUseCase', () => {
             NotFoundException,
         );
     });
+
+    describe('transferAccount', () => {
+        it('se oculta por defecto (no se pide includeTransferAccount)', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                transferAccount: 'BBVA 1234567890',
+            });
+
+            const result = await useCase.execute('order-1');
+
+            expect(result.transferAccount).toBeUndefined();
+        });
+
+        it('se oculta explícitamente cuando includeTransferAccount es false', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                transferAccount: 'BBVA 1234567890',
+            });
+
+            const result = await useCase.execute('order-1', false);
+
+            expect(result.transferAccount).toBeUndefined();
+        });
+
+        it('se incluye cuando includeTransferAccount es true (uso exclusivo del PDF)', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                transferAccount: 'BBVA 1234567890',
+            });
+
+            const result = await useCase.execute('order-1', true);
+
+            expect(result.transferAccount).toBe('BBVA 1234567890');
+        });
+    });
 });
