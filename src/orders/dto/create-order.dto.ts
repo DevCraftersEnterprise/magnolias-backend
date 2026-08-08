@@ -236,15 +236,16 @@ export class CreateOrderDto {
   paymentMethod?: PaymentMethod;
 
   @ApiPropertyOptional({
-    description: 'Bank account for transfer payments',
+    description:
+      'Bank account/reference for transfer payments. Required when paymentMethod is TRANSFER.',
     example: 'BBVA 1234567890',
   })
   @ValidateIf((o) => o.paymentMethod === PaymentMethod.TRANSFER)
+  @IsNotEmpty({ message: 'Transfer account is required for transfer payments' })
   @IsString({ message: 'Transfer account must be a string' })
   @MaxLength(255, {
     message: 'Transfer account must not exceed 255 characters',
   })
-  @IsOptional()
   transferAccount?: string;
 
   @ApiPropertyOptional({

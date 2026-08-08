@@ -68,8 +68,11 @@ export class OrdersService {
     return await this.findAllOrdersUseCase.execute(filter, branchId);
   }
 
-  async getOrderByTerm(term: string): Promise<Order> {
-    return await this.findOneOrderUseCase.execute(term);
+  async getOrderByTerm(
+    term: string,
+    includeTransferAccount = false,
+  ): Promise<Order> {
+    return await this.findOneOrderUseCase.execute(term, includeTransferAccount);
   }
 
   async updateOrder(

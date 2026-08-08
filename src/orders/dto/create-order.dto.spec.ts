@@ -137,6 +137,42 @@ describe('CreateOrderDto', () => {
     });
   });
 
+  describe('transferAccount', () => {
+    it('es requerido cuando paymentMethod es TRANSFER', async () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({ deliveryRound: 'ROUND_1', paymentMethod: 'TRANSFER' }),
+      );
+      const errors = await validate(dto);
+
+      expect(hasErrorOn(errors, 'transferAccount')).toBe(true);
+    });
+
+    it('no se exige cuando paymentMethod es CASH/CARD/undefined', async () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({ deliveryRound: 'ROUND_1', paymentMethod: 'CASH' }),
+      );
+      const errors = await validate(dto);
+
+      expect(hasErrorOn(errors, 'transferAccount')).toBe(false);
+    });
+
+    it('pasa validación cuando paymentMethod es TRANSFER y se envía la cuenta', async () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({
+          deliveryRound: 'ROUND_1',
+          paymentMethod: 'TRANSFER',
+          transferAccount: 'BBVA 1234567890',
+        }),
+      );
+      const errors = await validate(dto);
+
+      expect(hasErrorOn(errors, 'transferAccount')).toBe(false);
+    });
+  });
+
   describe('isEvento / isEnTienda / includesFlowers', () => {
     it('acepta un pedido de domicilio válido sin ninguna bandera marcada', async () => {
       const dto = plainToInstance(

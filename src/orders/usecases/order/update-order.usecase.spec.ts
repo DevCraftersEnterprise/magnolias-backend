@@ -168,6 +168,36 @@ describe('UpdateOrderUseCase', () => {
         ).resolves.toBeDefined();
     });
 
+    describe('transferAccount', () => {
+        it('no borra transferAccount si el DTO no la incluye', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(
+                baseOrder({ transferAccount: 'BBVA 1234567890' }),
+            );
+
+            const result = await mocks.useCase.execute(
+                baseDto({ setupServiceCost: 50 }),
+                user,
+            );
+
+            expect(result.transferAccount).toBe('BBVA 1234567890');
+        });
+
+        it('actualiza transferAccount cuando el DTO trae un valor nuevo', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(
+                baseOrder({ transferAccount: 'BBVA 1234567890' }),
+            );
+
+            const result = await mocks.useCase.execute(
+                baseDto({ transferAccount: 'SANTANDER 999999' }),
+                user,
+            );
+
+            expect(result.transferAccount).toBe('SANTANDER 999999');
+        });
+    });
+
     it('actualiza la sucursal y regenera el código de pedido si branchId difiere', async () => {
         const mocks = createMocks();
         mocks.orderRepository.findOne.mockResolvedValue(baseOrder());

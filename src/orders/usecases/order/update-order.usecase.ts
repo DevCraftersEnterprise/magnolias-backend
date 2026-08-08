@@ -253,7 +253,15 @@ export class UpdateOrderUseCase {
 
     order.updatedBy = user;
 
-    Object.assign(order, { ...dto });
+    // transferAccount nunca se devuelve al front (ver FindOneOrderUseCase),
+    // así que un payload de edición que no la toque llega sin ese campo. No
+    // debe tratarse como "bórrala": solo se sobrescribe cuando el usuario
+    // realmente capturó un valor nuevo.
+    const { transferAccount: newTransferAccount, ...restDto } = dto;
+    Object.assign(order, restDto);
+    if (newTransferAccount) {
+      order.transferAccount = newTransferAccount;
+    }
 
     const updatedOrder = await this.orderRepository.save(order);
     this.logger.log(`Order with ID ${id} updated successfully`);
