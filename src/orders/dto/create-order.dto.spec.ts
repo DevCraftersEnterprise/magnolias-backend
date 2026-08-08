@@ -11,6 +11,7 @@ function baseData(overrides: Record<string, unknown> = {}) {
     customerId: 'a1b2c3d4-e5f6-4890-abcd-ef1234567890',
     branchId: 'a1b2c3d4-e5f6-4890-abcd-ef1234567891',
     deliveryDate: new Date(),
+    orderSource: 'WHATSAPP',
     details: [
       {
         productId: 'a1b2c3d4-e5f6-4890-abcd-ef1234567892',
@@ -134,6 +135,46 @@ describe('CreateOrderDto', () => {
       const errors = await validate(dto);
 
       expect(hasErrorOn(errors, 'flowers')).toBe(false);
+    });
+  });
+
+  describe('orderSource', () => {
+    it('es requerido', async () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({ deliveryRound: 'ROUND_1', orderSource: undefined }),
+      );
+      const errors = await validate(dto);
+
+      expect(hasErrorOn(errors, 'orderSource')).toBe(true);
+    });
+
+    it('rechaza un valor que no es un canal válido', async () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({ deliveryRound: 'ROUND_1', orderSource: 'TIKTOK' }),
+      );
+      const errors = await validate(dto);
+
+      expect(hasErrorOn(errors, 'orderSource')).toBe(true);
+    });
+
+    it('pasa validación con cualquiera de los canales soportados', async () => {
+      for (const source of [
+        'WHATSAPP',
+        'INSTAGRAM',
+        'FACEBOOK',
+        'PHONE_CALL',
+        'IN_PERSON',
+      ]) {
+        const dto = plainToInstance(
+          CreateOrderDto,
+          baseData({ deliveryRound: 'ROUND_1', orderSource: source }),
+        );
+        const errors = await validate(dto);
+
+        expect(hasErrorOn(errors, 'orderSource')).toBe(false);
+      }
     });
   });
 
