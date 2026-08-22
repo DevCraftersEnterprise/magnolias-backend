@@ -5,6 +5,16 @@ import { PaginationResponse } from '../../common/responses/pagination.response';
 import { CustomersFilterDto } from '../dto/customers-filter.dto';
 import { Customer } from '../entities/customer.entity';
 
+/**
+ * Cap on the in-memory prefix scan in `searchByPhone`. `phone` is encrypted
+ * (random IV per row, so no SQL-level `startsWith`/`ILIKE` is possible),
+ * so this reads every row matching the other filters, decrypts it, and
+ * filters in JS. The cap bounds worst-case cost and logs a warning when
+ * hit, so an incomplete result surfaces early instead of silently growing
+ * unbounded as the customer base grows.
+ */
+const PHONE_PREFIX_SCAN_CAP = 1000;
+
 @Injectable()
 export class FindAllCustomersUseCase {
   private readonly logger = new Logger(FindAllCustomersUseCase.name);
@@ -17,7 +27,7 @@ export class FindAllCustomersUseCase {
   async execute(
     customersFilterDto: CustomersFilterDto,
   ): Promise<PaginationResponse<Customer> | Customer[]> {
-    const { name, phone, isActive, limit, offset } = customersFilterDto;
+    const { name, phone, last4, isActive, limit, offset } = customersFilterDto;
 
     const whereConditions = this.buildWhereConditions(name, isActive);
 
@@ -25,7 +35,14 @@ export class FindAllCustomersUseCase {
     let total: number;
     let applyManualPagination = false;
 
-    if (phone) {
+    if (last4) {
+      ({ customers, total } = await this.searchByLast4(
+        last4,
+        whereConditions,
+        limit,
+        offset,
+      ));
+    } else if (phone) {
       ({ customers, total } = await this.searchByPhone(phone, whereConditions));
       applyManualPagination = true;
     } else {
@@ -67,7 +84,14 @@ export class FindAllCustomersUseCase {
       where: whereConditions,
       relations: { address: true },
       order: { updatedAt: 'DESC', createdAt: 'DESC', fullName: 'ASC' },
+      take: PHONE_PREFIX_SCAN_CAP,
     });
+
+    if (allCustomers.length >= PHONE_PREFIX_SCAN_CAP) {
+      this.logger.warn(
+        `Phone prefix scan hit its cap of ${PHONE_PREFIX_SCAN_CAP} rows; results may be incomplete.`,
+      );
+    }
 
     const filteredCustomers = allCustomers.filter(
       (customer) => customer.phone && customer.phone.startsWith(phone),
@@ -77,6 +101,25 @@ export class FindAllCustomersUseCase {
       customers: filteredCustomers,
       total: filteredCustomers.length,
     };
+  }
+
+  private async searchByLast4(
+    last4: string,
+    whereConditions: FindOptionsWhere<Customer>,
+    limit?: number,
+    offset?: number,
+  ): Promise<{ customers: Customer[]; total: number }> {
+    this.logger.debug(`Searching customers by phone last4: ${last4}`);
+
+    const [customers, total] = await this.customerRepository.findAndCount({
+      where: { ...whereConditions, phoneLast4: last4 },
+      relations: { address: true },
+      order: { updatedAt: 'DESC', createdAt: 'DESC', fullName: 'ASC' },
+      take: limit,
+      skip: offset,
+    });
+
+    return { customers, total };
   }
 
   private async searchWithoutPhone(

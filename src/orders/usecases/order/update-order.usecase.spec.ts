@@ -1,7 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UpdateOrderUseCase } from './update-order.usecase';
 import { OrderStatus } from '../../enums/order-status.enum';
-import { OrderType } from '../../../common/enums/order-type.enum';
 import type { User } from '../../../users/entities/user.entity';
 import type { UpdateOrderDto } from '../../dto/update-order.dto';
 import * as cloudinaryUtil from '../../../common/utils/upload-to-cloudinary';
@@ -24,6 +23,11 @@ function createMocks() {
     const orderDetailRepository = {
         create: jest.fn((data) => ({ ...data })),
         save: jest.fn((entities) => Promise.resolve(entities)),
+    };
+    const orderDetailTierRepository = {
+        create: jest.fn((data) => ({ ...data })),
+        save: jest.fn((entities) => Promise.resolve(entities)),
+        delete: jest.fn().mockResolvedValue({ affected: 0 }),
     };
     const orderFlowerRepository = {
         create: jest.fn((data) => ({ ...data })),
@@ -64,6 +68,7 @@ function createMocks() {
         orderRepository as never,
         orderDeliveryAddressRepository as never,
         orderDetailRepository as never,
+        orderDetailTierRepository as never,
         orderFlowerRepository as never,
         orderPaymentRepository as never,
         orderDetailReferenceImageRepository as never,
@@ -81,6 +86,7 @@ function createMocks() {
         orderRepository,
         orderDeliveryAddressRepository,
         orderDetailRepository,
+        orderDetailTierRepository,
         orderFlowerRepository,
         orderPaymentRepository,
         orderDetailReferenceImageRepository,
@@ -101,7 +107,9 @@ function baseOrder(overrides: Record<string, unknown> = {}) {
     return {
         id: 'order-1',
         status: OrderStatus.CREATED,
-        orderType: OrderType.DOMICILIO,
+        isEvento: false,
+        isEnTienda: false,
+        includesFlowers: false,
         branch: { id: 'branch-1', name: 'Navarrete' },
         customer: { id: 'customer-1', address: null },
         details: [],
@@ -158,6 +166,36 @@ describe('UpdateOrderUseCase', () => {
         await expect(
             mocks.useCase.execute(baseDto({ setupServiceCost: 50 }), user),
         ).resolves.toBeDefined();
+    });
+
+    describe('transferAccount', () => {
+        it('no borra transferAccount si el DTO no la incluye', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(
+                baseOrder({ transferAccount: 'BBVA 1234567890' }),
+            );
+
+            const result = await mocks.useCase.execute(
+                baseDto({ setupServiceCost: 50 }),
+                user,
+            );
+
+            expect(result.transferAccount).toBe('BBVA 1234567890');
+        });
+
+        it('actualiza transferAccount cuando el DTO trae un valor nuevo', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(
+                baseOrder({ transferAccount: 'BBVA 1234567890' }),
+            );
+
+            const result = await mocks.useCase.execute(
+                baseDto({ transferAccount: 'SANTANDER 999999' }),
+                user,
+            );
+
+            expect(result.transferAccount).toBe('SANTANDER 999999');
+        });
     });
 
     it('actualiza la sucursal y regenera el código de pedido si branchId difiere', async () => {
@@ -320,6 +358,132 @@ describe('UpdateOrderUseCase', () => {
         ).toBe(true);
     });
 
+    describe('manejo de pisos (pasteles de 2+ pisos)', () => {
+        it('reemplaza por completo los tiers de un detalle existente', async () => {
+            const mocks = createMocks();
+            const existingDetail = {
+                id: 'detail-1',
+                product: { id: 'product-1' },
+                quantity: 1,
+                price: 50,
+                breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
+            };
+            mocks.orderRepository.findOne.mockResolvedValue(
+                baseOrder({ details: [existingDetail] }),
+            );
+            mocks.productsService.findProductByTerm.mockImplementation((id: string) =>
+                Promise.resolve({ id }),
+            );
+
+            await mocks.useCase.execute(
+                baseDto({
+                    details: [
+                        {
+                            productId: 'product-1',
+                            price: 80,
+                            quantity: 1,
+                            tiers: [
+                                { position: 1, productSize: '30P', breadTypeId: 'bread-1' },
+                                { position: 2, productSize: '20P', colorId: 'color-1' },
+                            ],
+                        },
+                    ] as never,
+                }),
+                user,
+            );
+
+            expect(mocks.orderDetailTierRepository.delete).toHaveBeenCalledWith({
+                orderDetail: { id: 'detail-1' },
+            });
+            expect(mocks.orderDetailTierRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    position: 1,
+                    productSize: '30P',
+                    breadType: { id: 'bread-1' },
+                    orderDetail: existingDetail,
+                }),
+            );
+            expect(mocks.orderDetailTierRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    position: 2,
+                    productSize: '20P',
+                    color: { id: 'color-1' },
+                    orderDetail: existingDetail,
+                }),
+            );
+            expect(mocks.orderDetailTierRepository.save).toHaveBeenCalled();
+        });
+
+        it('borra los tiers existentes cuando el detalle deja de tener pisos', async () => {
+            const mocks = createMocks();
+            const existingDetail = {
+                id: 'detail-1',
+                product: { id: 'product-1' },
+                quantity: 1,
+                price: 50,
+                breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
+            };
+            mocks.orderRepository.findOne.mockResolvedValue(
+                baseOrder({ details: [existingDetail] }),
+            );
+            mocks.productsService.findProductByTerm.mockImplementation((id: string) =>
+                Promise.resolve({ id }),
+            );
+
+            await mocks.useCase.execute(
+                baseDto({
+                    details: [
+                        { productId: 'product-1', price: 80, quantity: 1 },
+                    ] as never,
+                }),
+                user,
+            );
+
+            expect(mocks.orderDetailTierRepository.delete).toHaveBeenCalledWith({
+                orderDetail: { id: 'detail-1' },
+            });
+            expect(mocks.orderDetailTierRepository.create).not.toHaveBeenCalled();
+            expect(mocks.orderDetailTierRepository.save).not.toHaveBeenCalled();
+        });
+
+        it('crea tiers en cascada para un detalle nuevo', async () => {
+            const mocks = createMocks();
+            mocks.orderRepository.findOne.mockResolvedValue(baseOrder({ details: [] }));
+            mocks.productsService.findProductByTerm.mockImplementation((id: string) =>
+                Promise.resolve({ id }),
+            );
+
+            await mocks.useCase.execute(
+                baseDto({
+                    details: [
+                        {
+                            productId: 'product-new',
+                            price: 100,
+                            quantity: 1,
+                            tiers: [
+                                { position: 1, productSize: '30P' },
+                                { position: 2, productSize: '20P' },
+                            ],
+                        },
+                    ] as never,
+                }),
+                user,
+            );
+
+            expect(mocks.orderDetailRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    tiers: [
+                        expect.objectContaining({ position: 1, productSize: '30P' }),
+                        expect.objectContaining({ position: 2, productSize: '20P' }),
+                    ],
+                }),
+            );
+            // El reemplazo explícito de tiers no debe correr para el detalle nuevo
+            // (el cascade de OrderDetail ya lo inserta al guardar).
+            expect(mocks.orderDetailTierRepository.delete).not.toHaveBeenCalled();
+        });
+    });
+
     it('handleOrderDetails: falla por completo si un producto no existe (findProductByTerm siempre lanza)', async () => {
         const mocks = createMocks();
         mocks.orderRepository.findOne.mockResolvedValue(baseOrder());
@@ -337,10 +501,10 @@ describe('UpdateOrderUseCase', () => {
         ).rejects.toThrow('Product with term no-existe not found');
     });
 
-    it('handleOrderFlowers: solo se procesa si el pedido es de tipo FLOR', async () => {
+    it('handleOrderFlowers: solo se procesa si el pedido tiene includesFlowers', async () => {
         const mocks = createMocks();
         mocks.orderRepository.findOne.mockResolvedValue(
-            baseOrder({ orderType: OrderType.DOMICILIO }),
+            baseOrder({ includesFlowers: false }),
         );
 
         await mocks.useCase.execute(

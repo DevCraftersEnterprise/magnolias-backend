@@ -1,11 +1,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AddressesService } from '../../../addresses/addresses.service';
 import { BranchesService } from '../../../branches/branches.service';
-import { Branch } from '../../../branches/entities/branch.entity';
-import { OrderType } from '../../../common/enums/order-type.enum';
 import { uploadPictureToCloudinary } from '../../../common/utils/upload-to-cloudinary';
 import { CustomersService } from '../../../customers/customers.service';
 import { Customer } from '../../../customers/entities/customer.entity';
@@ -27,6 +25,8 @@ import { OrderEmployeeAction } from '../../entities/order-employee-action.entity
 import { OrderFlower } from '../../entities/order-flower.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
+import { buildOrderDetailData } from '../../utils/build-order-detail-data.util';
+import { generateOrderCode } from '../../utils/generate-order-code.util';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
 import { OrderPayment } from '../../entities/order-payment.entity';
@@ -69,7 +69,9 @@ export class CreateOrderUseCase {
     const {
       customerId,
       branchId,
-      orderType,
+      isEvento,
+      isEnTienda,
+      includesFlowers,
       details,
       deliveryAddress,
       flowers,
@@ -102,11 +104,17 @@ export class CreateOrderUseCase {
 
     const customer = await this.customerService.findOne(customerId);
     const branch = await this.branchesService.findBranchByTerm(branchId);
-    const orderCode = await this.generateOrderCode(orderType, branch);
+    const orderCode = await generateOrderCode(
+      this.orderRepository,
+      { isEvento: !!isEvento, isEnTienda: !!isEnTienda },
+      branch,
+    );
 
     const order = this.orderRepository.create({
       ...orderDto,
-      orderType,
+      isEvento: !!isEvento,
+      isEnTienda: !!isEnTienda,
+      includesFlowers: !!includesFlowers,
       orderCode,
       isCustomerPickup,
       customer,
@@ -127,14 +135,8 @@ export class CreateOrderUseCase {
       await this.orderEmployeeActionRepository.save(orderEmployeeAction);
     }
 
-    if (
-      !isCustomerPickup &&
-      deliveryAddress &&
-      (orderType === OrderType.DOMICILIO ||
-        orderType === OrderType.FLOR ||
-        orderType === OrderType.EVENTO)
-    ) {
-      this.logger.log(`Handling delivery address for ${orderType} order`);
+    if (!isCustomerPickup && deliveryAddress && !isEnTienda) {
+      this.logger.log('Handling delivery address for order');
       await this.handleDeliveryAddress(deliveryAddress, order, user, customer);
     }
 
@@ -153,43 +155,6 @@ export class CreateOrderUseCase {
     );
 
     return savedOrder;
-  }
-
-  private async generateOrderCode(
-    orderType: OrderType,
-    branch: Branch,
-  ): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = orderType;
-
-    const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
-    const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
-
-    const lastOrder = await this.orderRepository.findOne({
-      where: {
-        orderType,
-        branch: { id: branch.id },
-        createdAt: Between(startOfYear, endOfYear),
-      },
-      order: { createdAt: 'DESC' },
-      select: {
-        id: true,
-        orderCode: true,
-        createdAt: true,
-      },
-    });
-
-    let sequence = 1;
-
-    if (lastOrder?.orderCode) {
-      const parts = lastOrder.orderCode.split('-');
-      if (parts.length === 4) {
-        const lastSequence = parseInt(parts[3], 10);
-        if (!Number.isNaN(lastSequence)) sequence = lastSequence + 1;
-      }
-    }
-
-    return `${prefix.slice(0, 3)}-${branch.name.toUpperCase().replace(' ', '-')}-${year}-${sequence.toString().padStart(4, '0')}`;
   }
 
   private async handleDeliveryAddress(
@@ -376,22 +341,15 @@ export class CreateOrderUseCase {
 
       const hasDiscount = (detailDto.discountPercent ?? 0) > 0;
 
-      const orderDetail = this.orderDetailRepository.create({
-        ...detailDto,
-        breadType: { id: detailDto.breadTypeId },
-        filling: { id: detailDto.fillingId },
-        frosting: { id: detailDto.frostingId },
-        style: { id: detailDto.styleId },
-        color: { id: detailDto.colorId },
-        order,
-        product,
-        createdBy: user,
-        updatedBy: user,
-        ...(hasDiscount && {
-          discountAuthorizedBy: { id: discountAuthorizedById } as User,
-          discountAuthorizedAt: new Date(),
-        }),
-      });
+      const orderDetail = this.orderDetailRepository.create(
+        buildOrderDetailData(
+          detailDto,
+          order,
+          product,
+          user,
+          discountAuthorizedById,
+        ),
+      );
 
       orderDatails.push(orderDetail);
 
@@ -445,7 +403,7 @@ export class CreateOrderUseCase {
 
     order.dessertsTotal = totalAmount;
 
-    if (order.orderType !== OrderType.VITRINA && order.setupServiceCost) {
+    if (!order.isEnTienda && order.setupServiceCost) {
       totalAmount += parseCurrency(order.setupServiceCost);
     }
 

@@ -11,6 +11,7 @@ import { UpdateCustomerAddressDto } from '../dto/update-customer-address.dto';
 import { UpdateCustomerDto } from '../dto/update-customer.dto';
 import { CustomerAddress } from '../entities/customer-address.entity';
 import { Customer } from '../entities/customer.entity';
+import { buildPhoneIndexFields, hashPhone } from '../../common/utils/phone-hash.util';
 
 @Injectable()
 export class UpdateCustomerUseCase {
@@ -39,9 +40,13 @@ export class UpdateCustomerUseCase {
       throw new NotFoundException(`Customer with ID ${id} not found`);
     }
 
+    let phoneIndexFields: { phoneHash: string; phoneLast4: string } | undefined;
+
     if (customer && customerDto.phone && customer.phone !== customerDto.phone) {
+      const newPhoneHash = hashPhone(customerDto.phone);
+
       const duplicatedCustomer = await this.customerRepository.findOne({
-        where: { phone: customerDto.phone },
+        where: { phoneHash: newPhoneHash },
       });
 
       if (duplicatedCustomer && duplicatedCustomer.id !== id) {
@@ -52,11 +57,15 @@ export class UpdateCustomerUseCase {
           `Customer with this phone ${customerDto.phone} already exists`,
         );
       }
+
+      phoneIndexFields = buildPhoneIndexFields(customerDto.phone);
     }
 
     this.logger.log(`Updating customer with ID: ${id}`);
 
-    Object.assign(customer, customerDto, { updatedBy: user });
+    Object.assign(customer, customerDto, phoneIndexFields, {
+      updatedBy: user,
+    });
 
     const updatedCustomer = await this.customerRepository.save(customer);
 

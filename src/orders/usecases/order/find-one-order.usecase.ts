@@ -12,7 +12,17 @@ export class FindOneOrderUseCase {
     private readonly orderRepository: Repository<Order>,
   ) { }
 
-  async execute(term: string): Promise<Order> {
+  /**
+   * @param includeTransferAccount - `transferAccount` holds a bank
+   * account/reference number and must stay out of the normal admin UI
+   * (list/detail screens) — it's only meant to be printed on the PDF
+   * report. Defaults to `false`; only the PDF-generation path
+   * (`FormatsService`) should pass `true`.
+   */
+  async execute(
+    term: string,
+    includeTransferAccount = false,
+  ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { id: term },
       relations: {
@@ -30,15 +40,21 @@ export class FindOneOrderUseCase {
           color: true,
           referenceImages: true,
           discountAuthorizedBy: true,
+          tiers: {
+            breadType: true,
+            filling: true,
+            frosting: true,
+            color: true,
+          },
+          assignments: {
+            baker: true,
+          },
         },
         orderFlowers: {
           flower: true,
           color: true,
         },
         payments: true,
-        assignments: {
-          baker: true,
-        },
         createdBy: true,
         updatedBy: true,
       },
@@ -52,6 +68,10 @@ export class FindOneOrderUseCase {
     if (!order) {
       this.logger.warn(`Order with ID ${term} not found`);
       throw new NotFoundException(`Order with ID ${term} not found`);
+    }
+
+    if (!includeTransferAccount) {
+      order.transferAccount = undefined;
     }
 
     return order;

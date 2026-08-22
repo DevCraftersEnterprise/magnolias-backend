@@ -1,5 +1,6 @@
 import { ConflictException } from '@nestjs/common';
 import { CreateCustomerUseCase } from './create-customer.usecase';
+import { hashPhone } from '../../common/utils/phone-hash.util';
 import type { CreateCustomerDto } from '../dto/create-customer.dto';
 import type { User } from '../../users/entities/user.entity';
 
@@ -33,6 +34,16 @@ function baseDto(overrides: Partial<CreateCustomerDto> = {}): CreateCustomerDto 
 }
 
 describe('CreateCustomerUseCase', () => {
+    const ORIGINAL_ENV = process.env;
+
+    beforeEach(() => {
+        process.env = { ...ORIGINAL_ENV, PHONE_HASH_SECRET: 'test-secret' };
+    });
+
+    afterAll(() => {
+        process.env = ORIGINAL_ENV;
+    });
+
     it('lanza ConflictException si ya existe un cliente con el mismo teléfono', async () => {
         const mocks = createMocks();
         mocks.customerRepository.findOne.mockResolvedValue({ id: 'existing-1' });
@@ -43,7 +54,18 @@ describe('CreateCustomerUseCase', () => {
         expect(mocks.customerRepository.create).not.toHaveBeenCalled();
     });
 
-    it('crea el cliente con createdBy/updatedBy y no crea dirección si el DTO no la trae', async () => {
+    it('busca el duplicado por phoneHash, no por phone en texto plano', async () => {
+        const mocks = createMocks();
+        mocks.customerRepository.findOne.mockResolvedValue(null);
+
+        await mocks.useCase.execute(baseDto(), user);
+
+        expect(mocks.customerRepository.findOne).toHaveBeenCalledWith({
+            where: { phoneHash: hashPhone('5512345678') },
+        });
+    });
+
+    it('crea el cliente con createdBy/updatedBy, phoneHash/phoneLast4 y no crea dirección si el DTO no la trae', async () => {
         const mocks = createMocks();
         mocks.customerRepository.findOne.mockResolvedValue(null);
 
@@ -52,6 +74,8 @@ describe('CreateCustomerUseCase', () => {
         expect(mocks.customerRepository.create).toHaveBeenCalledWith(
             expect.objectContaining({
                 fullName: 'Juan Pérez',
+                phoneHash: hashPhone('5512345678'),
+                phoneLast4: '5678',
                 createdBy: user,
                 updatedBy: user,
             }),

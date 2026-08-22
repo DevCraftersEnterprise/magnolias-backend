@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { FindOneCustomerUseCase } from './find-one-customer.usecase';
+import { hashPhone } from '../../common/utils/phone-hash.util';
 
 const validUuid = '11111111-1111-1111-8111-111111111111';
 
@@ -14,6 +15,16 @@ function createMocks() {
 }
 
 describe('FindOneCustomerUseCase', () => {
+    const ORIGINAL_ENV = process.env;
+
+    beforeEach(() => {
+        process.env = { ...ORIGINAL_ENV, PHONE_HASH_SECRET: 'test-secret' };
+    });
+
+    afterAll(() => {
+        process.env = ORIGINAL_ENV;
+    });
+
     it('busca por id cuando el término es un UUID', async () => {
         const mocks = createMocks();
         mocks.customerRepository.findOne.mockResolvedValue({ id: validUuid });
@@ -25,14 +36,16 @@ describe('FindOneCustomerUseCase', () => {
         );
     });
 
-    it('busca por phone cuando el término no es un UUID', async () => {
+    it('busca por phoneHash cuando el término no es un UUID', async () => {
         const mocks = createMocks();
         mocks.customerRepository.findOne.mockResolvedValue({ id: 'c1' });
 
         await mocks.useCase.execute('5512345678');
 
         expect(mocks.customerRepository.findOne).toHaveBeenCalledWith(
-            expect.objectContaining({ where: { phone: '5512345678' } }),
+            expect.objectContaining({
+                where: { phoneHash: hashPhone('5512345678') },
+            }),
         );
     });
 

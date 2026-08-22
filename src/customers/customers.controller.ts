@@ -94,6 +94,12 @@ export class CustomersController {
     description: 'Filter customers by phone',
   })
   @ApiQuery({
+    name: 'last4',
+    required: false,
+    type: String,
+    description: 'Filter customers by the last 4 digits of their phone number',
+  })
+  @ApiQuery({
     name: 'isActive',
     required: false,
     type: Boolean,

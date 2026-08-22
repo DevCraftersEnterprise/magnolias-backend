@@ -12,15 +12,17 @@ import { UsersModule } from '../users/users.module';
 import { OrderAssignment } from './entities/order-assignment.entity';
 import { OrderCancellation } from './entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
+import { OrderDetailAssignment } from './entities/order-detail-assignment.entity';
 import { OrderDetail } from './entities/order-detail.entity';
+import { OrderDetailTier } from './entities/order-detail-tier.entity';
 import { OrderFlower } from './entities/order-flower.entity';
 import { OrderPayment } from './entities/order-payment.entity';
 import { Order } from './entities/order.entity';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
-import { AssignOrderUseCase } from './usecases/order-assignment/assign-order.usecase';
-import { GetAssignmentsUseCase } from './usecases/order-assignment/get-assignments.usecase';
-import { UpdateAssignOrderUseCase } from './usecases/order-assignment/update-assign-order.usecase';
+import { AssignOrderDetailUseCase } from './usecases/order-detail-assignment/assign-order-detail.usecase';
+import { GetBakerDetailAssignmentsUseCase } from './usecases/order-detail-assignment/get-baker-detail-assignments.usecase';
+import { UpdateProductionStatusUseCase } from './usecases/order-detail-assignment/update-production-status.usecase';
 import { ChangeOrderStatusUseCase } from './usecases/order/change-order-status.usecase';
 import { CreateOrderUseCase } from './usecases/order/create-order.usecase';
 import { FindAllOrdersUseCase } from './usecases/order/find-all-orders.usecase';
@@ -46,15 +48,17 @@ import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-orde
     UpdateOrderUseCase,
     ChangeOrderStatusUseCase,
     GetOrderStatsUseCase,
-    AssignOrderUseCase,
-    GetAssignmentsUseCase,
-    UpdateAssignOrderUseCase,
+    AssignOrderDetailUseCase,
+    GetBakerDetailAssignmentsUseCase,
+    UpdateProductionStatusUseCase,
     HideOrderDetailReferenceImageUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([
       Order,
       OrderDetail,
+      OrderDetailTier,
+      OrderDetailAssignment,
       OrderDetailReferenceImage,
       OrderCancellation,
       OrderDeliveryAddress,

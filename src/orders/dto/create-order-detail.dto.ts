@@ -1,5 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -12,10 +15,12 @@ import {
   MaxLength,
   Min,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { PipingLocation } from '../../common/enums/piping-location.enum';
 import { ProductSize } from '../../common/enums/product-size.enum';
 import { WritingLocation } from '../../common/enums/writing-location.enum';
+import { CreateOrderDetailTierDto } from './create-order-detail-tier.dto';
 
 export class CreateOrderDetailDto {
   @ApiProperty({
@@ -63,7 +68,6 @@ export class CreateOrderDetailDto {
   @IsNotEmpty({ message: 'Custom size is required when size is CUSTOM' })
   @IsString({ message: 'Custom size must be a string' })
   @MaxLength(100)
-  @IsOptional()
   customSize?: string;
 
   @ApiProperty({
@@ -126,7 +130,6 @@ export class CreateOrderDetailDto {
   @IsNotEmpty({ message: 'Writing text is required when hasWriting is true' })
   @IsString({ message: 'Writing text must be a string' })
   @MaxLength(255, { message: 'Writing text must not exceed 255 characters' })
-  @IsOptional()
   writingText?: string;
 
   @ApiProperty({
@@ -178,4 +181,17 @@ export class CreateOrderDetailDto {
   @Min(0, { message: 'Discount percent must be at least 0' })
   @Max(100, { message: 'Discount percent must not exceed 100' })
   discountPercent?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Tiers for a multi-tier cake (at least 2). When provided, the top-level ' +
+      'productSize/customSize/breadTypeId/fillingId/frostingId/colorId are ignored.',
+    type: [CreateOrderDetailTierDto],
+  })
+  @ValidateIf((o) => o.tiers !== undefined)
+  @IsArray({ message: 'Tiers must be an array' })
+  @ArrayMinSize(2, { message: 'A multi-tier cake must have at least 2 tiers' })
+  @ValidateNested({ each: true })
+  @Type(() => CreateOrderDetailTierDto)
+  tiers?: CreateOrderDetailTierDto[];
 }

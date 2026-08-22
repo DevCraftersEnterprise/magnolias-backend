@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { Customer } from '../entities/customer.entity';
+import { hashPhone } from '../../common/utils/phone-hash.util';
 
 @Injectable()
 export class FindOneCustomerUseCase {
@@ -17,7 +18,7 @@ export class FindOneCustomerUseCase {
     const whereConditions: FindOptionsWhere<Customer> = {};
 
     if (isUUID(term)) whereConditions.id = term;
-    else whereConditions.phone = term;
+    else whereConditions.phoneHash = hashPhone(term);
 
     const customer = await this.customerRepository.findOne({
       where: whereConditions,

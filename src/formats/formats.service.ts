@@ -16,7 +16,9 @@ export class FormatsService {
   ) { }
 
   async domicilio(orderId: string): Promise<TCreatedPdf> {
-    const order = await this.ordersService.getOrderByTerm(orderId);
+    // El PDF es el único lugar donde se muestra la cuenta/referencia de
+    // transferencia; el resto de la app la recibe oculta.
+    const order = await this.ordersService.getOrderByTerm(orderId, true);
     await this.processOrderImages(order);
 
     const docDefinition = getDomicilioReport(order);
@@ -27,7 +29,9 @@ export class FormatsService {
   }
 
   async evento(orderId: string): Promise<TCreatedPdf> {
-    const order = await this.ordersService.getOrderByTerm(orderId);
+    // El PDF es el único lugar donde se muestra la cuenta/referencia de
+    // transferencia; el resto de la app la recibe oculta.
+    const order = await this.ordersService.getOrderByTerm(orderId, true);
     await this.processOrderImages(order);
 
     const docDefinition = getEventoReport(order);
@@ -38,7 +42,9 @@ export class FormatsService {
   }
 
   async personalizado(orderId: string): Promise<TCreatedPdf> {
-    const order = await this.ordersService.getOrderByTerm(orderId);
+    // El PDF es el único lugar donde se muestra la cuenta/referencia de
+    // transferencia; el resto de la app la recibe oculta.
+    const order = await this.ordersService.getOrderByTerm(orderId, true);
     await this.processOrderImages(order);
 
     const docDefinition = getDomicilioReport(order);
@@ -49,7 +55,9 @@ export class FormatsService {
   }
 
   async vitrina(orderId: string): Promise<TCreatedPdf> {
-    const order = await this.ordersService.getOrderByTerm(orderId);
+    // El PDF es el único lugar donde se muestra la cuenta/referencia de
+    // transferencia; el resto de la app la recibe oculta.
+    const order = await this.ordersService.getOrderByTerm(orderId, true);
     await this.processOrderImages(order);
 
     const docDefinition = getVitrinaReport(order);

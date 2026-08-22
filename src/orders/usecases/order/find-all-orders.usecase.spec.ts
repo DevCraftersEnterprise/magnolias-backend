@@ -93,4 +93,54 @@ describe('FindAllOrdersUseCase', () => {
         const whereArg = findAndCountMock.mock.calls[0][0].where;
         expect(whereArg.deliveryDate).toBeUndefined();
     });
+
+    describe('resumen de asignación por línea', () => {
+        it('calcula assignedBakersCount/totalLinesCount por pedido', async () => {
+            findAndCountMock.mockResolvedValue([
+                [
+                    {
+                        id: 'order-1',
+                        details: [
+                            { id: 'd1', assignments: [{ id: 'a1' }] },
+                            { id: 'd2', assignments: [] },
+                            { id: 'd3', assignments: [{ id: 'a2' }] },
+                        ],
+                    },
+                    { id: 'order-2', details: [] },
+                ],
+                2,
+            ]);
+
+            const filter = {} as OrdersFilterDto;
+            const result = (await useCase.execute(filter, branchId)) as never as {
+                id: string;
+                assignedBakersCount: number;
+                totalLinesCount: number;
+            }[];
+
+            expect(result[0]).toMatchObject({
+                assignedBakersCount: 2,
+                totalLinesCount: 3,
+            });
+            expect(result[1]).toMatchObject({
+                assignedBakersCount: 0,
+                totalLinesCount: 0,
+            });
+        });
+
+        it('no falla si un pedido no trae details (undefined)', async () => {
+            findAndCountMock.mockResolvedValue([[{ id: 'order-1' }], 1]);
+
+            const filter = {} as OrdersFilterDto;
+            const result = (await useCase.execute(filter, branchId)) as never as {
+                assignedBakersCount: number;
+                totalLinesCount: number;
+            }[];
+
+            expect(result[0]).toMatchObject({
+                assignedBakersCount: 0,
+                totalLinesCount: 0,
+            });
+        });
+    });
 });

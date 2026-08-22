@@ -13,7 +13,6 @@ import {
 import { Branch } from '../../branches/entities/branch.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { EventServiceType } from '../../common/enums/event-service-type.enum';
-import { OrderType } from '../../common/enums/order-type.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 import { Customer } from '../../customers/entities/customer.entity';
@@ -35,11 +34,28 @@ export class Order {
   id: string;
 
   @ApiProperty({
-    description: 'Type of the order',
-    example: OrderType.DOMICILIO,
+    description: 'Whether the order is for an event',
+    example: false,
+    default: false,
   })
-  @Column({ type: 'enum', enum: OrderType, nullable: false })
-  orderType: OrderType;
+  @Column({ type: 'boolean', default: false })
+  isEvento: boolean;
+
+  @ApiProperty({
+    description: 'Whether the order is picked up in-store',
+    example: false,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  isEnTienda: boolean;
+
+  @ApiProperty({
+    description: 'Whether the order includes flowers',
+    example: false,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  includesFlowers: boolean;
 
   @ApiProperty({
     description: 'Order code generated based on type and sequence',
@@ -320,4 +336,21 @@ export class Order {
   @ApiHideProperty()
   @OneToMany(() => OrderAssignment, (assignment) => assignment.order)
   assignments: OrderAssignment[];
+
+  // Campos calculados (no persistidos): resumen liviano de asignación de
+  // reposteros por línea, usado por el listado paginado para no pagar el
+  // costo de un eager-load completo de details.assignments.baker por pedido.
+  @ApiProperty({
+    description: 'Number of order details with a baker assigned',
+    example: 2,
+    required: false,
+  })
+  assignedBakersCount?: number;
+
+  @ApiProperty({
+    description: 'Total number of order details (product lines)',
+    example: 3,
+    required: false,
+  })
+  totalLinesCount?: number;
 }

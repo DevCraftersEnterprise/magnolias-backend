@@ -19,18 +19,19 @@
 
 ## 📋 Descripción
 
-Magnolias Backend es una aplicación servidor moderna y escalable desarrollada con NestJS, diseñada para proporcionar una base sólida para aplicaciones empresariales. Implementa las mejores prácticas de desarrollo, seguridad y arquitectura modular.
+Magnolias Backend es la API que sostiene el panel de administración y la tienda pública de Pastelería Magnolias. Gestiona pedidos, productos, clientes, sucursales, usuarios y catálogos, con arquitectura Controller → Service → UseCase (Clean/Use-Case) sobre NestJS 11, TypeORM 0.3 y PostgreSQL. Se despliega en Render.com (ambientes `dev`/`staging`/`prod`, cada uno con su propia base de datos).
 
 ### ✨ Características Principales
 
-- 🔐 Autenticación y autorización con JWT
-- 👥 Control de acceso basado en roles
-- 🗄️ Integración con TypeORM y PostgreSQL
-- 🛡️ Rate limiting y protección contra ataques
-- 📦 Arquitectura modular y escalable
-- 🔄 Migraciones de base de datos automatizadas
-- ✅ Validación de datos con class-validator
-- 🚀 Optimizado para producción
+- 🔐 Autenticación JWT (access/refresh) y sesiones cortas con PIN individual por empleado de sucursal
+- 👥 Control de acceso basado en roles (`SUPER`, `ADMIN`, `EMPLOYEE`, `BAKER`)
+- 🗄️ TypeORM + PostgreSQL, con migraciones manuales (`synchronize: false`)
+- 🔒 Cifrado AES-256-GCM para datos sensibles (teléfonos, cuenta de transferencia) + índice HMAC determinístico para búsqueda/unicidad
+- 🍰 Módulo de pedidos con pisos de pastel independientes, asignación de repostero por línea de producto, estado de producción derivado automáticamente, descuentos por producto con autorización, e imágenes de referencia
+- 🛡️ Rate limiting (throttling) por endpoint, incluyendo intentos de PIN
+- 📦 Arquitectura modular y escalable (un módulo por dominio, casos de uso independientes y testeados)
+- 🧪 Cobertura de pruebas unitarias con Jest, gate de calidad con SonarQube Cloud en cada PR
+- 🚀 CI/CD: push a `dev`/`staging`/`prod` dispara build + migraciones en Render
 
 ## 📑 Tabla de Contenidos
 
@@ -60,36 +61,50 @@ Completa las variables de entorno requeridas (consulta la sección [Variables de
 
 ## 🔧 Variables de Entorno
 
-Crea un archivo `.env` en el directorio raíz con las siguientes variables:
+Copia `.env.template` a `.env` y completa los valores (ver también la sección [Configuración del Proyecto](#configuración-del-proyecto)):
 
 ```env
-# Configuración del Servidor
 PORT=3000
 NODE_ENV=development
 
-# Configuración JWT
+# JWT
 JWT_SECRET=tu-clave-secreta-aqui
 JWT_EXPIRES_IN=8h
 JWT_ACCESS_EXPIRY=1h
 JWT_REFRESH_EXPIRY=7d
+DISCOUNT_AUTH_TOKEN_EXPIRY=10m      # Token corto emitido al autorizar un descuento por producto
+EMPLOYEE_ACTION_TOKEN_EXPIRY=5m     # Token corto emitido al verificar el PIN de un empleado de sucursal
 
-# Configuración de Base de Datos
+# BASE DE DATOS
 DB_HOST=tu-host-de-base-de-datos
 DB_PORT=5432
 DB_USERNAME=tu-usuario
 DB_PASSWORD=tu-contraseña
 DB_NAME=nombre-de-tu-base-de-datos
 
-# Configuración de Cloudinary (Opcional)
+# CLOUDINARY (fotos de producto e imágenes de referencia de pedidos)
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 
-# Limitación de Peticiones
+# RATE LIMITING
 THROTTLE_TTL=60
 THROTTLE_LIMIT=10
 THROTTLE_LOGIN_LIMIT=5
+THROTTLE_PIN_LIMIT=5                # Intentos de PIN de empleado antes de bloquear temporalmente
+
+# ENCRYPTION — cifrado reversible (AES-256-GCM) de phone/alternativePhone/transferAccount
+ENCRYPTION_KEY=tu-clave-generada-aqui
+
+# PHONE HASH — hash determinístico (HMAC-SHA256) para búsqueda/unicidad exacta de teléfono,
+# no reversible, distinto de ENCRYPTION_KEY
+PHONE_HASH_SECRET=tu-secreto-generado-aqui
+
+# Orígenes permitidos para CORS (separados por coma)
+CORS_ORIGIN=http://localhost:3000,http://localhost:3001
 ```
+
+`ENCRYPTION_KEY` y `PHONE_HASH_SECRET` se generan con `npm run encryption:generate-key` (32 bytes aleatorios en hex). Cada ambiente (`dev`/`staging`/`prod`) tiene su propio valor — nunca reutilices el mismo secreto entre ambientes ni lo subas al repositorio.
 
 ## ⚡ Comandos Clave
 
@@ -142,9 +157,28 @@ npm run migration:run
 
 # Revertir la última migración
 npm run migration:revert
+```
 
-# Mostrar estado de migraciones
-npm run migration:show
+> ⚠️ En este proyecto, la mayoría de las migraciones se escriben a mano (SQL puro en `up`/`down`) en lugar de generarse con `migration:generate`: el tipo `money` de Postgres introduce drift cosmético que ese comando arrastra junto con el cambio real que se quiere aplicar. Revisa migraciones recientes en `src/database/migrations/` como referencia de estilo antes de escribir una nueva.
+
+### Scripts de Mantenimiento
+
+Scripts independientes (no forman parte del arranque normal de la app) para tareas puntuales sobre la base de datos:
+
+```bash
+# Generar un secreto aleatorio de 32 bytes (sirve tanto para ENCRYPTION_KEY como para PHONE_HASH_SECRET)
+npm run encryption:generate-key
+
+# Rotar ENCRYPTION_KEY: re-cifra phone/alternativePhone/transferAccount con una clave nueva
+# Requiere OLD_ENCRYPTION_KEY y NEW_ENCRYPTION_KEY en el entorno
+npm run encryption:rotate-key
+
+# Poblar phoneHash/phoneLast4 en clientes existentes tras correr la migración
+# AddCustomerPhoneIndexFields — correr una vez por ambiente, después de esa migración
+npm run customers:backfill-phone-index
+
+# Cargar datos semilla (catálogos base, etc.)
+npm run seed:run
 ```
 
 ### Pruebas
@@ -178,52 +212,52 @@ npm run build
 
 ## 📁 Estructura del Proyecto
 
+Cada módulo de dominio sigue el mismo patrón: `*.controller.ts` (rutas, delgado) → `*.service.ts` (delega) → `usecases/*.usecase.ts` (una clase por operación, con su `.spec.ts`), más `dto/`, `entities/` y a veces `enums/`/`utils/`/`responses/` propios.
+
 ```
 src/
 ├── app.module.ts               # Módulo raíz de la aplicación
 ├── main.ts                     # Punto de entrada de la aplicación
-├── auth/                       # Módulo de autenticación
-│   ├── decorators/             # Decoradores personalizados (Auth, RoleProtected, etc.)
-│   ├── dto/                    # DTOs de autenticación
+├── addresses/                  # Direcciones de clientes (calle, colonia, referencias)
+├── auth/                       # Login, refresh token, PIN de empleado, autorización de descuento
+│   ├── decorators/             # Auth, CurrentUser, RoleProtected, etc.
 │   ├── guards/                 # Guards (JWT, roles, throttling)
-│   ├── responses/              # Respuestas de autenticación
 │   └── strategies/             # Estrategias de Passport
-├── branches/                   # Módulo de sucursales (branches)
-│   ├── dto/                    # DTOs de sucursales
-│   ├── entities/               # Entidad de sucursal
-│   ├── branches.controller.ts  # Controlador de sucursales
-│   ├── branches.module.ts      # Módulo de sucursales
-│   └── branches.service.ts     # Servicio de sucursales
-├── common/                     # Módulo compartido
-│   ├── decorators/             # Decoradores comunes (files)
+├── branch-employees/           # Empleados de sucursal (nombre/apellido + PIN, sin login propio)
+├── branches/                   # Sucursales (punto de venta/producción, teléfonos)
+├── bread-types/                # Catálogo: tipo de pan (incluye el antiguo catálogo "Sabor", fusionado)
+├── categories/                 # Categorías de producto
+├── colors/                     # Catálogo de colores (nombre + hex)
+├── common/                     # Código compartido entre módulos
+│   ├── decorators/             # Decoradores comunes (archivos, etc.)
 │   ├── dto/                    # DTOs comunes (paginación)
-│   ├── enums/                  # Enums globales (área pastelero, etc.)
-│   ├── interfaces/             # Interfaces globales
-│   ├── pipes/                  # Pipes globales
-|   ├── responses/              # Respuestas comunes
-│   └── utils/                  # Utilidades compartidas
-├── config/                     # Configuración de servicios de terceros
+│   ├── transformers/           # EncryptedTransformer (cifrado transparente de columnas TypeORM)
+│   ├── usecases/               # Base genérica para catálogos simples (BaseCatalogEntity)
+│   └── utils/                  # encryption.util, phone-hash.util, etc.
+├── config/                     # Configuración de servicios de terceros (Cloudinary, etc.)
 ├── custom-jwt/                 # Configuración personalizada de JWT
 ├── custom-passport/            # Configuración personalizada de Passport
-├── custom-throttler/           # Configuración personalizada de Throttler
+├── custom-throttler/           # Configuración personalizada de Throttler (incluye guard de PIN)
+├── customers/                  # Clientes (teléfono cifrado + hash/last4 para búsqueda), direcciones
 ├── database/                   # Configuración de base de datos
-│   ├── migrations/             # Migraciones de TypeORM
+│   ├── migrations/             # Migraciones de TypeORM (mayormente SQL escrito a mano)
+│   ├── seeds/                  # Datos semilla
 │   ├── data-source.ts          # Fuente de datos principal
 │   └── database.module.ts      # Módulo de base de datos
-├── products/                   # Módulo de productos
-│   ├── dto/                    # DTOs de productos
-│   ├── entities/               # Entidad de producto
-│   ├── products.controller.ts  # Controlador de productos
-│   ├── products.module.ts      # Módulo de productos
-│   └── products.service.ts     # Servicio de productos
-├── users/                      # Módulo de usuarios
-│   ├── dto/                    # DTOs de usuario
-│   ├── entities/               # Entidad de usuario
-│   ├── enums/                  # Enums de usuario (roles, etc.)
-│   ├── utils/                  # Utilidades de usuario
-│   ├── users.controller.ts     # Controlador de usuarios
-│   ├── users.module.ts         # Módulo de usuarios
-│   └── users.service.ts        # Servicio de usuarios
+├── fillings/                   # Catálogo: rellenos
+├── flowers/                    # Catálogo: flores (pedidos con "incluye flores")
+├── formats/                    # Generación de reportes/PDF por tipo de pedido
+├── frostings/                  # Catálogo: cubiertas
+├── orders/                     # Pedidos: líneas de producto, pisos, asignación por línea,
+│   │                           # estado de producción, descuentos, imágenes de referencia, pagos
+│   └── usecases/
+│       ├── order/                        # Casos de uso a nivel pedido (crear, editar, stats, etc.)
+│       └── order-detail-assignment/      # Asignación de repostero y avance de producción por línea
+├── printer/                    # Utilidades de impresión de reportes
+├── products/                   # Productos (categoría, fotos, favorito, visibilidad pública)
+├── scripts/                    # Scripts de mantenimiento de uso único (ver comandos arriba)
+├── styles/                     # Catálogo: forma
+└── users/                      # Usuarios del sistema (login, roles, sucursales)
 ```
 
 ## 🗄️ Migraciones de Base de Datos
@@ -492,37 +526,21 @@ git push origin v1.0.1
 
 ## 🚀 Despliegue
 
-Cuando estés listo para desplegar tu aplicación NestJS en producción, hay algunos pasos clave que puedes seguir para asegurarte de que se ejecute de la manera más eficiente posible. Consulta la [documentación de despliegue](https://docs.nestjs.com/deployment) para más información.
+El backend se despliega en **[Render.com](https://render.com)**, con un servicio independiente por ambiente:
 
-Si estás buscando una plataforma basada en la nube para desplegar tu aplicación NestJS, echa un vistazo a [Mau](https://mau.nestjs.com), nuestra plataforma oficial para desplegar aplicaciones NestJS en AWS. Mau hace que el despliegue sea sencillo y rápido, requiriendo solo unos simples pasos:
+| Rama    | Ambiente  | Base de datos |
+|---------|-----------|----------------|
+| `dev`   | Desarrollo | propia (Neon Postgres) |
+| `staging` | Staging  | propia |
+| `prod`  | Producción | propia |
 
-```bash
-npm install -g @nestjs/mau
-mau deploy
-```
-
-Con Mau, puedes desplegar tu aplicación en solo unos clics, permitiéndote enfocarte en construir funcionalidades en lugar de gestionar infraestructura.
+- Cada push a `dev`/`staging`/`prod` dispara un build en Render (Build Command configurado en el dashboard de Render, no hay `render.yaml` en el repo).
+- `npm run deploy:prod` (`build:prod` + `migration:run`) es lo que Render ejecuta para arrancar: **las migraciones pendientes se aplican automáticamente en cada deploy**. Por eso toda migración debe probarse primero en `dev`, y cualquier script de mantenimiento que necesite correr (ver [Scripts de Mantenimiento](#scripts-de-mantenimiento)) se ejecuta manualmente después, ambiente por ambiente.
+- Reglas de rama estrictas en los tres ambientes (`dev`/`staging`/`prod`): sin bypass, ni para administradores. La promoción siempre sigue el orden `dev` → `staging` → `prod`, nunca directo a `prod`.
+- Variables de entorno (incluyendo `ENCRYPTION_KEY`/`PHONE_HASH_SECRET`) se configuran por separado en cada servicio de Render — nunca se comparten entre ambientes.
 
 ## 📚 Recursos
 
-Consulta algunos recursos que pueden ser útiles al trabajar con NestJS:
-
-- Visita la [Documentación de NestJS](https://docs.nestjs.com) para aprender más sobre el framework
-- Para preguntas y soporte, visita nuestro [canal de Discord](https://discord.gg/G7Qnnhy)
-- Para profundizar y obtener más experiencia práctica, consulta nuestros [cursos oficiales](https://courses.nestjs.com/)
-- Despliega tu aplicación en AWS con la ayuda de [NestJS Mau](https://mau.nestjs.com) en solo unos clics
-- Visualiza el gráfico de tu aplicación e interactúa con la aplicación NestJS en tiempo real usando [NestJS Devtools](https://devtools.nestjs.com)
-
-## 💖 Soporte
-
-Nest es un proyecto de código abierto con licencia MIT. Puede crecer gracias a los patrocinadores y el apoyo de increbles colaboradores.
-
-## 📧 Contacto
-
-- Autor - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Sitio web - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## 📜 Licencia
-
-Nest está bajo [licencia MIT](https://github.com/nestjs/nest/blob/master/LICENSE).
+- [Documentación de NestJS](https://docs.nestjs.com)
+- [Documentación de TypeORM](https://typeorm.io)
+- [Render.com](https://render.com) — plataforma de despliegue de este proyecto
