@@ -18,6 +18,7 @@ import {
 } from 'class-validator';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { EventServiceType } from '../../common/enums/event-service-type.enum';
+import { OrderSource } from '../../common/enums/order-source.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { AddFlowerToOrderDto } from '../../flowers/dto/add-flower-to-order.dto';
 import { CreateOrderDeliveryAddressDto } from './create-order-delivery-address.dto';
@@ -65,6 +66,16 @@ export class CreateOrderDto {
   })
   @IsBoolean({ message: 'includesFlowers must be a boolean' })
   includesFlowers?: boolean;
+
+  @ApiProperty({
+    description:
+      'Channel through which the order was taken (used for future sales-by-channel reports)',
+    example: OrderSource.WHATSAPP,
+    enum: OrderSource,
+  })
+  @IsNotEmpty({ message: 'Order source is required' })
+  @IsEnum(OrderSource, { message: 'Invalid order source' })
+  orderSource: OrderSource;
 
   @ApiProperty({
     description: 'ID of the customer placing the order',
