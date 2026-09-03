@@ -13,6 +13,7 @@ import {
 import { Branch } from '../../branches/entities/branch.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
 import { EventServiceType } from '../../common/enums/event-service-type.enum';
+import { OrderSource } from '../../common/enums/order-source.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { EncryptedTransformer } from '../../common/transformers/encrypted.transformer';
 import { Customer } from '../../customers/entities/customer.entity';
@@ -56,6 +57,16 @@ export class Order {
   })
   @Column({ type: 'boolean', default: false })
   includesFlowers: boolean;
+
+  @ApiProperty({
+    description:
+      'Channel through which the order was taken (WhatsApp, Instagram, Facebook, phone call, in person). Nullable only because orders created before this field existed have no value.',
+    example: OrderSource.WHATSAPP,
+    enum: OrderSource,
+    required: false,
+  })
+  @Column({ type: 'enum', enum: OrderSource, nullable: true })
+  orderSource?: OrderSource;
 
   @ApiProperty({
     description: 'Order code generated based on type and sequence',

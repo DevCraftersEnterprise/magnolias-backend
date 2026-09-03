@@ -3,6 +3,7 @@ import { Branch } from '../../branches/entities/branch.entity';
 import { BreadType } from '../../bread-types/entities/bread-type.entity';
 import { Color } from '../../colors/entities/color.entity';
 import { DeliveryRound } from '../../common/enums/delivery-round.enum';
+import { OrderSource } from '../../common/enums/order-source.enum';
 import { PaymentMethod } from '../../common/enums/payment-methods.enum';
 import { PipingLocation } from '../../common/enums/piping-location.enum';
 import { ProductSize } from '../../common/enums/product-size.enum';
@@ -103,6 +104,7 @@ export async function seedOrders(
       advancePayment: 400,
       setupServiceCost: 50,
       paymentMethod: PaymentMethod.CASH,
+      orderSource: OrderSource.WHATSAPP,
       ticketNumber: 'TKT-DOM-001',
       hasPhotoReference: true,
       customerId: customers[0].id,
@@ -172,6 +174,7 @@ export async function seedOrders(
     const createOrderVit1: CreateOrderDto = {
       isEnTienda: true,
       deliveryDate: getFutureDate(1),
+      orderSource: OrderSource.IN_PERSON,
       advancePayment: 225,
       customerId: customers[1].id,
       branchId: branches[1].id,
@@ -203,6 +206,7 @@ export async function seedOrders(
       setupServiceCost: 50,
       paymentMethod: PaymentMethod.TRANSFER,
       transferAccount: 'BBVA 1234567890',
+      orderSource: OrderSource.INSTAGRAM,
       ticketNumber: 'TKT-DOM-002',
       hasPhotoReference: false,
       customerId: customers[2].id,
@@ -271,6 +275,7 @@ export async function seedOrders(
       dessertsTotal: 18000,
       setupServiceCost: 5000,
       paymentMethod: PaymentMethod.MIXED,
+      orderSource: OrderSource.PHONE_CALL,
       ticketNumber: 'TKT-EVT-001',
       requiresInvoice: true,
       hasPhotoReference: true,
@@ -381,6 +386,7 @@ export async function seedOrders(
       advancePayment: 1750,
       setupServiceCost: 50,
       paymentMethod: PaymentMethod.CARD,
+      orderSource: OrderSource.FACEBOOK,
       ticketNumber: 'TKT-PER-001',
       hasPhotoReference: true,
       requiresInvoice: true,
