@@ -9,7 +9,6 @@ import { BranchesService } from '../../branches/branches.service';
 import { BreadTypesService } from '../../bread-types/bread-types.service';
 import { CategoriesService } from '../../categories/categories.service';
 import { ColorsService } from '../../colors/colors.service';
-import { GeocodingService } from '../../common/services/geocoding.service';
 import { CustomersService } from '../../customers/customers.service';
 import { FillingsService } from '../../fillings/fillings.service';
 import { FlowersService } from '../../flowers/flowers.service';
@@ -238,18 +237,11 @@ async function runSeeds() {
     const getAllBakersByBranchUseCase = new FindAllBakersUseCase(userRepository);
 
     const configService = new ConfigService();
-    const geocodingService = new GeocodingService(configService);
 
-    const createBranchUseCase = new CreateBranchUseCase(
-      branchRepository,
-      geocodingService,
-    );
+    const createBranchUseCase = new CreateBranchUseCase(branchRepository);
     const findAllBranchesUseCase = new FindAllBranchesUseCase(branchRepository);
     const findOneBranchUseCase = new FindOneBranchUseCase(branchRepository);
-    const updateBranchUseCase = new UpdateBranchUseCase(
-      branchRepository,
-      geocodingService,
-    );
+    const updateBranchUseCase = new UpdateBranchUseCase(branchRepository);
     const removeBranchUseCase = new RemoveBranchUseCase(branchRepository);
     const createPhoneForBranchUseCase = new CreatePhoneForBranchUseCase(
       branchRepository,

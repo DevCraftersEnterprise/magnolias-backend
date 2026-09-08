@@ -29,18 +29,26 @@ export async function seedBranches(
     {
       name: 'Navarrete',
       address: 'Blvd Juan Navarrete 261, Hermosillo, Sonora',
+      locationUrl:
+        'https://www.google.com/maps?q=Blvd+Juan+Navarrete+261,+Hermosillo,+Sonora',
     },
     {
       name: 'Morelos',
       address: 'Av. Morelos 314, Ciudad Obregón, Sonora',
+      locationUrl:
+        'https://www.google.com/maps?q=Av.+Morelos+314,+Ciudad+Obregón,+Sonora',
     },
     {
       name: 'Cantabria',
       address: 'Blvd. Luis Donaldo Colosio Murrieta 80312, Hermosillo, Sonora',
+      locationUrl:
+        'https://www.google.com/maps?q=Blvd.+Luis+Donaldo+Colosio+Murrieta+80312,+Hermosillo,+Sonora',
     },
     {
       name: 'Pitic',
       address: 'Av. León Guzmán 20, Hermosillo, Sonora',
+      locationUrl:
+        'https://www.google.com/maps?q=Av.+León+Guzmán+20,+Hermosillo,+Sonora',
     },
   ];
 
