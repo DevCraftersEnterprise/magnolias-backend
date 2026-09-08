@@ -67,7 +67,7 @@ export class BranchEmployeesController {
   create(
     @Body() createBranchEmployeeDto: CreateBranchEmployeeDto,
     @CurrentUser() user: User,
-  ): Promise<BranchEmployee> {
+  ): Promise<Omit<BranchEmployee, 'pin'>> {
     return this.branchEmployeesService.create(createBranchEmployeeDto, user);
   }
 
@@ -86,7 +86,10 @@ export class BranchEmployeesController {
   findAllByBranch(
     @Param('branchId', ParseUUIDPipe) branchId: string,
     @Query() paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<BranchEmployee> | BranchEmployee[]> {
+  ): Promise<
+    | PaginationResponse<Omit<BranchEmployee, 'pin'>>
+    | Omit<BranchEmployee, 'pin'>[]
+  > {
     return this.branchEmployeesService.findAllByBranch(
       branchId,
       paginationDto,
@@ -109,7 +112,7 @@ export class BranchEmployeesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBranchEmployeeDto: UpdateBranchEmployeeDto,
     @CurrentUser() user: User,
-  ): Promise<BranchEmployee> {
+  ): Promise<Omit<BranchEmployee, 'pin'>> {
     return this.branchEmployeesService.update(
       id,
       updateBranchEmployeeDto,

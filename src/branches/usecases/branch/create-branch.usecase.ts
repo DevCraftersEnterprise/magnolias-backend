@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateBranchDto } from '../../../branches/dto/create-branch.dto';
 import { Branch } from '../../../branches/entities/branch.entity';
-import { GeocodingService } from '../../../common/services/geocoding.service';
 import { User } from '../../../users/entities/user.entity';
 
 @Injectable()
@@ -13,7 +12,6 @@ export class CreateBranchUseCase {
   constructor(
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-    private readonly geocodingService: GeocodingService,
   ) {}
 
   async execute(createBranchDto: CreateBranchDto, user: User): Promise<Branch> {
@@ -24,15 +22,6 @@ export class CreateBranchUseCase {
       createdBy: user,
       updatedBy: user,
     });
-
-    const result = await this.geocodingService.geocodeAddress(
-      createBranchDto.address,
-    );
-
-    if (result) {
-      newBranch.latitude = result.latitude;
-      newBranch.longitude = result.longitude;
-    }
 
     const branch = await this.branchRepository.save(newBranch);
 

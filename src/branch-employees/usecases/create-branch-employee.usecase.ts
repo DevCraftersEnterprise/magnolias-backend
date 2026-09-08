@@ -7,6 +7,7 @@ import { User } from '../../users/entities/user.entity';
 import { CreateBranchEmployeeDto } from '../dto/create-branch-employee.dto';
 import { BranchEmployee } from '../entities/branch-employee.entity';
 import { isPinTakenInBranch } from '../utils/check-pin-availability.util';
+import { sanitizeBranchEmployee } from '../utils/sanitized-branch-employee.util';
 
 @Injectable()
 export class CreateBranchEmployeeUseCase {
@@ -21,7 +22,7 @@ export class CreateBranchEmployeeUseCase {
   async execute(
     dto: CreateBranchEmployeeDto,
     user: User,
-  ): Promise<BranchEmployee> {
+  ): Promise<Omit<BranchEmployee, 'pin'>> {
     const { name, lastname, pin, branchId } = dto;
 
     const branch = await this.branchesService.findBranchByTerm(branchId);
@@ -56,6 +57,6 @@ export class CreateBranchEmployeeUseCase {
       `Branch employee created with ID: ${savedEmployee.id} for branch ${branch.id}`,
     );
 
-    return savedEmployee;
+    return sanitizeBranchEmployee(savedEmployee);
   }
 }

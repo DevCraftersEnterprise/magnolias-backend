@@ -47,7 +47,7 @@ describe('UpdateBranchEmployeeUseCase', () => {
         );
 
         expect(result.name).toBe('Mariana');
-        expect(result.pin).toBe('old-hash');
+        expect(result).not.toHaveProperty('pin');
         expect(result.updatedBy).toBe(user);
     });
 
@@ -101,8 +101,10 @@ describe('UpdateBranchEmployeeUseCase', () => {
             user,
         );
 
-        expect(result.pin).not.toBe('old-hash');
-        expect(await argon2.verify(result.pin, '1357')).toBe(true);
+        expect(result).not.toHaveProperty('pin');
+        const savedArg = mocks.branchEmployeeRepository.save.mock.calls[0][0];
+        expect(savedArg.pin).not.toBe('old-hash');
+        expect(await argon2.verify(savedArg.pin, '1357')).toBe(true);
     });
 
     it('permite desactivar al empleado (isActive=false)', async () => {

@@ -8,16 +8,10 @@ function createMocks() {
         findOne: jest.fn(),
         save: jest.fn((entity) => Promise.resolve(entity)),
     };
-    const geocodingService = {
-        geocodeAddress: jest.fn(),
-    };
 
-    const useCase = new UpdateBranchUseCase(
-        branchRepository as never,
-        geocodingService as never,
-    );
+    const useCase = new UpdateBranchUseCase(branchRepository as never);
 
-    return { useCase, branchRepository, geocodingService };
+    return { useCase, branchRepository };
 }
 
 const user = { id: 'user-1' } as User;
@@ -27,8 +21,7 @@ function baseBranch(overrides: Record<string, unknown> = {}) {
         id: 'b1',
         name: 'Sucursal Vieja',
         address: 'Calle Vieja 1',
-        latitude: 10,
-        longitude: 20,
+        locationUrl: 'https://www.google.com/maps/embed?pb=old',
         ...overrides,
     };
 }
@@ -43,52 +36,6 @@ describe('UpdateBranchUseCase', () => {
         ).rejects.toThrow(NotFoundException);
     });
 
-    it('no vuelve a geocodificar si el DTO no trae address', async () => {
-        const mocks = createMocks();
-        mocks.branchRepository.findOne.mockResolvedValue(baseBranch());
-
-        await mocks.useCase.execute(
-            { id: 'b1', name: 'Nuevo nombre' } as UpdateBranchDto,
-            user,
-        );
-
-        expect(mocks.geocodingService.geocodeAddress).not.toHaveBeenCalled();
-    });
-
-    it('geocodifica y actualiza lat/lng si el DTO trae address y el geocoder resuelve', async () => {
-        const mocks = createMocks();
-        mocks.branchRepository.findOne.mockResolvedValue(baseBranch());
-        mocks.geocodingService.geocodeAddress.mockResolvedValue({
-            latitude: 99,
-            longitude: -99,
-        });
-
-        const result = await mocks.useCase.execute(
-            { id: 'b1', address: 'Nueva Calle 2' } as UpdateBranchDto,
-            user,
-        );
-
-        expect(mocks.geocodingService.geocodeAddress).toHaveBeenCalledWith(
-            'Nueva Calle 2',
-        );
-        expect(result.latitude).toBe(99);
-        expect(result.longitude).toBe(-99);
-    });
-
-    it('conserva las coordenadas previas si el geocoder retorna null', async () => {
-        const mocks = createMocks();
-        mocks.branchRepository.findOne.mockResolvedValue(baseBranch());
-        mocks.geocodingService.geocodeAddress.mockResolvedValue(null);
-
-        const result = await mocks.useCase.execute(
-            { id: 'b1', address: 'Dirección rara' } as UpdateBranchDto,
-            user,
-        );
-
-        expect(result.latitude).toBe(10);
-        expect(result.longitude).toBe(20);
-    });
-
     it('aplica los campos del DTO y registra updatedBy', async () => {
         const mocks = createMocks();
         mocks.branchRepository.findOne.mockResolvedValue(baseBranch());
@@ -101,6 +48,33 @@ describe('UpdateBranchUseCase', () => {
         expect(result.name).toBe('Nuevo nombre');
         expect(mocks.branchRepository.save).toHaveBeenCalledWith(
             expect.objectContaining({ updatedBy: user }),
+        );
+    });
+
+    it('actualiza el locationUrl si el DTO lo incluye', async () => {
+        const mocks = createMocks();
+        mocks.branchRepository.findOne.mockResolvedValue(baseBranch());
+        const locationUrl = 'https://www.google.com/maps/embed?pb=new';
+
+        const result = await mocks.useCase.execute(
+            { id: 'b1', locationUrl } as UpdateBranchDto,
+            user,
+        );
+
+        expect(result.locationUrl).toBe(locationUrl);
+    });
+
+    it('conserva el locationUrl previo si el DTO no lo incluye', async () => {
+        const mocks = createMocks();
+        mocks.branchRepository.findOne.mockResolvedValue(baseBranch());
+
+        const result = await mocks.useCase.execute(
+            { id: 'b1', name: 'Nuevo nombre' } as UpdateBranchDto,
+            user,
+        );
+
+        expect(result.locationUrl).toBe(
+            'https://www.google.com/maps/embed?pb=old',
         );
     });
 });

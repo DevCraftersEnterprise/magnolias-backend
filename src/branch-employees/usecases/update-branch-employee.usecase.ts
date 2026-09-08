@@ -11,6 +11,7 @@ import { User } from '../../users/entities/user.entity';
 import { UpdateBranchEmployeeDto } from '../dto/update-branch-employee.dto';
 import { BranchEmployee } from '../entities/branch-employee.entity';
 import { isPinTakenInBranch } from '../utils/check-pin-availability.util';
+import { sanitizeBranchEmployee } from '../utils/sanitized-branch-employee.util';
 
 @Injectable()
 export class UpdateBranchEmployeeUseCase {
@@ -25,7 +26,7 @@ export class UpdateBranchEmployeeUseCase {
     id: string,
     dto: UpdateBranchEmployeeDto,
     user: User,
-  ): Promise<BranchEmployee> {
+  ): Promise<Omit<BranchEmployee, 'pin'>> {
     const { pin, ...rest } = dto;
 
     const employee = await this.branchEmployeeRepository.findOne({
@@ -66,6 +67,6 @@ export class UpdateBranchEmployeeUseCase {
 
     this.logger.log(`Branch employee updated with ID: ${updatedEmployee.id}`);
 
-    return updatedEmployee;
+    return sanitizeBranchEmployee(updatedEmployee);
   }
 }
