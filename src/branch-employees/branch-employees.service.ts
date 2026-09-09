@@ -29,14 +29,17 @@ export class BranchEmployeesService {
   async create(
     dto: CreateBranchEmployeeDto,
     user: User,
-  ): Promise<BranchEmployee> {
+  ): Promise<Omit<BranchEmployee, 'pin'>> {
     return this.createBranchEmployeeUseCase.execute(dto, user);
   }
 
   async findAllByBranch(
     branchId: string,
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<BranchEmployee> | BranchEmployee[]> {
+  ): Promise<
+    | PaginationResponse<Omit<BranchEmployee, 'pin'>>
+    | Omit<BranchEmployee, 'pin'>[]
+  > {
     return this.findAllBranchEmployeesUseCase.execute(branchId, paginationDto);
   }
 
@@ -44,7 +47,7 @@ export class BranchEmployeesService {
     id: string,
     dto: UpdateBranchEmployeeDto,
     user: User,
-  ): Promise<BranchEmployee> {
+  ): Promise<Omit<BranchEmployee, 'pin'>> {
     return this.updateBranchEmployeeUseCase.execute(id, dto, user);
   }
 

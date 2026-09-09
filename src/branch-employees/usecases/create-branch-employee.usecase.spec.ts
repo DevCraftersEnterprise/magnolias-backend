@@ -74,6 +74,15 @@ describe('CreateBranchEmployeeUseCase', () => {
         expect(result.id).toBe('employee-1');
     });
 
+    it('no incluye el PIN (hasheado) en el resultado devuelto', async () => {
+        const mocks = createMocks();
+        mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+
+        const result = await mocks.useCase.execute(baseDto(), user);
+
+        expect(result).not.toHaveProperty('pin');
+    });
+
     it('permite el mismo PIN en sucursales distintas', async () => {
         const mocks = createMocks();
         mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);

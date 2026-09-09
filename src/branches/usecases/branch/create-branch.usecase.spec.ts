@@ -7,16 +7,10 @@ function createMocks() {
         create: jest.fn((data) => ({ ...data })),
         save: jest.fn((entity) => Promise.resolve(entity)),
     };
-    const geocodingService = {
-        geocodeAddress: jest.fn(),
-    };
 
-    const useCase = new CreateBranchUseCase(
-        branchRepository as never,
-        geocodingService as never,
-    );
+    const useCase = new CreateBranchUseCase(branchRepository as never);
 
-    return { useCase, branchRepository, geocodingService };
+    return { useCase, branchRepository };
 }
 
 const user = { id: 'user-1' } as User;
@@ -30,12 +24,8 @@ function baseDto(overrides: Partial<CreateBranchDto> = {}): CreateBranchDto {
 }
 
 describe('CreateBranchUseCase', () => {
-    it('crea la sucursal con createdBy/updatedBy y asigna coordenadas si el geocoder resuelve', async () => {
+    it('crea la sucursal con createdBy/updatedBy', async () => {
         const mocks = createMocks();
-        mocks.geocodingService.geocodeAddress.mockResolvedValue({
-            latitude: 21.88,
-            longitude: -102.29,
-        });
 
         const result = await mocks.useCase.execute(baseDto(), user);
 
@@ -46,31 +36,29 @@ describe('CreateBranchUseCase', () => {
                 updatedBy: user,
             }),
         );
-        expect(result.latitude).toBe(21.88);
-        expect(result.longitude).toBe(-102.29);
+        expect(result.name).toBe('Sucursal Centro');
     });
 
-    it('no asigna coordenadas si el geocoder retorna null', async () => {
+    it('propaga el locationUrl del DTO al crear la sucursal', async () => {
         const mocks = createMocks();
-        mocks.geocodingService.geocodeAddress.mockResolvedValue(null);
+        const locationUrl = 'https://www.google.com/maps/embed?pb=123';
 
-        const result = await mocks.useCase.execute(baseDto(), user);
-
-        expect(result.latitude).toBeUndefined();
-        expect(result.longitude).toBeUndefined();
-    });
-
-    it('llama al geocoder con la dirección del DTO', async () => {
-        const mocks = createMocks();
-        mocks.geocodingService.geocodeAddress.mockResolvedValue(null);
-
-        await mocks.useCase.execute(
-            baseDto({ address: 'Calle Falsa 456' }),
+        const result = await mocks.useCase.execute(
+            baseDto({ locationUrl }),
             user,
         );
 
-        expect(mocks.geocodingService.geocodeAddress).toHaveBeenCalledWith(
-            'Calle Falsa 456',
+        expect(mocks.branchRepository.create).toHaveBeenCalledWith(
+            expect.objectContaining({ locationUrl }),
         );
+        expect(result.locationUrl).toBe(locationUrl);
+    });
+
+    it('no requiere locationUrl para crear la sucursal', async () => {
+        const mocks = createMocks();
+
+        const result = await mocks.useCase.execute(baseDto(), user);
+
+        expect(result.locationUrl).toBeUndefined();
     });
 });

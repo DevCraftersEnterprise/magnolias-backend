@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PaginationResponse } from '../../common/responses/pagination.response';
 import { BranchEmployee } from '../entities/branch-employee.entity';
+import { sanitizeBranchEmployees } from '../utils/sanitized-branch-employee.util';
 
 @Injectable()
 export class FindAllBranchEmployeesUseCase {
@@ -17,7 +18,10 @@ export class FindAllBranchEmployeesUseCase {
   async execute(
     branchId: string,
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<BranchEmployee> | BranchEmployee[]> {
+  ): Promise<
+    | PaginationResponse<Omit<BranchEmployee, 'pin'>>
+    | Omit<BranchEmployee, 'pin'>[]
+  > {
     const { limit, offset } = paginationDto;
 
     const [items, total] = await this.branchEmployeeRepository.findAndCount({
@@ -27,13 +31,15 @@ export class FindAllBranchEmployeesUseCase {
       order: { name: 'ASC' },
     });
 
+    const sanitizedItems = sanitizeBranchEmployees(items);
+
     if (limit !== undefined && offset !== undefined) {
       this.logger.log(
         `Found ${items.length} branch employees with pagination for branch ${branchId}`,
       );
 
       return {
-        items,
+        items: sanitizedItems,
         total,
         pagination: {
           limit,
@@ -48,6 +54,6 @@ export class FindAllBranchEmployeesUseCase {
       `Found ${items.length} branch employees without pagination for branch ${branchId}`,
     );
 
-    return items;
+    return sanitizedItems;
   }
 }

@@ -7,6 +7,7 @@ function createMocks() {
     const branchRepository = {
         findOne: jest.fn(),
         save: jest.fn((entity) => Promise.resolve(entity)),
+        update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
     const phoneRepository = {
         create: jest.fn((data) => ({ ...data })),
@@ -54,8 +55,22 @@ describe('CreatePhoneForBranchUseCase', () => {
             }),
         );
         expect(result.id).toBe('phone-1');
-        expect(branch.updatedBy).toBe(user);
-        expect(mocks.branchRepository.save).toHaveBeenCalledWith(branch);
+        expect(mocks.branchRepository.update).toHaveBeenCalledWith('branch-1', {
+            updatedBy: user,
+        });
     });
 
+    it('no usa save(branch) para registrar el updatedBy de la sucursal', async () => {
+        // branch.phones queda cargado (eager) como null desde antes de crear
+        // el teléfono. Si se usara branchRepository.save(branch) aquí, el
+        // cascade:true de la relación interpretaría ese null como "quitar el
+        // teléfono" y anularía el branchId del teléfono recién creado.
+        const mocks = createMocks();
+        const branch = { id: 'branch-1', phones: null, updatedBy: null };
+        mocks.branchRepository.findOne.mockResolvedValue(branch);
+
+        await mocks.useCase.execute(baseDto(), user, 'branch-1');
+
+        expect(mocks.branchRepository.save).not.toHaveBeenCalled();
+    });
 });

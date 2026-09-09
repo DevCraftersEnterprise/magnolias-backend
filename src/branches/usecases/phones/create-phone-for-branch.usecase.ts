@@ -44,11 +44,12 @@ export class CreatePhoneForBranchUseCase {
       `Created phone with ID ${savedPhones.id} for branch ID ${branchId}`,
     );
 
-    Object.assign(branch, { updatedBy: user });
-
-    await this.branchRepository.save(branch);
-
-    this.logger.log(`Branch with ID ${branchId} updatedBy set to ${user.id}`);
+    // Se usa update() en lugar de save(branch) a propósito: branch.phones se
+    // cargó (eager) antes de crear el teléfono de arriba, por lo que en este
+    // punto sigue siendo null en memoria. Un save() con cascade:true
+    // interpretaría ese null como "quitar la relación" y pondría en NULL el
+    // branchId del teléfono que se acaba de crear, violando el NOT NULL.
+    await this.branchRepository.update(branchId, { updatedBy: user });
 
     return savedPhones;
   }

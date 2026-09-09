@@ -37,20 +37,13 @@ export class Branch {
   address: string;
 
   @ApiProperty({
-    description: 'Latitude coordinate of the branch location',
-    example: 21.8853,
+    description:
+      'Google Maps link for the branch location, embedded as an iframe on the frontend',
+    example: 'https://www.google.com/maps/embed?pb=...',
     required: false,
   })
-  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
-  latitude: number;
-
-  @ApiProperty({
-    description: 'Longitude coordinate of the branch location',
-    example: -102.2916,
-    required: false,
-  })
-  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
-  longitude: number;
+  @Column({ type: 'text', nullable: true })
+  locationUrl?: string;
 
   @ApiProperty({
     description: 'Indicates whether the branch is active',
@@ -66,7 +59,7 @@ export class Branch {
     eager: true,
   })
   @Expose()
-  phones: Phone;
+  phones: Phone | null;
 
 
   @ApiHideProperty()
