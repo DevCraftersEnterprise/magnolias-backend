@@ -17,8 +17,10 @@ describe('RefreshTokenUseCase', () => {
             (payload, options) =>
                 `signed:${JSON.stringify(payload)}:${options?.expiresIn ?? ''}`,
         );
+        // Como en el .env real: un string SIN unidad (p.ej. "604800"), no
+        // "7d". El usecase debe convertirlo a número antes de firmarlo.
         configGetMock = jest.fn((key: string) =>
-            key === 'JWT_REFRESH_EXPIRY' ? '7d' : undefined,
+            key === 'JWT_REFRESH_EXPIRY' ? '604800' : undefined,
         );
         findUserByTermMock = jest.fn();
 
@@ -84,10 +86,12 @@ describe('RefreshTokenUseCase', () => {
             id: 'u1',
             type: 'access',
         });
+        // expiresIn debe ser el NÚMERO 604800, no el string "604800":
+        // jsonwebtoken interpreta un string sin unidad como milisegundos.
         expect(jwtSignMock).toHaveBeenNthCalledWith(
             2,
             { id: 'u1', type: 'refresh' },
-            { expiresIn: '7d' },
+            { expiresIn: 604800 },
         );
         expect(result.user).not.toHaveProperty('userkey');
         expect(result.user).toEqual(

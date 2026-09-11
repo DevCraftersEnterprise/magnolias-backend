@@ -2,6 +2,9 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Order } from '../../entities/order.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../../../users/entities/user.entity';
+import { sanitizeUser } from '../../../users/utils/sanitized-user.util';
+import { sanitizeBranchEmployee } from '../../../branch-employees/utils/sanitized-branch-employee.util';
 
 @Injectable()
 export class FindOneOrderUseCase {
@@ -57,10 +60,16 @@ export class FindOneOrderUseCase {
         payments: true,
         createdBy: true,
         updatedBy: true,
+        employeeActions: {
+          employee: true,
+        },
       },
       order: {
         payments: {
           createdAt: 'DESC',
+        },
+        employeeActions: {
+          performedAt: 'DESC',
         },
       },
     });
@@ -72,6 +81,35 @@ export class FindOneOrderUseCase {
 
     if (!includeTransferAccount) {
       order.transferAccount = undefined;
+    }
+
+    // Este proyecto no registra un ClassSerializerInterceptor global, así
+    // que @Exclude()/@ApiHideProperty() en User.userkey y BranchEmployee.pin
+    // no ocultan nada por sí solos: hay que sanear a mano cada relación de
+    // usuario/empleado que viaje en la respuesta de un pedido.
+    if (order.createdBy) {
+      order.createdBy = sanitizeUser(order.createdBy) as User;
+    }
+    if (order.updatedBy) {
+      order.updatedBy = sanitizeUser(order.updatedBy) as User;
+    }
+    if (order.employeeActions) {
+      order.employeeActions = order.employeeActions.map((action) => ({
+        ...action,
+        employee: sanitizeBranchEmployee(action.employee),
+      })) as typeof order.employeeActions;
+    }
+    if (order.details) {
+      order.details = order.details.map((detail) => ({
+        ...detail,
+        discountAuthorizedBy: detail.discountAuthorizedBy
+          ? (sanitizeUser(detail.discountAuthorizedBy) as User)
+          : detail.discountAuthorizedBy,
+        assignments: detail.assignments?.map((assignment) => ({
+          ...assignment,
+          baker: sanitizeUser(assignment.baker) as User,
+        })),
+      })) as typeof order.details;
     }
 
     return order;

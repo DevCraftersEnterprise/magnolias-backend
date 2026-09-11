@@ -47,8 +47,15 @@ export class VerifyDiscountAuthorizationUseCase {
       type: 'discount-authorization',
     };
 
-    const discountAuthTokenExpiry = this.configService.get(
-      'DISCOUNT_AUTH_TOKEN_EXPIRY',
+    // ConfigService.get() devuelve un string (viene de process.env). Un
+    // expiresIn de tipo string SIN unidad (p.ej. "600") lo interpreta
+    // jsonwebtoken como MILISEGUNDOS, no segundos — con eso el token nacía
+    // prácticamente vencido (600ms redondeados a 0s) y cualquier intento de
+    // aplicar el descuento fallaba con un token "inválido o expirado".
+    // Number(...) fuerza la rama numérica, que sí trata el valor como
+    // segundos (igual que ya se hace para JWT_EXPIRES_IN).
+    const discountAuthTokenExpiry = Number(
+      this.configService.get('DISCOUNT_AUTH_TOKEN_EXPIRY'),
     );
 
     const discountAuthToken = this.jwtService.sign(discountAuthPayload, {

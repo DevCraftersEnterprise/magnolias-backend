@@ -62,8 +62,15 @@ export class VerifyEmployeePinUseCase {
       type: 'employee-action',
     };
 
-    const employeeActionTokenExpiry = this.configService.get(
-      'EMPLOYEE_ACTION_TOKEN_EXPIRY',
+    // ConfigService.get() siempre devuelve un string (viene de process.env).
+    // jsonwebtoken interpreta un expiresIn de tipo string SIN unidad (p.ej.
+    // "300") como milisegundos, no segundos — con eso el token vencía en el
+    // mismo instante en que se emitía (iat === exp), y cualquier intento de
+    // usarlo fallaba con "Invalid or expired employee PIN authorization".
+    // Number(...) fuerza la rama numérica de jsonwebtoken, que sí interpreta
+    // el valor como segundos (igual que ya se hace para JWT_EXPIRES_IN).
+    const employeeActionTokenExpiry = Number(
+      this.configService.get('EMPLOYEE_ACTION_TOKEN_EXPIRY'),
     );
 
     const employeeActionToken = this.jwtService.sign(employeeActionPayload, {
