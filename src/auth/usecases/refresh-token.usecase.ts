@@ -39,7 +39,11 @@ export class RefreshTokenUseCase {
     const accessPayload = { id: user.id, type: 'access' };
     const refreshPayload = { id: user.id, type: 'refresh' };
 
-    const refreshTokenExpiry = this.configService.get('JWT_REFRESH_EXPIRY');
+    // Ver la nota equivalente en LoginUseCase: sin Number(...), jsonwebtoken
+    // interpreta este string como milisegundos en vez de segundos.
+    const refreshTokenExpiry = Number(
+      this.configService.get('JWT_REFRESH_EXPIRY'),
+    );
 
     const accessToken = this.jwtService.sign(accessPayload);
     const refreshToken = this.jwtService.sign(refreshPayload, {
