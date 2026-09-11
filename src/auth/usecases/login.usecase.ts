@@ -49,7 +49,14 @@ export class LoginUseCase {
     const accessPayload = { id: user!.id, type: 'access' };
     const refreshPayload = { id: user!.id, type: 'refresh' };
 
-    const refreshTokenExpiry = this.configService.get('JWT_REFRESH_EXPIRY');
+    // ConfigService.get() devuelve un string (viene de process.env). Un
+    // expiresIn de tipo string SIN unidad (p.ej. "604800") lo interpreta
+    // jsonwebtoken como MILISEGUNDOS, no segundos, acortando drásticamente
+    // la vida real del refresh token. Number(...) fuerza la rama numérica,
+    // que sí trata el valor como segundos.
+    const refreshTokenExpiry = Number(
+      this.configService.get('JWT_REFRESH_EXPIRY'),
+    );
 
     const accessToken = this.jwtService.sign(accessPayload);
     const refreshToken = this.jwtService.sign(refreshPayload, {
