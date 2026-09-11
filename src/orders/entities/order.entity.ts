@@ -23,6 +23,7 @@ import { OrderAssignment } from '../entities/order-assignment.entity';
 import { OrderStatus } from '../enums/order-status.enum';
 import { OrderDeliveryAddress } from './order-delivery-address.entity';
 import { OrderDetail } from './order-detail.entity';
+import { OrderEmployeeAction } from './order-employee-action.entity';
 import { OrderPayment } from './order-payment.entity';
 
 @Entity({ name: 'orders' })
@@ -347,6 +348,14 @@ export class Order {
   @ApiHideProperty()
   @OneToMany(() => OrderAssignment, (assignment) => assignment.order)
   assignments: OrderAssignment[];
+
+  // Registro de qué empleado (persona real, identificada por PIN) realizó
+  // cada acción cuando el pedido se crea/edita/entrega/cancela desde una
+  // cuenta compartida de sucursal. createdBy/updatedBy solo apuntan a esa
+  // cuenta compartida (p.ej. "Sucursal Morelos"), no a la persona.
+  @ApiHideProperty()
+  @OneToMany(() => OrderEmployeeAction, (action) => action.order)
+  employeeActions: OrderEmployeeAction[];
 
   // Campos calculados (no persistidos): resumen liviano de asignación de
   // reposteros por línea, usado por el listado paginado para no pagar el

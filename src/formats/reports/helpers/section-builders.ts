@@ -1413,7 +1413,13 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
           labelCell('SABOR DE PAN'),
           valueCell(toUpperSafe(detail.breadType?.name)),
           labelCell('UBICACIÓN DEL ESCRITO'),
-          valueCell(detail.writingLocation ?? ''),
+          valueCell(
+            detail.writingLocation
+              ? EnumTransformer.translateWritingLocation(
+                detail.writingLocation,
+              ).toUpperCase()
+              : '',
+          ),
         ],
         [
           labelCell('RELLENO'),
@@ -1425,7 +1431,13 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
           labelCell('CUBIERTA SABOR'),
           valueCell(toUpperSafe(detail.frosting?.name)),
           labelCell('POSICIÓN POMPEADO'),
-          valueCell(detail.pipingLocation ?? ''),
+          valueCell(
+            detail.pipingLocation
+              ? EnumTransformer.translatePipingLocation(
+                detail.pipingLocation,
+              ).toUpperCase()
+              : '',
+          ),
         ],
         [
           labelCell('TIPO DE CUBIERTA', { border: [true, true, true, false] }),
