@@ -20,6 +20,7 @@ describe('FindOneOrderUseCase', () => {
                 where: { id: 'order-1' },
                 relations: expect.objectContaining({
                     employeeActions: { employee: true },
+                    deliveryAssignments: { driver: true },
                 }),
             }),
         );
@@ -133,6 +134,22 @@ describe('FindOneOrderUseCase', () => {
             );
             expect(
                 result.details[0].assignments![0].baker,
+            ).not.toHaveProperty('userkey');
+        });
+
+        it('quita userkey del repartidor en deliveryAssignments (cliente #8)', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                deliveryAssignments: [
+                    { id: 'da1', driver: { id: 'u4', userkey: 'hash' } },
+                ],
+            });
+
+            const result = await useCase.execute('order-1');
+
+            expect(
+                result.deliveryAssignments[0].driver,
             ).not.toHaveProperty('userkey');
         });
     });

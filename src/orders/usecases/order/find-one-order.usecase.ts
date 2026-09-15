@@ -63,6 +63,9 @@ export class FindOneOrderUseCase {
         employeeActions: {
           employee: true,
         },
+        deliveryAssignments: {
+          driver: true,
+        },
       },
       order: {
         payments: {
@@ -98,6 +101,14 @@ export class FindOneOrderUseCase {
         ...action,
         employee: sanitizeBranchEmployee(action.employee),
       })) as typeof order.employeeActions;
+    }
+    if (order.deliveryAssignments) {
+      order.deliveryAssignments = order.deliveryAssignments.map(
+        (assignment) => ({
+          ...assignment,
+          driver: sanitizeUser(assignment.driver) as User,
+        }),
+      ) as typeof order.deliveryAssignments;
     }
     if (order.details) {
       order.details = order.details.map((detail) => ({

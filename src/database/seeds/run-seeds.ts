@@ -30,6 +30,7 @@ import { Customer } from '../../customers/entities/customer.entity';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Flower } from '../../flowers/entities/flower.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
+import { OrderDeliveryAssignment } from '../../orders/entities/order-delivery-assignment.entity';
 import { OrderDetailAssignment } from '../../orders/entities/order-detail-assignment.entity';
 import { OrderCancellation } from '../../orders/entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from '../../orders/entities/order-delivery-address.entity';
@@ -52,6 +53,7 @@ import { RemoveUserUseCase } from '../../users/usecases/remove-user.usecase';
 import { ResetPasswordForUserUseCase } from '../../users/usecases/reset-password-for-user.usecase';
 import { UpdateUserUseCase } from '../../users/usecases/update-user.usecase';
 import { FindAllBakersUseCase } from '../../users/usecases/find-all-bakers.usecase';
+import { FindAllDriversUseCase } from '../../users/usecases/find-all-drivers.usecase';
 
 import { FindAllBranchesUseCase } from '../../branches/usecases/branch/find-all-branches.usecase';
 import { FindOneBranchUseCase } from '../../branches/usecases/branch/find-one-branch.usecase';
@@ -128,6 +130,8 @@ import { FindOneCommonAddressUseCase } from '../../addresses/usecases/find-one-c
 import { RemoveCommonAddressUseCase } from '../../addresses/usecases/remove-common-address.usecase';
 import { UpdateCommonAddressUseCase } from '../../addresses/usecases/update-common-address.usecase';
 
+import { AssignOrderDeliveryUseCase } from '../../orders/usecases/order-delivery-assignment/assign-order-delivery.usecase';
+import { GetDriverAssignmentsUseCase } from '../../orders/usecases/order-delivery-assignment/get-driver-assignments.usecase';
 import { AssignOrderDetailUseCase } from '../../orders/usecases/order-detail-assignment/assign-order-detail.usecase';
 import { GetBakerDetailAssignmentsUseCase } from '../../orders/usecases/order-detail-assignment/get-baker-detail-assignments.usecase';
 import { UpdateProductionStatusUseCase } from '../../orders/usecases/order-detail-assignment/update-production-status.usecase';
@@ -212,6 +216,8 @@ async function runSeeds() {
       AppDataSource.getRepository(OrderCancellation);
     const orderDetailAssignmentRepository: Repository<OrderDetailAssignment> =
       AppDataSource.getRepository(OrderDetailAssignment);
+    const orderDeliveryAssignmentRepository: Repository<OrderDeliveryAssignment> =
+      AppDataSource.getRepository(OrderDeliveryAssignment);
     const orderPaymentsRepository: Repository<OrderPayment> =
       AppDataSource.getRepository(OrderPayment);
     const orderEmployeeActionRepository: Repository<OrderEmployeeAction> =
@@ -235,6 +241,7 @@ async function runSeeds() {
     );
 
     const getAllBakersByBranchUseCase = new FindAllBakersUseCase(userRepository);
+    const getAllDriversByBranchUseCase = new FindAllDriversUseCase(userRepository);
 
     const configService = new ConfigService();
 
@@ -373,7 +380,8 @@ async function runSeeds() {
       updateUserUseCase,
       removeUserUseCase,
       resetPasswordForUserUseCase,
-      getAllBakersByBranchUseCase
+      getAllBakersByBranchUseCase,
+      getAllDriversByBranchUseCase,
     );
 
     const categoriesService = new CategoriesService(
@@ -541,6 +549,7 @@ async function runSeeds() {
       orderRepository,
       orderCancellationRepository,
       orderEmployeeActionRepository,
+      orderDeliveryAssignmentRepository,
       seedJwtService,
     );
     const getOrderStatsUseCase = new GetOrderStatsUseCase(orderRepository);
@@ -563,6 +572,16 @@ async function runSeeds() {
     const hideOrderDetailReferenceImageUseCase =
       new HideOrderDetailReferenceImageUseCase(orderDetailReferenceImageRepository);
 
+    const assignOrderDeliveryUseCase = new AssignOrderDeliveryUseCase(
+      userRepository,
+      orderRepository,
+      orderDeliveryAssignmentRepository,
+    );
+    const getDriverAssignmentsUseCase = new GetDriverAssignmentsUseCase(
+      userRepository,
+      orderDeliveryAssignmentRepository,
+    );
+
     const ordersService = new OrdersService(
       createOrderUseCase,
       setPickupPersonUseCase,
@@ -575,6 +594,8 @@ async function runSeeds() {
       getBakerDetailAssignmentsUseCase,
       updateProductionStatusUseCase,
       hideOrderDetailReferenceImageUseCase,
+      assignOrderDeliveryUseCase,
+      getDriverAssignmentsUseCase,
     );
 
     console.log('✅ Conexión establecida\n');
