@@ -51,20 +51,26 @@ export class UpdateUserUseCase {
       );
     }
 
-    if (user.role === UserRoles.BAKER && role !== UserRoles.BAKER) {
+    // BAKER y DRIVER (cliente #8) pueden operar en varias sucursales.
+    const multiBranchRoles = new Set<UserRoles | undefined>([
+      UserRoles.BAKER,
+      UserRoles.DRIVER,
+    ]);
+
+    if (multiBranchRoles.has(user.role) && !multiBranchRoles.has(role)) {
       this.logger.log(
-        `User with ID ${id} is no longer a BAKER, clearing branches`,
+        `User with ID ${id} is no longer ${user.role}, clearing branches`,
       );
       user.branches = [];
     }
 
-    if (role === UserRoles.BAKER) {
+    if (multiBranchRoles.has(role)) {
       if (!branchIds || branchIds.length === 0) {
         this.logger.warn(
-          `Users with role BAKER must be linked to at least one branch`,
+          `Users with role ${role} must be linked to at least one branch`,
         );
         throw new BadRequestException(
-          `Users with role BAKER must be linked to at least one branch`,
+          `Users with role ${role} must be linked to at least one branch`,
         );
       }
 
@@ -91,7 +97,7 @@ export class UpdateUserUseCase {
       });
     }
 
-    if (branchId && role !== UserRoles.BAKER) {
+    if (branchId && !multiBranchRoles.has(role)) {
       const branch = await this.branchRepository.findOne({
         where: { id: branchId },
       });

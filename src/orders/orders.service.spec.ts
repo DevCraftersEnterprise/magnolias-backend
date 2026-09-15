@@ -14,6 +14,8 @@ function createMocks() {
     const getBakerDetailAssignmentsUseCase = { execute: jest.fn() };
     const updateProductionStatusUseCase = { execute: jest.fn() };
     const hideOrderDetailReferenceImageUseCase = { execute: jest.fn() };
+    const assignOrderDeliveryUseCase = { execute: jest.fn() };
+    const getDriverAssignmentsUseCase = { execute: jest.fn() };
 
     const service = new OrdersService(
         createOrderUseCase as never,
@@ -27,6 +29,8 @@ function createMocks() {
         getBakerDetailAssignmentsUseCase as never,
         updateProductionStatusUseCase as never,
         hideOrderDetailReferenceImageUseCase as never,
+        assignOrderDeliveryUseCase as never,
+        getDriverAssignmentsUseCase as never,
     );
 
     return {
@@ -42,6 +46,8 @@ function createMocks() {
         getBakerDetailAssignmentsUseCase,
         updateProductionStatusUseCase,
         hideOrderDetailReferenceImageUseCase,
+        assignOrderDeliveryUseCase,
+        getDriverAssignmentsUseCase,
     };
 }
 
@@ -201,6 +207,30 @@ describe('OrdersService', () => {
 
         expect(getBakerDetailAssignmentsUseCase.execute).toHaveBeenCalledWith(
             'baker-1',
+        );
+    });
+
+    it('assignOrderDelivery delega en AssignOrderDeliveryUseCase', async () => {
+        const { service, assignOrderDeliveryUseCase } = createMocks();
+        assignOrderDeliveryUseCase.execute.mockResolvedValue({ id: 'assignment-1' });
+
+        await service.assignOrderDelivery('order-1', {} as never, user);
+
+        expect(assignOrderDeliveryUseCase.execute).toHaveBeenCalledWith(
+            'order-1',
+            {},
+            user,
+        );
+    });
+
+    it('getDriverAssignments delega en GetDriverAssignmentsUseCase', async () => {
+        const { service, getDriverAssignmentsUseCase } = createMocks();
+        getDriverAssignmentsUseCase.execute.mockResolvedValue([]);
+
+        await service.getDriverAssignments('driver-1');
+
+        expect(getDriverAssignmentsUseCase.execute).toHaveBeenCalledWith(
+            'driver-1',
         );
     });
 

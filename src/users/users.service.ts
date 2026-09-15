@@ -12,6 +12,7 @@ import { RemoveUserUseCase } from './usecases/remove-user.usecase';
 import { ResetPasswordForUserUseCase } from './usecases/reset-password-for-user.usecase';
 import { UpdateUserUseCase } from './usecases/update-user.usecase';
 import { FindAllBakersUseCase } from './usecases/find-all-bakers.usecase';
+import { FindAllDriversUseCase } from './usecases/find-all-drivers.usecase';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,7 @@ export class UsersService {
     private readonly removeUserUseCase: RemoveUserUseCase,
     private readonly resetPasswordForUserUseCase: ResetPasswordForUserUseCase,
     private readonly findAllBakersUseCase: FindAllBakersUseCase,
+    private readonly findAllDriversUseCase: FindAllDriversUseCase,
   ) { }
 
   async registerUser(dto: RegisterUserDto): Promise<Partial<User>> {
@@ -38,6 +40,10 @@ export class UsersService {
 
   async findBakers(branchId: string): Promise<User[]> {
     return await this.findAllBakersUseCase.execute(branchId);
+  }
+
+  async findDrivers(branchId: string): Promise<User[]> {
+    return await this.findAllDriversUseCase.execute(branchId);
   }
 
   async findUserByTerm(term: string): Promise<User> {

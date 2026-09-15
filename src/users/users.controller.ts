@@ -167,6 +167,40 @@ export class UsersController {
     return this.usersService.findBakers(branchId);
   }
 
+  @Get('drivers/:branchId')
+  @ApiOperation({
+    summary: 'Get drivers by branch ID',
+    description: 'Retrieves a list of drivers based on the provided branch ID.',
+  })
+  @ApiOkResponse({
+    description: 'List of drivers retrieved successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/User' },
+        },
+        total: { type: 'number', example: 100 },
+        pagination: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number', example: 10 },
+            offset: { type: 'number', example: 0 },
+            totalPages: { type: 'number', example: 10 },
+            currentPage: { type: 'number', example: 1 },
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  findDrivers(
+    @Param('branchId') branchId: string,
+  ): Promise<User[]> {
+    return this.usersService.findDrivers(branchId);
+  }
+
 
   @Get(':term')
   @ApiOperation({
