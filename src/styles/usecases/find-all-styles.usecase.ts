@@ -30,6 +30,7 @@ export class FindAllStylesUseCase {
         name: true,
         description: true,
         isActive: true,
+        applicableSizes: true,
       },
       take: limit,
       skip: offset,

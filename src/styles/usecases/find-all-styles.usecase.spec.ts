@@ -31,6 +31,18 @@ describe('FindAllStylesUseCase', () => {
         );
     });
 
+    it('incluye applicableSizes en el select (cliente #5)', async () => {
+        findAndCountMock.mockResolvedValue([[], 0]);
+
+        await useCase.execute({});
+
+        expect(findAndCountMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                select: expect.objectContaining({ applicableSizes: true }),
+            }),
+        );
+    });
+
     it('retorna la respuesta paginada cuando se envían limit y offset', async () => {
         findAndCountMock.mockResolvedValue([[{ id: '1', name: 'RÚSTICO' }], 1]);
 
