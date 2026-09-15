@@ -1,6 +1,8 @@
-import { getEventoCakeSection } from './section-builders';
+import { getEventoCakeSection, getEventoServicesSection } from './section-builders';
+import { EventServiceType } from '../../../common/enums/event-service-type.enum';
 import { PipingLocation } from '../../../common/enums/piping-location.enum';
 import { WritingLocation } from '../../../common/enums/writing-location.enum';
+import type { Order } from '../../../orders/entities/order.entity';
 import type { OrderDetail } from '../../../orders/entities/order-detail.entity';
 
 function buildDetail(overrides: Partial<OrderDetail> = {}): OrderDetail {
@@ -45,5 +47,50 @@ describe('getEventoCakeSection', () => {
 
         expect(valueForLabel(detail, 'UBICACIÓN DEL ESCRITO')).toBe('');
         expect(valueForLabel(detail, 'POSICIÓN POMPEADO')).toBe('');
+    });
+});
+
+function buildOrder(overrides: Partial<Order> = {}): Order {
+    return { eventServices: [], ...overrides } as unknown as Order;
+}
+
+// Busca, en cualquier fila de la tabla, la celda de VALOR inmediatamente a la
+// derecha de la celda de ETIQUETA que coincide, sin depender de índices fijos.
+function serviceMark(order: Order, label: string): string {
+    const section = getEventoServicesSection(order) as any;
+    for (const row of section.table.body) {
+        const idx = row.findIndex((cell: any) => cell?.text === label);
+        if (idx !== -1) return row[idx + 1]?.text ?? '';
+    }
+    return '';
+}
+
+describe('getEventoServicesSection', () => {
+    it('marca con X solo los servicios incluidos en el pedido', () => {
+        const order = buildOrder({
+            eventServices: [EventServiceType.DESSERT_TABLE, EventServiceType.CAKE],
+        });
+
+        expect(serviceMark(order, 'MESA DE POSTRES')).toBe('X');
+        expect(serviceMark(order, 'PASTEL')).toBe('X');
+        expect(serviceMark(order, 'MESA DE QUESOS')).toBe('');
+        expect(serviceMark(order, 'EMPLATADO')).toBe('');
+    });
+
+    it('incluye Charolas y Mesa de bocadillos como servicios marcables (cliente #4)', () => {
+        const order = buildOrder({
+            eventServices: [EventServiceType.TRAYS, EventServiceType.SNACK_TABLE],
+        });
+
+        expect(serviceMark(order, 'CHAROLAS')).toBe('X');
+        expect(serviceMark(order, 'MESA DE BOCADILLOS')).toBe('X');
+    });
+
+    it('deja todo sin marcar cuando el pedido no tiene servicios', () => {
+        const order = buildOrder();
+
+        expect(serviceMark(order, 'MESA DE POSTRES')).toBe('');
+        expect(serviceMark(order, 'CHAROLAS')).toBe('');
+        expect(serviceMark(order, 'MESA DE BOCADILLOS')).toBe('');
     });
 });
