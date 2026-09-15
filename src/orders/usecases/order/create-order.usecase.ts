@@ -407,6 +407,10 @@ export class CreateOrderUseCase {
       totalAmount += parseCurrency(order.setupServiceCost);
     }
 
+    if (order.specialRoundCost) {
+      totalAmount += parseCurrency(order.specialRoundCost);
+    }
+
     const remainingBalance = totalAmount - parseCurrency(order.advancePayment);
 
     order.paidAmount = parseCurrency(order.advancePayment);

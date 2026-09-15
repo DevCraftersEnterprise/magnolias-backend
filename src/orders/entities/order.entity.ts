@@ -208,6 +208,14 @@ export class Order {
   setupServiceCost: number;
 
   @ApiProperty({
+    description:
+      'Additional cost for a special delivery round (RONDA_ESPECIAL)',
+    example: 200.0,
+  })
+  @Column({ type: 'money', default: 0 })
+  specialRoundCost: number;
+
+  @ApiProperty({
     description: 'Indicates if the order has a photo reference',
     example: true,
     default: false,
