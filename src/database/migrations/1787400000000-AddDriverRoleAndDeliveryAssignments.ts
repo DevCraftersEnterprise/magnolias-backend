@@ -15,6 +15,9 @@ export class AddDriverRoleAndDeliveryAssignments1787400000000
       ALTER TYPE "public"."users_role_enum" ADD VALUE 'DRIVER'
     `);
 
+        // Constraints inline en el CREATE TABLE (en vez de ALTER TABLE ADD
+        // CONSTRAINT por separado) para no duplicar la estructura de
+        // AddOrderDetailAssignmentsAndProductionStatus.
         await queryRunner.query(`
       CREATE TABLE "order_delivery_assignments" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -26,44 +29,21 @@ export class AddDriverRoleAndDeliveryAssignments1787400000000
         "orderId" uuid NOT NULL,
         "createdBy" uuid NOT NULL,
         "updatedBy" uuid NOT NULL,
-        CONSTRAINT "PK_order_delivery_assignments" PRIMARY KEY ("id")
+        CONSTRAINT "PK_order_delivery_assignments" PRIMARY KEY ("id"),
+        CONSTRAINT "FK_odla_driver" FOREIGN KEY ("driverId")
+          REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION,
+        CONSTRAINT "FK_odla_order" FOREIGN KEY ("orderId")
+          REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE NO ACTION,
+        CONSTRAINT "FK_odla_createdBy" FOREIGN KEY ("createdBy")
+          REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION,
+        CONSTRAINT "FK_odla_updatedBy" FOREIGN KEY ("updatedBy")
+          REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
       )
-    `);
-        await queryRunner.query(`
-      ALTER TABLE "order_delivery_assignments"
-      ADD CONSTRAINT "FK_odla_driver" FOREIGN KEY ("driverId")
-      REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-    `);
-        await queryRunner.query(`
-      ALTER TABLE "order_delivery_assignments"
-      ADD CONSTRAINT "FK_odla_order" FOREIGN KEY ("orderId")
-      REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE NO ACTION
-    `);
-        await queryRunner.query(`
-      ALTER TABLE "order_delivery_assignments"
-      ADD CONSTRAINT "FK_odla_createdBy" FOREIGN KEY ("createdBy")
-      REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-    `);
-        await queryRunner.query(`
-      ALTER TABLE "order_delivery_assignments"
-      ADD CONSTRAINT "FK_odla_updatedBy" FOREIGN KEY ("updatedBy")
-      REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
     `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(
-            `ALTER TABLE "order_delivery_assignments" DROP CONSTRAINT "FK_odla_updatedBy"`,
-        );
-        await queryRunner.query(
-            `ALTER TABLE "order_delivery_assignments" DROP CONSTRAINT "FK_odla_createdBy"`,
-        );
-        await queryRunner.query(
-            `ALTER TABLE "order_delivery_assignments" DROP CONSTRAINT "FK_odla_order"`,
-        );
-        await queryRunner.query(
-            `ALTER TABLE "order_delivery_assignments" DROP CONSTRAINT "FK_odla_driver"`,
-        );
+        // Dropear la tabla elimina también sus constraints (definidos inline).
         await queryRunner.query(`DROP TABLE "order_delivery_assignments"`);
 
         // Postgres no soporta quitar un valor de un enum directamente: hay que
