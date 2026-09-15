@@ -86,6 +86,7 @@ export class UpdateOrderUseCase {
       flowers,
       payment,
       setupServiceCost,
+      specialRoundCost,
       advancePayment,
       customerId,
       branchId,
@@ -212,8 +213,15 @@ export class UpdateOrderUseCase {
       order.setupServiceCost = setupServiceCost;
     }
 
+    if (specialRoundCost) {
+      order.specialRoundCost = specialRoundCost;
+    }
+
     order.dessertsTotal = totalAmount;
-    order.totalAmount = totalAmount + parseCurrency(order.setupServiceCost);
+    order.totalAmount =
+      totalAmount +
+      parseCurrency(order.setupServiceCost) +
+      parseCurrency(order.specialRoundCost);
 
     if (order.payments.length === 0 && advancePayment) {
       order.advancePayment = advancePayment;

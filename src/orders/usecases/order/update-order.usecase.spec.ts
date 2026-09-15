@@ -117,6 +117,7 @@ function baseOrder(overrides: Record<string, unknown> = {}) {
         payments: [],
         deliveryAddress: undefined,
         setupServiceCost: 0,
+        specialRoundCost: 0,
         advancePayment: 0,
         paidAmount: 0,
         totalAmount: 0,
@@ -533,6 +534,23 @@ describe('UpdateOrderUseCase', () => {
 
         expect(result.dessertsTotal).toBe(200);
         expect(result.totalAmount).toBe(230);
+    });
+
+    it('recalcula dessertsTotal/totalAmount sumando el costo de ronda especial (cliente #3)', async () => {
+        const mocks = createMocks();
+        mocks.orderRepository.findOne.mockResolvedValue(
+            baseOrder({
+                details: [{ product: { id: 'product-1' }, price: 100, quantity: 2 }],
+            }),
+        );
+
+        const result = await mocks.useCase.execute(
+            baseDto({ specialRoundCost: 40 }),
+            user,
+        );
+
+        expect(result.dessertsTotal).toBe(200);
+        expect(result.totalAmount).toBe(240);
     });
 
     it('aplica el anticipo solo si el pedido no tiene pagos previos', async () => {

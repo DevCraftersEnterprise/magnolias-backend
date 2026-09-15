@@ -413,6 +413,17 @@ export class CreateOrderDto {
 
   @ApiPropertyOptional({
     description:
+      'Additional cost for a special delivery round (required when deliveryRound is RONDA_ESPECIAL)',
+    example: 200.0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Special round cost must be a number' })
+  @Min(0, { message: 'Special round cost must be at least 0' })
+  specialRoundCost?: number;
+
+  @ApiPropertyOptional({
+    description:
       'Short-lived token obtained from POST /auth/verify-discount-authorization, required when any detail has discountPercent > 0',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
