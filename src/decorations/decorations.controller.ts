@@ -18,12 +18,15 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import {
+  ApiCatalogListResponse,
+  ApiCatalogPaginationQueries,
+} from '../common/decorators/api-catalog-pagination.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
@@ -62,50 +65,9 @@ export class DecorationsController {
     summary: 'Get Decorations with optional filters',
     description: 'Retrieves a list of Decorations based on provided filters.',
   })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Number of items to return',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'offset',
-    required: false,
-    type: Number,
-    description: 'Number of items to skip',
-    example: 0,
-  })
-  @ApiQuery({
-    name: 'isActive',
-    required: false,
-    type: Boolean,
-    description: 'Value to recover thee item if they are active or not',
-    example: true,
-  })
+  @ApiCatalogPaginationQueries()
   @ApiOkResponse({ description: 'Decorations list.', type: [Decoration] })
-  @ApiOkResponse({
-    description: 'List of Decorations retrieved successfully.',
-    schema: {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/Decoration' },
-        },
-        total: { type: 'number', example: 100 },
-        pagination: {
-          type: 'object',
-          properties: {
-            limit: { type: 'number', example: 10 },
-            offset: { type: 'number', example: 0 },
-            totalPages: { type: 'number', example: 10 },
-            currentPage: { type: 'number', example: 1 },
-          },
-        },
-      },
-    },
-  })
+  @ApiCatalogListResponse('Decoration')
   findAll(
     @Query() filterDto: DecorationsFilterDto,
   ): Promise<PaginationResponse<Decoration> | Decoration[]> {

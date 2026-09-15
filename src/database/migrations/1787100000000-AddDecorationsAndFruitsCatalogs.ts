@@ -11,37 +11,14 @@ export class AddDecorationsAndFruitsCatalogs1787100000000
     implements MigrationInterface {
     name = 'AddDecorationsAndFruitsCatalogs1787100000000';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // ── decorations ──────────────────────────────────────────────────────
-        await queryRunner.query(`
-      CREATE TABLE "decorations" (
-        "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "name" character varying(100) NOT NULL,
-        "description" text,
-        "isActive" boolean NOT NULL DEFAULT true,
-        "price" money NOT NULL DEFAULT 0,
-        "createdBy" uuid NOT NULL,
-        "updatedBy" uuid NOT NULL,
-        "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-        "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-        CONSTRAINT "UQ_decorations_name" UNIQUE ("name"),
-        CONSTRAINT "PK_decorations" PRIMARY KEY ("id")
-      )
-    `);
-        await queryRunner.query(`
-      ALTER TABLE "decorations"
-      ADD CONSTRAINT "FK_decorations_createdBy" FOREIGN KEY ("createdBy")
-      REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-    `);
-        await queryRunner.query(`
-      ALTER TABLE "decorations"
-      ADD CONSTRAINT "FK_decorations_updatedBy" FOREIGN KEY ("updatedBy")
-      REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-    `);
+    private readonly catalogTables = ['decorations', 'fruits'];
 
-        // ── fruits ───────────────────────────────────────────────────────────
+    private async createCatalogTable(
+        queryRunner: QueryRunner,
+        table: string,
+    ): Promise<void> {
         await queryRunner.query(`
-      CREATE TABLE "fruits" (
+      CREATE TABLE "${table}" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "name" character varying(100) NOT NULL,
         "description" text,
@@ -51,20 +28,39 @@ export class AddDecorationsAndFruitsCatalogs1787100000000
         "updatedBy" uuid NOT NULL,
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-        CONSTRAINT "UQ_fruits_name" UNIQUE ("name"),
-        CONSTRAINT "PK_fruits" PRIMARY KEY ("id")
+        CONSTRAINT "UQ_${table}_name" UNIQUE ("name"),
+        CONSTRAINT "PK_${table}" PRIMARY KEY ("id")
       )
     `);
         await queryRunner.query(`
-      ALTER TABLE "fruits"
-      ADD CONSTRAINT "FK_fruits_createdBy" FOREIGN KEY ("createdBy")
+      ALTER TABLE "${table}"
+      ADD CONSTRAINT "FK_${table}_createdBy" FOREIGN KEY ("createdBy")
       REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
     `);
         await queryRunner.query(`
-      ALTER TABLE "fruits"
-      ADD CONSTRAINT "FK_fruits_updatedBy" FOREIGN KEY ("updatedBy")
+      ALTER TABLE "${table}"
+      ADD CONSTRAINT "FK_${table}_updatedBy" FOREIGN KEY ("updatedBy")
       REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
     `);
+    }
+
+    private async dropCatalogTable(
+        queryRunner: QueryRunner,
+        table: string,
+    ): Promise<void> {
+        await queryRunner.query(
+            `ALTER TABLE "${table}" DROP CONSTRAINT "FK_${table}_updatedBy"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "${table}" DROP CONSTRAINT "FK_${table}_createdBy"`,
+        );
+        await queryRunner.query(`DROP TABLE "${table}"`);
+    }
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        for (const table of this.catalogTables) {
+            await this.createCatalogTable(queryRunner, table);
+        }
 
         // ── order_details.decorationId / fruitId ────────────────────────────
         await queryRunner.query(`
@@ -99,20 +95,8 @@ export class AddDecorationsAndFruitsCatalogs1787100000000
             `ALTER TABLE "order_details" DROP COLUMN "decorationId"`,
         );
 
-        await queryRunner.query(
-            `ALTER TABLE "fruits" DROP CONSTRAINT "FK_fruits_updatedBy"`,
-        );
-        await queryRunner.query(
-            `ALTER TABLE "fruits" DROP CONSTRAINT "FK_fruits_createdBy"`,
-        );
-        await queryRunner.query(`DROP TABLE "fruits"`);
-
-        await queryRunner.query(
-            `ALTER TABLE "decorations" DROP CONSTRAINT "FK_decorations_updatedBy"`,
-        );
-        await queryRunner.query(
-            `ALTER TABLE "decorations" DROP CONSTRAINT "FK_decorations_createdBy"`,
-        );
-        await queryRunner.query(`DROP TABLE "decorations"`);
+        for (const table of [...this.catalogTables].reverse()) {
+            await this.dropCatalogTable(queryRunner, table);
+        }
     }
 }
