@@ -693,12 +693,12 @@ export const getDetailTable = (detail: OrderDetail | null): Content => {
 
   const sizeAndFlavorRows: TextTableCell[][] = hasTiers
     ? [
-      ...getTierRows(detail!.tiers!),
+      ...getTierRows(detail.tiers!),
       [
         labelCell('"ESCRITO"', { border: [true, true, true, true] }),
         valueCell(escritoValue, { border: [true, true, true, true] }),
         labelCell('CANTIDAD DE PISOS', { border: [true, true, true, true] }),
-        valueCell(String(detail!.tiers!.length), {
+        valueCell(String(detail.tiers!.length), {
           border: [true, true, true, true],
         }),
       ],
@@ -1297,6 +1297,38 @@ export const getEventoServicesSection = (order: Order): Content => {
             alignment: 'center',
             border: [true, true, true, false],
           },
+        ],
+        [
+          {
+            text: 'CHAROLAS',
+            fillColor: COLORS.HEADER_LIGHT,
+            fontSize: FONT_SIZE.BODY,
+            bold: true,
+            border: [true, true, true, true],
+          },
+          {
+            text: hasService(EventServiceType.TRAYS),
+            fontSize: FONT_SIZE.BODY,
+            alignment: 'center',
+            border: [true, true, true, true],
+          },
+          {
+            text: 'MESA DE BOCADILLOS',
+            fillColor: COLORS.HEADER_LIGHT,
+            fontSize: FONT_SIZE.BODY,
+            bold: true,
+            border: [true, true, true, true],
+          },
+          {
+            text: hasService(EventServiceType.SNACK_TABLE),
+            fontSize: FONT_SIZE.BODY,
+            alignment: 'center',
+            border: [true, true, true, true],
+          },
+          { text: '', border: [true, true, true, true] },
+          { text: '', border: [true, true, true, true] },
+          { text: '', border: [true, true, true, true] },
+          { text: '', border: [true, true, true, true] },
         ],
       ],
     },

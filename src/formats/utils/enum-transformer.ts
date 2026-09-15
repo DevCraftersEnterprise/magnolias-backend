@@ -38,6 +38,8 @@ export class EnumTransformer {
       [EventServiceType.CHEESE_TABLE]: 'Mesa de quesos',
       [EventServiceType.PLATED]: 'Emplatado',
       [EventServiceType.CAKE]: 'Pastel',
+      [EventServiceType.TRAYS]: 'Charolas',
+      [EventServiceType.SNACK_TABLE]: 'Mesa de bocadillos',
     };
 
     return translations[type] || 'Desconocido';
