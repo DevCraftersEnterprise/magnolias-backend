@@ -20,6 +20,7 @@ import { Customer } from '../../customers/entities/customer.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderAssignment } from '../entities/order-assignment.entity';
+import { OrderDeliveryAssignment } from '../entities/order-delivery-assignment.entity';
 import { OrderStatus } from '../enums/order-status.enum';
 import { OrderDeliveryAddress } from './order-delivery-address.entity';
 import { OrderDetail } from './order-detail.entity';
@@ -356,6 +357,14 @@ export class Order {
   @ApiHideProperty()
   @OneToMany(() => OrderAssignment, (assignment) => assignment.order)
   assignments: OrderAssignment[];
+
+  // Asignación de repartidor a nivel de pedido completo (cliente #8).
+  @ApiHideProperty()
+  @OneToMany(
+    () => OrderDeliveryAssignment,
+    (assignment) => assignment.order,
+  )
+  deliveryAssignments: OrderDeliveryAssignment[];
 
   // Registro de qué empleado (persona real, identificada por PIN) realizó
   // cada acción cuando el pedido se crea/edita/entrega/cancela desde una

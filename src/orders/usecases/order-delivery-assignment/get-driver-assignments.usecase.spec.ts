@@ -1,0 +1,47 @@
+import { BadRequestException } from '@nestjs/common';
+import { GetDriverAssignmentsUseCase } from './get-driver-assignments.usecase';
+
+function createMocks() {
+  const userRepository = { findOne: jest.fn() };
+  const orderDeliveryAssignmentRepository = { find: jest.fn() };
+
+  const useCase = new GetDriverAssignmentsUseCase(
+    userRepository as never,
+    orderDeliveryAssignmentRepository as never,
+  );
+
+  return { useCase, userRepository, orderDeliveryAssignmentRepository };
+}
+
+describe('GetDriverAssignmentsUseCase', () => {
+  it('lanza BadRequestException si el repartidor no existe', async () => {
+    const mocks = createMocks();
+    mocks.userRepository.findOne.mockResolvedValue(null);
+
+    await expect(mocks.useCase.execute('driver-1')).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('devuelve las entregas asignadas al repartidor', async () => {
+    const mocks = createMocks();
+    mocks.userRepository.findOne.mockResolvedValue({ id: 'driver-1' });
+    const assignments = [{ id: 'assignment-1' }, { id: 'assignment-2' }];
+    mocks.orderDeliveryAssignmentRepository.find.mockResolvedValue(
+      assignments,
+    );
+
+    const result = await mocks.useCase.execute('driver-1');
+
+    expect(result).toBe(assignments);
+    expect(
+      mocks.orderDeliveryAssignmentRepository.find,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          driver: { id: 'driver-1' },
+        }),
+      }),
+    );
+  });
+});

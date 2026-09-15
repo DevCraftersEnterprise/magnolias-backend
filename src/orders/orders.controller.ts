@@ -30,6 +30,7 @@ import { PaginationResponse } from '../common/responses/pagination.response';
 import { FileValidator } from '../common/utils/file-validator';
 import { User } from '../users/entities/user.entity';
 import { UserRoles } from '../users/enums/user-role';
+import { AssignOrderDeliveryDto } from './dto/assign-order-delivery.dto';
 import { AssignOrderDetailDto } from './dto/assign-order-detail.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -37,6 +38,7 @@ import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateProductionStatusDto } from './dto/update-production-status.dto';
+import { OrderDeliveryAssignment } from './entities/order-delivery-assignment.entity';
 import { OrderDetailAssignment } from './entities/order-detail-assignment.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { Order } from './entities/order.entity';
@@ -317,7 +319,7 @@ export class OrdersController {
   }
 
   @Patch('delivered')
-  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.DRIVER])
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Mark order as delivered',
@@ -467,6 +469,67 @@ export class OrdersController {
     @Param('bakerId', ParseUUIDPipe) bakerId: string,
   ): Promise<OrderDetailAssignment[]> {
     return this.ordersService.getBakerDetailAssignments(bakerId);
+  }
+
+  // Assign drivers per order (cliente #8: repartidores)
+  @Post(':orderId/delivery/assign')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Assign (or reassign) a driver to an order',
+    description:
+      'Assigns a driver to a specific order for delivery. If the order already ' +
+      'has a delivery assignment, it is updated in place (reassign).',
+  })
+  @ApiParam({
+    name: 'orderId',
+    description: 'UUID of the order',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Order successfully assigned to a driver.',
+    type: OrderDeliveryAssignment,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data, order not found, or order is closed.',
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  assignOrderDelivery(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @Body() assignOrderDeliveryDto: AssignOrderDeliveryDto,
+    @CurrentUser() user: User,
+  ): Promise<OrderDeliveryAssignment> {
+    return this.ordersService.assignOrderDelivery(
+      orderId,
+      assignOrderDeliveryDto,
+      user,
+    );
+  }
+
+  @Get('delivery/assignments/:driverId')
+  @Auth([UserRoles.SUPER, UserRoles.ADMIN, UserRoles.EMPLOYEE, UserRoles.DRIVER])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get delivery assignments for a driver',
+    description: 'Retrieves all orders assigned to a specific driver for delivery.',
+  })
+  @ApiParam({
+    name: 'driverId',
+    description: 'UUID of the driver',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'List of delivery assignments.',
+    type: [OrderDeliveryAssignment],
+  })
+  @ApiNotFoundResponse({ description: 'Driver not found.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  getDriverAssignments(
+    @Param('driverId', ParseUUIDPipe) driverId: string,
+  ): Promise<OrderDeliveryAssignment[]> {
+    return this.ordersService.getDriverAssignments(driverId);
   }
 
   @Patch('details/:detailId/production-status')

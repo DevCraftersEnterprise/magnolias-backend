@@ -15,6 +15,7 @@ import {
 import { Branch } from '../../branches/entities/branch.entity';
 import { BakerArea } from '../../common/enums/baker-area.enum';
 import { OrderAssignment } from '../../orders/entities/order-assignment.entity';
+import { OrderDeliveryAssignment } from '../../orders/entities/order-delivery-assignment.entity';
 import { UserRoles } from '../enums/user-role';
 
 @Entity({ name: 'users' })
@@ -108,6 +109,14 @@ export class User {
   @ApiHideProperty()
   @OneToMany(() => OrderAssignment, (assignment) => assignment.baker)
   assignments?: OrderAssignment[];
+
+  // Relación con asignaciones de entrega (cliente #8: repartidores)
+  @ApiHideProperty()
+  @OneToMany(
+    () => OrderDeliveryAssignment,
+    (assignment) => assignment.driver,
+  )
+  deliveryAssignments?: OrderDeliveryAssignment[];
 
   @ApiProperty({
     description: 'Creation timestamp',

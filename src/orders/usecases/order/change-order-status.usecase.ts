@@ -9,6 +9,7 @@ import { Order } from '../../entities/order.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderCancellation } from '../../entities/order-cancellation.entity';
+import { OrderDeliveryAssignment } from '../../entities/order-delivery-assignment.entity';
 import { OrderEmployeeAction } from '../../entities/order-employee-action.entity';
 import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
 import { UpdateOrderDto } from '../../dto/update-order.dto';
@@ -36,6 +37,8 @@ export class ChangeOrderStatusUseCase {
     private readonly cancellationRepository: Repository<OrderCancellation>,
     @InjectRepository(OrderEmployeeAction)
     private readonly orderEmployeeActionRepository: Repository<OrderEmployeeAction>,
+    @InjectRepository(OrderDeliveryAssignment)
+    private readonly orderDeliveryAssignmentRepository: Repository<OrderDeliveryAssignment>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -75,6 +78,10 @@ export class ChangeOrderStatusUseCase {
       );
     }
 
+    if (orderStatus === OrderStatus.DELIVERED && user.role === UserRoles.DRIVER) {
+      await this.validateAssignedDriver(id, user);
+    }
+
     this.logger.log(
       `Changing status of order ID ${id} from ${order.status} to ${orderStatus} by user ${user.id}`,
     );
@@ -105,6 +112,25 @@ export class ChangeOrderStatusUseCase {
     }
 
     return updatedOrder;
+  }
+
+  private async validateAssignedDriver(
+    orderId: string,
+    user: User,
+  ): Promise<void> {
+    const assignment = await this.orderDeliveryAssignmentRepository.findOne({
+      where: { order: { id: orderId } },
+      relations: { driver: true },
+    });
+
+    if (assignment?.driver.id !== user.id) {
+      this.logger.warn(
+        `Driver ${user.id} is not assigned to order ${orderId} and cannot mark it as delivered`,
+      );
+      throw new BadRequestException(
+        'You are not the driver assigned to this order',
+      );
+    }
   }
 
   private async handleCancellation(

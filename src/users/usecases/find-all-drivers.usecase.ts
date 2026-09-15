@@ -6,8 +6,8 @@ import { UserRoles } from '../enums/user-role';
 import { findUsersByRoleAndBranch } from '../utils/find-users-by-role-and-branch.util';
 
 @Injectable()
-export class FindAllBakersUseCase {
-  private readonly logger = new Logger(FindAllBakersUseCase.name);
+export class FindAllDriversUseCase {
+  private readonly logger = new Logger(FindAllDriversUseCase.name);
 
   constructor(
     @InjectRepository(User)
@@ -20,7 +20,7 @@ export class FindAllBakersUseCase {
 
     const users = await findUsersByRoleAndBranch(
       this.userRepository,
-      UserRoles.BAKER,
+      UserRoles.DRIVER,
       branchId,
     );
 

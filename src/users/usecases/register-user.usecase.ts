@@ -31,12 +31,15 @@ export class RegisterUserUseCase {
       throw new BadRequestException(`Username "${username}" already exists`);
     }
 
-    if (role === UserRoles.BAKER && !branchIds) {
+    // BAKER y DRIVER (cliente #8) pueden operar en varias sucursales.
+    const multiBranchRoles = [UserRoles.BAKER, UserRoles.DRIVER];
+
+    if (multiBranchRoles.includes(role) && !branchIds) {
       this.logger.warn(
-        `Users with role BAKER must be linked to at least one branch`,
+        `Users with role ${role} must be linked to at least one branch`,
       );
       throw new BadRequestException(
-        `Users with role BAKER must be linked to at least one branch`,
+        `Users with role ${role} must be linked to at least one branch`,
       );
     }
 
