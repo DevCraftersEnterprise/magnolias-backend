@@ -5,6 +5,7 @@ import { User } from '../entities/user.entity';
 import { UsersFilterDto } from '../dto/users-filter.dto';
 import { PaginationResponse } from '../../common/responses/pagination.response';
 import { UserRoles } from '../enums/user-role';
+import { USER_LIST_QUERY_OPTIONS } from '../utils/user-list-query.util';
 
 @Injectable()
 export class FindAllUsersUseCase {
@@ -22,6 +23,7 @@ export class FindAllUsersUseCase {
     const { name, lastname, username, role, limit, offset } = usersFilterDto;
 
     const [users, total] = await this.userRepository.findAndCount({
+      ...USER_LIST_QUERY_OPTIONS,
       where: {
         id: Not(user.id),
         name: name ? ILike(`%${name}%`) : undefined,
@@ -34,32 +36,6 @@ export class FindAllUsersUseCase {
               ? And(Not(UserRoles.SUPER), Equal(role))
               : Not(UserRoles.SUPER),
       },
-      relations: {
-        branch: true,
-        branches: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        lastname: true,
-        username: true,
-        role: true,
-        area: true,
-        phone: true,
-        specialty: true,
-        isActive: true,
-        branch: {
-          id: true,
-          name: true,
-        },
-        branches: {
-          id: true,
-          name: true,
-        },
-        createdAt: true,
-        updatedAt: true,
-      },
-      order: { createdAt: 'DESC', name: 'ASC' },
       skip: offset,
       take: limit,
     });
