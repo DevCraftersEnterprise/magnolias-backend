@@ -12,10 +12,12 @@ import { CustomPassportModule } from './custom-passport/custom-passport.module';
 import { CustomThrottlerModule } from './custom-throttler/custom-throttler.module';
 import { CustomersModule } from './customers/customers.module';
 import { DatabaseModule } from './database/database.module';
+import { DecorationsModule } from './decorations/decorations.module';
 import { FillingsModule } from './fillings/fillings.module';
 import { FlowersModule } from './flowers/flowers.module';
 import { FormatsModule } from './formats/formats.module';
 import { FrostingsModule } from './frostings/frostings.module';
+import { FruitsModule } from './fruits/fruits.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrinterModule } from './printer/printer.module';
 import { ProductsModule } from './products/products.module';
@@ -42,6 +44,8 @@ import { UsersModule } from './users/users.module';
     FrostingsModule,
     StylesModule,
     FlowersModule,
+    DecorationsModule,
+    FruitsModule,
     CategoriesModule,
     PrinterModule,
     FormatsModule,
