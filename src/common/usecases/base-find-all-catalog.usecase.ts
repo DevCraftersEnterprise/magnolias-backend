@@ -22,6 +22,7 @@ export abstract class BaseFindAllCatalogUseCase<T extends BaseCatalogEntity> {
         name: true,
         description: true,
         isActive: true,
+        price: true,
       } as any,
       take: limit,
       skip: offset,

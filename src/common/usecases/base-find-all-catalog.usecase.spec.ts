@@ -26,7 +26,12 @@ describe('BaseFindAllCatalogUseCase', () => {
         const result = await useCase.execute({ limit: 10, offset: 0 });
 
         expect(findAndCountMock).toHaveBeenCalledWith(
-            expect.objectContaining({ take: 10, skip: 0, order: { name: 'ASC' } }),
+            expect.objectContaining({
+                take: 10,
+                skip: 0,
+                order: { name: 'ASC' },
+                select: expect.objectContaining({ price: true }),
+            }),
         );
         expect(result).toEqual({
             items: [{ id: '1', name: 'CHOCOLATE' }],

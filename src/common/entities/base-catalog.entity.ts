@@ -39,6 +39,13 @@ export abstract class BaseCatalogEntity {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @ApiProperty({
+    description: 'Price of the item',
+    example: 50.0,
+  })
+  @Column({ type: 'money', default: 0 })
+  price: number;
+
   @ApiHideProperty()
   @ManyToOne('User', { nullable: false })
   @JoinColumn({ name: 'createdBy' })
