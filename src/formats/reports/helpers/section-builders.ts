@@ -1349,13 +1349,24 @@ export const getEventoDataSection = (order: Order): Content => ({
         }),
       ],
       [
-        labelCell('HORA DE MONTAJE', { border: [true, true, true, false] }),
-        valueCell(order.setupTime, { border: [true, true, true, false] }),
+        labelCell('FECHA DE MONTAJE', { border: [true, true, true, true] }),
+        valueCell(
+          toUpperSafe(
+            DateFormatter.getDDMMMMYYYY(order.setupDate ?? order.deliveryDate),
+          ),
+          { border: [true, true, true, true] },
+        ),
+        labelCell('HORA DE MONTAJE', { border: [true, true, true, true] }),
+        valueCell(order.setupTime, { border: [true, true, true, true] }),
+      ],
+      [
         labelCell('ATENDIÓ', { border: [true, true, true, false] }),
         valueCell(
           `${toUpperSafe(order.createdBy?.name)} ${toUpperSafe(order.createdBy?.lastname)}`,
           { border: [true, true, true, false] },
         ),
+        { text: '', border: [true, true, true, false] },
+        { text: '', border: [true, true, true, false] },
       ],
     ],
   },

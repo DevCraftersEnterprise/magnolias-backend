@@ -238,4 +238,39 @@ describe('CreateOrderDto', () => {
       expect(hasErrorOn(errors, 'isEvento')).toBe(true);
     });
   });
+
+  describe('setupDate (cliente: fecha de montaje distinta a la del evento)', () => {
+    it('es opcional', async () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({ deliveryRound: 'ROUND_1' }),
+      );
+      const errors = await validate(dto);
+
+      expect(hasErrorOn(errors, 'setupDate')).toBe(false);
+    });
+
+    it('normaliza la hora a mediodía UTC, igual que deliveryDate', () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({
+          deliveryRound: 'ROUND_1',
+          setupDate: '2026-01-15T23:59:59.000Z',
+        }),
+      );
+
+      expect(dto.setupDate).toBeInstanceOf(Date);
+      expect((dto.setupDate as Date).getUTCHours()).toBe(12);
+    });
+
+    it('rechaza un valor que no es una fecha válida', async () => {
+      const dto = plainToInstance(
+        CreateOrderDto,
+        baseData({ deliveryRound: 'ROUND_1', setupDate: 'no-es-fecha' }),
+      );
+      const errors = await validate(dto);
+
+      expect(hasErrorOn(errors, 'setupDate')).toBe(true);
+    });
+  });
 });
