@@ -93,6 +93,15 @@ export class Order {
   deliveryDate: Date;
 
   @ApiProperty({
+    description:
+      'Setup/assembly date (for events), when different from the event date itself',
+    example: '2024-12-30T00:00:00Z',
+    required: false,
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  setupDate?: Date;
+
+  @ApiProperty({
     description: 'Specific delivery time (optional)',
     example: '15:30',
     required: false,

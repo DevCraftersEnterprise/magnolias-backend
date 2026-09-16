@@ -111,6 +111,22 @@ export class CreateOrderDto {
   deliveryDate: Date;
 
   @ApiPropertyOptional({
+    description:
+      'Setup/assembly date (for events), when different from the event date itself',
+    example: '2023-12-30T23:59:59.000Z',
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (!value) return value;
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return value;
+    date.setUTCHours(12, 0, 0, 0);
+    return date;
+  })
+  @IsDate({ message: 'setupDate must be a valid date' })
+  setupDate?: Date;
+
+  @ApiPropertyOptional({
     description: 'Specific delivery time (HH:MM format)',
     example: '15:30',
   })
