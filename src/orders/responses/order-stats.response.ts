@@ -4,6 +4,7 @@ export class OrderStatsResponse {
     created: number;
     in_process: number;
     done: number;
+    in_delivery: number;
     delivered: number;
     cancelled: number;
     order_type_counts: {

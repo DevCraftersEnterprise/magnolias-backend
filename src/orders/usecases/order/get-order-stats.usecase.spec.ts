@@ -70,6 +70,7 @@ describe('GetOrderStatsUseCase', () => {
       order({ status: 'CREATED' }), // domicilio puro
       order({ status: 'IN PROCESS', isEnTienda: true }),
       order({ status: 'DONE', isEvento: true, includesFlowers: true }),
+      order({ status: 'IN DELIVERY' }),
       order({ status: 'DELIVERED', includesFlowers: true }), // domicilio + flores
       order({ status: 'CANCELED' }),
     ];
@@ -78,14 +79,15 @@ describe('GetOrderStatsUseCase', () => {
 
     const stats = await useCase.execute(user);
 
-    expect(stats.total).toBe(5);
+    expect(stats.total).toBe(6);
     expect(stats.data.created).toBe(1);
     expect(stats.data.in_process).toBe(1);
     expect(stats.data.done).toBe(1);
+    expect(stats.data.in_delivery).toBe(1);
     expect(stats.data.delivered).toBe(1);
     expect(stats.data.cancelled).toBe(1);
     expect(stats.data.order_type_counts).toEqual({
-      domicilio: 3,
+      domicilio: 4,
       evento: 1,
       enTienda: 1,
       conFlores: 2,
