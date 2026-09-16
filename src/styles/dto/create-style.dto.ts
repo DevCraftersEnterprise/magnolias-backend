@@ -1,9 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsOptional } from 'class-validator';
-import { BaseCreateCatalogDto } from '../../common/dto/base-create-catalog.dto';
+import { PricedCreateCatalogDto } from '../../common/dto/priced-create-catalog.dto';
 import { ProductSize } from '../../common/enums/product-size.enum';
 
-export class CreateStyleDto extends BaseCreateCatalogDto {
+export class CreateStyleDto extends PricedCreateCatalogDto {
   @ApiPropertyOptional({
     description:
       'Tamaños de producto para los que aplica esta forma. Vacío/omitido significa que aplica para cualquier tamaño.',

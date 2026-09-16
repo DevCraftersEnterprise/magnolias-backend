@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { PaginationDto } from '../dto/pagination.dto';
 import { PaginationResponse } from '../responses/pagination.response';
-import { BaseCatalogEntity } from '../entities/base-catalog.entity';
+import { PricedCatalogEntity } from '../entities/priced-catalog.entity';
 
 @Injectable()
-export abstract class BaseFindAllCatalogUseCase<T extends BaseCatalogEntity> {
+export abstract class BaseFindAllCatalogUseCase<T extends PricedCatalogEntity> {
   protected abstract readonly logger: Logger;
   protected abstract readonly entityName: string;
 

@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 import { BaseFindAllCatalogUseCase } from './base-find-all-catalog.usecase';
-import { BaseCatalogEntity } from '../entities/base-catalog.entity';
+import { PricedCatalogEntity } from '../entities/priced-catalog.entity';
 
-class FakeCatalogEntity extends BaseCatalogEntity { }
+class FakeCatalogEntity extends PricedCatalogEntity { }
 
 class TestFindAllUseCase extends BaseFindAllCatalogUseCase<FakeCatalogEntity> {
     protected readonly logger = new Logger(TestFindAllUseCase.name);

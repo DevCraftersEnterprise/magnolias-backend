@@ -1,3 +1,3 @@
-import { BaseUpdateCatalogDto } from '../../common/dto/base-update-catalog.dto';
+import { PricedUpdateCatalogDto } from '../../common/dto/priced-update-catalog.dto';
 
-export class UpdateDecorationDto extends BaseUpdateCatalogDto {}
+export class UpdateDecorationDto extends PricedUpdateCatalogDto {}

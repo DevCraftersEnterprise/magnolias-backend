@@ -1,3 +1,3 @@
-import { BaseCreateCatalogDto } from '../../common/dto/base-create-catalog.dto';
+import { PricedCreateCatalogDto } from '../../common/dto/priced-create-catalog.dto';
 
-export class CreateFillingDto extends BaseCreateCatalogDto {}
+export class CreateFillingDto extends PricedCreateCatalogDto {}
