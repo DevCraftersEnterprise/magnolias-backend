@@ -44,4 +44,24 @@ describe('GetDriverAssignmentsUseCase', () => {
       }),
     );
   });
+
+  it('incluye la dirección de entrega en las relaciones (cliente: repartidor debe ver la dirección)', async () => {
+    const mocks = createMocks();
+    mocks.userRepository.findOne.mockResolvedValue({ id: 'driver-1' });
+    mocks.orderDeliveryAssignmentRepository.find.mockResolvedValue([]);
+
+    await mocks.useCase.execute('driver-1');
+
+    expect(
+      mocks.orderDeliveryAssignmentRepository.find,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        relations: expect.objectContaining({
+          order: expect.objectContaining({
+            deliveryAddress: true,
+          }),
+        }),
+      }),
+    );
+  });
 });

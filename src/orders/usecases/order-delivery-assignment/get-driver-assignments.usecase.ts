@@ -43,6 +43,7 @@ export class GetDriverAssignmentsUseCase {
         order: {
           branch: true,
           details: { product: true },
+          deliveryAddress: true,
         },
       },
       order: {
