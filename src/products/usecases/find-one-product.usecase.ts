@@ -52,7 +52,7 @@ export class FindOneProductUseCase {
 
   async favorite(): Promise<Product> {
     const product = await this.productRepository.findOne({
-      where: { isFavorite: true },
+      where: { isFavorite: true, isActive: true, isPublic: true },
       relations: { pictures: true, category: true },
       select: {
         id: true,

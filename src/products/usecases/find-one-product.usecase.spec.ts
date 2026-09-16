@@ -78,7 +78,23 @@ describe('FindOneProductUseCase', () => {
 
       expect(result).toBe(favorite);
       expect(mocks.productRepository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { isFavorite: true } }),
+        expect.objectContaining({
+          where: { isFavorite: true, isActive: true, isPublic: true },
+        }),
+      );
+    });
+
+    it('no expone un favorito desactivado u oculto (cliente: producto no disponible seguía en landing)', async () => {
+      const mocks = createMocks();
+      mocks.productRepository.findOne.mockResolvedValue(null);
+
+      await expect(mocks.useCase.favorite()).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mocks.productRepository.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isFavorite: true, isActive: true, isPublic: true },
+        }),
       );
     });
   });
