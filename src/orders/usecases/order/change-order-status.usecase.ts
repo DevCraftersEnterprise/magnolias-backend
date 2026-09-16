@@ -18,6 +18,7 @@ import { User } from '../../../users/entities/user.entity';
 import { UserRoles } from '../../../users/enums/user-role';
 import { verifyEmployeeActionToken } from '../../../branch-employees/utils/verify-employee-action-token.util';
 import { CancelOrderDto } from '../../dto/cancel-order.dto';
+import { parseCurrency } from '../../utils/parse-currency.util';
 
 const EMPLOYEE_ACTION_BY_STATUS: Partial<
   Record<OrderStatus, OrderEmployeeActionType>
@@ -78,8 +79,12 @@ export class ChangeOrderStatusUseCase {
       );
     }
 
-    if (orderStatus === OrderStatus.DELIVERED && user.role === UserRoles.DRIVER) {
-      await this.validateAssignedDriver(id, user);
+    if (orderStatus === OrderStatus.DELIVERED) {
+      this.validateReadyForDelivery(order);
+
+      if (user.role === UserRoles.DRIVER) {
+        await this.validateAssignedDriver(id, user);
+      }
     }
 
     this.logger.log(
@@ -112,6 +117,31 @@ export class ChangeOrderStatusUseCase {
     }
 
     return updatedOrder;
+  }
+
+  private validateReadyForDelivery(order: Order): void {
+    const requiresDeliveryFlow = !order.isEnTienda && !order.isCustomerPickup;
+    const expectedStatus = requiresDeliveryFlow
+      ? OrderStatus.IN_DELIVERY
+      : OrderStatus.DONE;
+
+    if (order.status !== expectedStatus) {
+      this.logger.warn(
+        `Order ${order.id} cannot be marked as delivered because its status is ${order.status}`,
+      );
+      throw new BadRequestException(
+        requiresDeliveryFlow
+          ? 'El pedido debe estar en proceso de entrega antes de marcarlo como entregado'
+          : 'El pedido debe estar listo antes de marcarlo como entregado',
+      );
+    }
+
+    if (parseCurrency(order.remainingBalance) > 0) {
+      this.logger.warn(
+        `Order ${order.id} cannot be marked as delivered because it has a pending balance`,
+      );
+      throw new BadRequestException('El pedido tiene saldo pendiente de pago');
+    }
   }
 
   private async validateAssignedDriver(
