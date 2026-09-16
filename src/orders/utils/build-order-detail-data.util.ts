@@ -21,6 +21,7 @@ export function mapOrderDetailTierData(
     filling: { id: tier.fillingId },
     frosting: { id: tier.frostingId },
     color: { id: tier.colorId },
+    style: { id: tier.styleId },
     createdBy: user,
     updatedBy: user,
   };

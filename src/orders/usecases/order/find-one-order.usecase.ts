@@ -48,6 +48,7 @@ export class FindOneOrderUseCase {
             filling: true,
             frosting: true,
             color: true,
+            style: true,
           },
           assignments: {
             baker: true,
