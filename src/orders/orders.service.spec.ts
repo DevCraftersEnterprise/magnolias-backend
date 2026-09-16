@@ -16,6 +16,8 @@ function createMocks() {
     const hideOrderDetailReferenceImageUseCase = { execute: jest.fn() };
     const assignOrderDeliveryUseCase = { execute: jest.fn() };
     const getDriverAssignmentsUseCase = { execute: jest.fn() };
+    const claimOrderDeliveryUseCase = { execute: jest.fn() };
+    const getAvailableDeliveriesUseCase = { execute: jest.fn() };
 
     const service = new OrdersService(
         createOrderUseCase as never,
@@ -31,6 +33,8 @@ function createMocks() {
         hideOrderDetailReferenceImageUseCase as never,
         assignOrderDeliveryUseCase as never,
         getDriverAssignmentsUseCase as never,
+        claimOrderDeliveryUseCase as never,
+        getAvailableDeliveriesUseCase as never,
     );
 
     return {
@@ -48,6 +52,8 @@ function createMocks() {
         hideOrderDetailReferenceImageUseCase,
         assignOrderDeliveryUseCase,
         getDriverAssignmentsUseCase,
+        claimOrderDeliveryUseCase,
+        getAvailableDeliveriesUseCase,
     };
 }
 
@@ -232,6 +238,28 @@ describe('OrdersService', () => {
         expect(getDriverAssignmentsUseCase.execute).toHaveBeenCalledWith(
             'driver-1',
         );
+    });
+
+    it('claimOrderDelivery delega en ClaimOrderDeliveryUseCase', async () => {
+        const { service, claimOrderDeliveryUseCase } = createMocks();
+        claimOrderDeliveryUseCase.execute.mockResolvedValue({ id: 'assignment-1' });
+
+        await service.claimOrderDelivery('order-1', {} as never, user);
+
+        expect(claimOrderDeliveryUseCase.execute).toHaveBeenCalledWith(
+            'order-1',
+            {},
+            user,
+        );
+    });
+
+    it('getAvailableDeliveries delega en GetAvailableDeliveriesUseCase', async () => {
+        const { service, getAvailableDeliveriesUseCase } = createMocks();
+        getAvailableDeliveriesUseCase.execute.mockResolvedValue([]);
+
+        await service.getAvailableDeliveries(user);
+
+        expect(getAvailableDeliveriesUseCase.execute).toHaveBeenCalledWith(user);
     });
 
     it('updateProductionStatus delega en UpdateProductionStatusUseCase', async () => {

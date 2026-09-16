@@ -33,6 +33,7 @@ import { UserRoles } from '../users/enums/user-role';
 import { AssignOrderDeliveryDto } from './dto/assign-order-delivery.dto';
 import { AssignOrderDetailDto } from './dto/assign-order-detail.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
+import { ClaimOrderDeliveryDto } from './dto/claim-order-delivery.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
@@ -530,6 +531,62 @@ export class OrdersController {
     @Param('driverId', ParseUUIDPipe) driverId: string,
   ): Promise<OrderDeliveryAssignment[]> {
     return this.ordersService.getDriverAssignments(driverId);
+  }
+
+  @Get('delivery/available')
+  @Auth([UserRoles.DRIVER])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get orders available for a driver to claim',
+    description:
+      'Lists orders ready for delivery (status DONE) in the driver\'s ' +
+      'branch that do not have a driver assigned yet.',
+  })
+  @ApiOkResponse({
+    description: 'List of available orders.',
+    type: [Order],
+  })
+  @ApiBadRequestResponse({ description: 'Driver has no associated branch.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  getAvailableDeliveries(@CurrentUser() user: User): Promise<Order[]> {
+    return this.ordersService.getAvailableDeliveries(user);
+  }
+
+  @Post(':orderId/delivery/claim')
+  @Auth([UserRoles.DRIVER])
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Claim an available order for delivery',
+    description:
+      'Lets the authenticated driver take an order that is ready for ' +
+      'delivery and has no driver assigned yet. Moves the order to ' +
+      'IN DELIVERY. Uses a pessimistic lock so two drivers cannot claim ' +
+      'the same order at the same time.',
+  })
+  @ApiParam({
+    name: 'orderId',
+    description: 'UUID of the order',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Order successfully claimed.',
+    type: OrderDeliveryAssignment,
+  })
+  @ApiBadRequestResponse({
+    description: 'Order not ready for delivery, or driver has no access to its branch.',
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  claimOrderDelivery(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @Body() claimOrderDeliveryDto: ClaimOrderDeliveryDto,
+    @CurrentUser() user: User,
+  ): Promise<OrderDeliveryAssignment> {
+    return this.ordersService.claimOrderDelivery(
+      orderId,
+      claimOrderDeliveryDto,
+      user,
+    );
   }
 
   @Patch('details/:detailId/production-status')
