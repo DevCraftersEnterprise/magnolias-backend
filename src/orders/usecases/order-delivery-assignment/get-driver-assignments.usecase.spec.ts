@@ -1,5 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
+import { In } from 'typeorm';
 import { GetDriverAssignmentsUseCase } from './get-driver-assignments.usecase';
+import { OrderStatus } from '../../enums/order-status.enum';
 
 function createMocks() {
   const userRepository = { findOne: jest.fn() };
@@ -40,6 +42,31 @@ describe('GetDriverAssignmentsUseCase', () => {
       expect.objectContaining({
         where: expect.objectContaining({
           driver: { id: 'driver-1' },
+        }),
+      }),
+    );
+  });
+
+  it('incluye IN_DELIVERY en los estados consultados (cliente: sigue viendo el pedido tras tomarlo)', async () => {
+    const mocks = createMocks();
+    mocks.userRepository.findOne.mockResolvedValue({ id: 'driver-1' });
+    mocks.orderDeliveryAssignmentRepository.find.mockResolvedValue([]);
+
+    await mocks.useCase.execute('driver-1');
+
+    expect(
+      mocks.orderDeliveryAssignmentRepository.find,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          order: expect.objectContaining({
+            status: In([
+              OrderStatus.CREATED,
+              OrderStatus.IN_PROCESS,
+              OrderStatus.DONE,
+              OrderStatus.IN_DELIVERY,
+            ]),
+          }),
         }),
       }),
     );

@@ -54,6 +54,9 @@ export class GetOrderStatsUseCase {
         ).length,
         done: orders.filter((order) => order.status === OrderStatus.DONE)
           .length,
+        in_delivery: orders.filter(
+          (order) => order.status === OrderStatus.IN_DELIVERY,
+        ).length,
         delivered: orders.filter(
           (order) => order.status === OrderStatus.DELIVERED,
         ).length,

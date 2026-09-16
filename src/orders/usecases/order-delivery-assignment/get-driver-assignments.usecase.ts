@@ -36,6 +36,7 @@ export class GetDriverAssignmentsUseCase {
             OrderStatus.CREATED,
             OrderStatus.IN_PROCESS,
             OrderStatus.DONE,
+            OrderStatus.IN_DELIVERY,
           ]),
         },
       },
