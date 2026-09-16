@@ -131,6 +131,8 @@ import { RemoveCommonAddressUseCase } from '../../addresses/usecases/remove-comm
 import { UpdateCommonAddressUseCase } from '../../addresses/usecases/update-common-address.usecase';
 
 import { AssignOrderDeliveryUseCase } from '../../orders/usecases/order-delivery-assignment/assign-order-delivery.usecase';
+import { ClaimOrderDeliveryUseCase } from '../../orders/usecases/order-delivery-assignment/claim-order-delivery.usecase';
+import { GetAvailableDeliveriesUseCase } from '../../orders/usecases/order-delivery-assignment/get-available-deliveries.usecase';
 import { GetDriverAssignmentsUseCase } from '../../orders/usecases/order-delivery-assignment/get-driver-assignments.usecase';
 import { AssignOrderDetailUseCase } from '../../orders/usecases/order-detail-assignment/assign-order-detail.usecase';
 import { GetBakerDetailAssignmentsUseCase } from '../../orders/usecases/order-detail-assignment/get-baker-detail-assignments.usecase';
@@ -581,6 +583,12 @@ async function runSeeds() {
       userRepository,
       orderDeliveryAssignmentRepository,
     );
+    const claimOrderDeliveryUseCase = new ClaimOrderDeliveryUseCase(
+      AppDataSource,
+    );
+    const getAvailableDeliveriesUseCase = new GetAvailableDeliveriesUseCase(
+      orderRepository,
+    );
 
     const ordersService = new OrdersService(
       createOrderUseCase,
@@ -596,6 +604,8 @@ async function runSeeds() {
       hideOrderDetailReferenceImageUseCase,
       assignOrderDeliveryUseCase,
       getDriverAssignmentsUseCase,
+      claimOrderDeliveryUseCase,
+      getAvailableDeliveriesUseCase,
     );
 
     console.log('✅ Conexión establecida\n');

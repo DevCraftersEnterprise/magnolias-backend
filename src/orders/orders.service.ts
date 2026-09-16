@@ -4,6 +4,7 @@ import { User } from '../users/entities/user.entity';
 import { AssignOrderDeliveryDto } from './dto/assign-order-delivery.dto';
 import { AssignOrderDetailDto } from './dto/assign-order-detail.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
+import { ClaimOrderDeliveryDto } from './dto/claim-order-delivery.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersFilterDto } from './dto/orders-filter.dto';
 import { SetPickupPersonDto } from './dto/set-pickup-person.dto';
@@ -16,6 +17,8 @@ import { Order } from './entities/order.entity';
 import { OrderStatus } from './enums/order-status.enum';
 import { OrderStatsResponse } from './responses/order-stats.response';
 import { AssignOrderDeliveryUseCase } from './usecases/order-delivery-assignment/assign-order-delivery.usecase';
+import { ClaimOrderDeliveryUseCase } from './usecases/order-delivery-assignment/claim-order-delivery.usecase';
+import { GetAvailableDeliveriesUseCase } from './usecases/order-delivery-assignment/get-available-deliveries.usecase';
 import { GetDriverAssignmentsUseCase } from './usecases/order-delivery-assignment/get-driver-assignments.usecase';
 import { AssignOrderDetailUseCase } from './usecases/order-detail-assignment/assign-order-detail.usecase';
 import { GetBakerDetailAssignmentsUseCase } from './usecases/order-detail-assignment/get-baker-detail-assignments.usecase';
@@ -45,6 +48,8 @@ export class OrdersService {
     private readonly hideOrderDetailReferenceImageUseCase: HideOrderDetailReferenceImageUseCase,
     private readonly assignOrderDeliveryUseCase: AssignOrderDeliveryUseCase,
     private readonly getDriverAssignmentsUseCase: GetDriverAssignmentsUseCase,
+    private readonly claimOrderDeliveryUseCase: ClaimOrderDeliveryUseCase,
+    private readonly getAvailableDeliveriesUseCase: GetAvailableDeliveriesUseCase,
   ) { }
 
   async createOrder(
@@ -164,6 +169,22 @@ export class OrdersService {
     driverId: string,
   ): Promise<OrderDeliveryAssignment[]> {
     return await this.getDriverAssignmentsUseCase.execute(driverId);
+  }
+
+  async claimOrderDelivery(
+    orderId: string,
+    claimOrderDeliveryDto: ClaimOrderDeliveryDto,
+    driver: User,
+  ): Promise<OrderDeliveryAssignment> {
+    return await this.claimOrderDeliveryUseCase.execute(
+      orderId,
+      claimOrderDeliveryDto,
+      driver,
+    );
+  }
+
+  async getAvailableDeliveries(driver: User): Promise<Order[]> {
+    return await this.getAvailableDeliveriesUseCase.execute(driver);
   }
 
   async updateProductionStatus(
