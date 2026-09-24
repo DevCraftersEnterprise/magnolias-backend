@@ -8,7 +8,7 @@ import { OrderStatus } from '../../enums/order-status.enum';
 
 function createQueryBuilderMock(order: unknown) {
   return {
-    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    innerJoinAndSelect: jest.fn().mockReturnThis(),
     setLock: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getOne: jest.fn().mockResolvedValue(order),
