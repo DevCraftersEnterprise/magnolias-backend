@@ -38,7 +38,7 @@ export class ClaimOrderDeliveryUseCase {
     return this.dataSource.transaction(async (manager) => {
       const order = await manager
         .createQueryBuilder(Order, 'order')
-        .leftJoinAndSelect('order.branch', 'branch')
+        .innerJoinAndSelect('order.branch', 'branch')
         .setLock('pessimistic_write')
         .where('order.id = :orderId', { orderId })
         .getOne();
