@@ -41,6 +41,7 @@ export class AssignOrderDetailUseCase {
     }
 
     if (
+      orderDetail.order.status === OrderStatus.IN_DELIVERY ||
       orderDetail.order.status === OrderStatus.DELIVERED ||
       orderDetail.order.status === OrderStatus.CANCELED
     ) {

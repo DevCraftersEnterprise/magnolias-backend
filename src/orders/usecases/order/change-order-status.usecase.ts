@@ -79,6 +79,18 @@ export class ChangeOrderStatusUseCase {
       );
     }
 
+    if (
+      orderStatus === OrderStatus.CANCELED &&
+      order.status !== OrderStatus.CREATED
+    ) {
+      this.logger.warn(
+        `Order ${id} cannot be canceled because its status is ${order.status}`,
+      );
+      throw new BadRequestException(
+        'Solo se puede cancelar un pedido en estado Creado',
+      );
+    }
+
     if (orderStatus === OrderStatus.DELIVERED) {
       this.validateReadyForDelivery(order);
 
