@@ -60,6 +60,21 @@ describe('UpdateProductionStatusUseCase', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  it('lanza BadRequestException si el pedido está IN_DELIVERY', async () => {
+    const mocks = createMocks();
+    mocks.orderDetailRepository.findOne.mockResolvedValue(
+      baseDetail({ order: { ...baseDetail().order, status: OrderStatus.IN_DELIVERY } }),
+    );
+
+    await expect(
+      mocks.useCase.execute(
+        'detail-1',
+        { status: OrderDetailProductionStatus.IN_PROCESS } as never,
+        superUser,
+      ),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('lanza BadRequestException si el pedido está DELIVERED', async () => {
     const mocks = createMocks();
     mocks.orderDetailRepository.findOne.mockResolvedValue(

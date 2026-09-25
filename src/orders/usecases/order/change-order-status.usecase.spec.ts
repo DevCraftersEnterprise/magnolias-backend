@@ -70,6 +70,23 @@ describe('ChangeOrderStatusUseCase', () => {
         ).rejects.toThrow(BadRequestException);
     });
 
+    it('rechaza cancelar un pedido que ya no está en estado Creado (cliente)', async () => {
+        const { useCase, orderRepository } = createMocks();
+        orderRepository.findOne.mockResolvedValue({
+            id: 'order-1',
+            status: OrderStatus.IN_PROCESS,
+        });
+
+        await expect(
+            useCase.execute(
+                { id: 'order-1' } as never,
+                OrderStatus.CANCELED,
+                user,
+                { reason: 'x' } as never,
+            ),
+        ).rejects.toThrow(BadRequestException);
+    });
+
     it('cambia el estado y actualiza updatedBy', async () => {
         const { useCase, orderRepository } = createMocks();
         orderRepository.findOne.mockResolvedValue({
@@ -93,7 +110,7 @@ describe('ChangeOrderStatusUseCase', () => {
         const { useCase, orderRepository, cancellationRepository } = createMocks();
         orderRepository.findOne.mockResolvedValue({
             id: 'order-1',
-            status: OrderStatus.IN_PROCESS,
+            status: OrderStatus.CREATED,
         });
 
         await useCase.execute(
@@ -116,7 +133,7 @@ describe('ChangeOrderStatusUseCase', () => {
         const { useCase, orderRepository, cancellationRepository } = createMocks();
         orderRepository.findOne.mockResolvedValue({
             id: 'order-1',
-            status: OrderStatus.IN_PROCESS,
+            status: OrderStatus.CREATED,
         });
 
         await useCase.execute(
