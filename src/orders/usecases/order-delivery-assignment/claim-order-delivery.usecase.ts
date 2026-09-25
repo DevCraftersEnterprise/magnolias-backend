@@ -50,6 +50,19 @@ export class ClaimOrderDeliveryUseCase {
         );
       }
 
+      const existingAssignment = await manager
+        .getRepository(OrderDeliveryAssignment)
+        .findOne({ where: { order: { id: orderId } } });
+
+      if (existingAssignment) {
+        this.logger.warn(
+          `Order ${orderId} was already claimed by another driver`,
+        );
+        throw new ConflictException(
+          'Este pedido ya fue tomado por otro repartidor',
+        );
+      }
+
       if (order.status !== OrderStatus.DONE) {
         this.logger.warn(
           `Order ${orderId} cannot be claimed because its status is ${order.status}`,
@@ -68,19 +81,6 @@ export class ClaimOrderDeliveryUseCase {
         );
         throw new BadRequestException(
           'No perteneces a la sucursal de este pedido',
-        );
-      }
-
-      const existingAssignment = await manager
-        .getRepository(OrderDeliveryAssignment)
-        .findOne({ where: { order: { id: orderId } } });
-
-      if (existingAssignment) {
-        this.logger.warn(
-          `Order ${orderId} was already claimed by another driver`,
-        );
-        throw new ConflictException(
-          'Este pedido ya fue tomado por otro repartidor',
         );
       }
 
