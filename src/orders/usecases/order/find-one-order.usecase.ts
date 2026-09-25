@@ -38,6 +38,8 @@ export class FindOneOrderUseCase {
           },
           frosting: true,
           breadType: true,
+          decoration: true,
+          fruit: true,
           style: true,
           filling: true,
           color: true,

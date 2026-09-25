@@ -104,6 +104,21 @@ describe('ClaimOrderDeliveryUseCase', () => {
     ).rejects.toThrow(ConflictException);
   });
 
+  it('responde Conflict (no "no listo") si otro repartidor ya lo tomó y el pedido ya está IN_DELIVERY', async () => {
+    const order = {
+      id: 'order-1',
+      status: OrderStatus.IN_DELIVERY,
+      branch: { id: 'branch-1' },
+    };
+    const mocks = createMocks(order);
+    mocks.orderDeliveryAssignmentRepository.findOne.mockResolvedValue({ id: 'a1' });
+    const driver = { id: 'driver-2', branches: [{ id: 'branch-1' }] };
+
+    await expect(
+      mocks.useCase.execute('order-1', {}, driver as never),
+    ).rejects.toThrow(ConflictException);
+  });
+
   it('crea la asignación y mueve el pedido a IN_DELIVERY cuando todo es válido', async () => {
     const order = {
       id: 'order-1',
