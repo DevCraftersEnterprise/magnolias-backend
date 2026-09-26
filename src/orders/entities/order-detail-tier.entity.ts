@@ -13,6 +13,7 @@ import { Color } from '../../colors/entities/color.entity';
 import { ProductSize } from '../../common/enums/product-size.enum';
 import { Filling } from '../../fillings/entities/filling.entity';
 import { Frosting } from '../../frostings/entities/frosting.entity';
+import { Style } from '../../styles/entities/style.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderDetail } from './order-detail.entity';
 
@@ -67,6 +68,11 @@ export class OrderDetailTier {
   @ManyToOne(() => Color, { nullable: true })
   @JoinColumn({ name: 'colorId' })
   color?: Color;
+
+  @ApiHideProperty()
+  @ManyToOne(() => Style, { nullable: true })
+  @JoinColumn({ name: 'styleId' })
+  style?: Style;
 
   @ApiHideProperty()
   @ManyToOne(() => OrderDetail, (detail) => detail.tiers, {

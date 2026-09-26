@@ -16,7 +16,7 @@ function baseFilter(overrides: Partial<ProductsFilterDto> = {}): ProductsFilterD
 }
 
 describe('FindAllProductsUseCase', () => {
-  it('sin filtros ni paginación: filtra por isPublic=true y retorna un arreglo plano', async () => {
+  it('sin filtros ni paginación: filtra por isPublic=true e isActive=true, y retorna un arreglo plano', async () => {
     const mocks = createMocks();
     mocks.productRepository.findAndCount.mockResolvedValue([
       [{ id: 'p1' }, { id: 'p2' }],
@@ -27,12 +27,22 @@ describe('FindAllProductsUseCase', () => {
 
     expect(mocks.productRepository.findAndCount).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { isPublic: true },
+        where: { isPublic: true, isActive: true },
         skip: undefined,
         take: undefined,
       }),
     );
     expect(result).toEqual([{ id: 'p1' }, { id: 'p2' }]);
+  });
+
+  it('filtra por isActive=true además de isPublic (un producto desactivado no debe verse en el listado público)', async () => {
+    const mocks = createMocks();
+    mocks.productRepository.findAndCount.mockResolvedValue([[], 0]);
+
+    await mocks.useCase.execute(baseFilter());
+
+    const callArg = mocks.productRepository.findAndCount.mock.calls[0][0];
+    expect(callArg.where).toEqual({ isPublic: true, isActive: true });
   });
 
   it('con includeHidden=true: no filtra por isPublic (ve también productos ocultos)', async () => {

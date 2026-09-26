@@ -23,7 +23,10 @@ export class FindAllProductsUseCase {
 
     if (name) whereConditions.name = ILike(`%${name}%`);
     if (description) whereConditions.description = ILike(`%${description}%`);
-    if (!includeHidden) whereConditions.isPublic = true;
+    if (!includeHidden) {
+      whereConditions.isPublic = true;
+      whereConditions.isActive = true;
+    }
 
     const [products, total] = await this.productRepository.findAndCount({
       where: {

@@ -68,4 +68,11 @@ export class CreateOrderDetailTierDto {
   @IsOptional()
   @IsUUID('4', { message: 'Color ID must be a valid UUID' })
   colorId?: string;
+
+  @ApiPropertyOptional({
+    description: 'ID of the style (forma) for this tier',
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'Style ID must be a valid UUID' })
+  styleId?: string;
 }

@@ -23,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Auth } from '../auth/decorators/auth.decorator';
+import { ApiStaffByBranchResponse } from './decorators/api-staff-by-branch-response.decorator';
 import { PaginationResponse } from '../common/responses/pagination.response';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -134,37 +135,19 @@ export class UsersController {
   }
 
   @Get('bakers/:branchId')
-  @ApiOperation({
-    summary: 'Get bakers by branch ID',
-    description: 'Retrieves a list of bakers based on the provided branch ID.',
-  })
-  @ApiOkResponse({
-    description: 'List of bakers retrieved successfully.',
-    schema: {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/User' },
-        },
-        total: { type: 'number', example: 100 },
-        pagination: {
-          type: 'object',
-          properties: {
-            limit: { type: 'number', example: 10 },
-            offset: { type: 'number', example: 0 },
-            totalPages: { type: 'number', example: 10 },
-            currentPage: { type: 'number', example: 1 },
-          },
-        },
-      },
-    },
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized access.' })
+  @ApiStaffByBranchResponse('bakers')
   findBakers(
     @Param('branchId') branchId: string,
   ): Promise<User[]> {
     return this.usersService.findBakers(branchId);
+  }
+
+  @Get('drivers/:branchId')
+  @ApiStaffByBranchResponse('drivers')
+  findDrivers(
+    @Param('branchId') branchId: string,
+  ): Promise<User[]> {
+    return this.usersService.findDrivers(branchId);
   }
 
 

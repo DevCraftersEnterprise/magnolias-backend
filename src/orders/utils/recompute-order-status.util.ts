@@ -4,14 +4,16 @@ import { OrderDetailProductionStatus } from '../enums/order-detail-production-st
 /**
  * Deriva el estado general de un pedido a partir del estado de producción
  * de sus líneas: pasa a IN_PROCESS en cuanto una línea arranca, a DONE solo
- * cuando TODAS las líneas están listas. Nunca sobrescribe DELIVERED/CANCELED
- * (son acciones explícitas de admin, ajenas a la producción).
+ * cuando TODAS las líneas están listas. Nunca sobrescribe IN_DELIVERY/
+ * DELIVERED/CANCELED (son acciones explícitas de reparto/admin, ajenas a
+ * la producción).
  */
 export function computeDerivedOrderStatus(
   currentStatus: OrderStatus,
   detailStatuses: OrderDetailProductionStatus[],
 ): OrderStatus {
   if (
+    currentStatus === OrderStatus.IN_DELIVERY ||
     currentStatus === OrderStatus.DELIVERED ||
     currentStatus === OrderStatus.CANCELED
   ) {

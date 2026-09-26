@@ -45,6 +45,14 @@ describe('computeDerivedOrderStatus', () => {
     ).toBe(OrderStatus.DONE);
   });
 
+  it('nunca sobrescribe IN_DELIVERY, sin importar el estado de las líneas', () => {
+    expect(
+      computeDerivedOrderStatus(OrderStatus.IN_DELIVERY, [
+        OrderDetailProductionStatus.PENDING,
+      ]),
+    ).toBe(OrderStatus.IN_DELIVERY);
+  });
+
   it('nunca sobrescribe DELIVERED, sin importar el estado de las líneas', () => {
     expect(
       computeDerivedOrderStatus(OrderStatus.DELIVERED, [

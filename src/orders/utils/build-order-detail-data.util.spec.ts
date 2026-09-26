@@ -18,6 +18,7 @@ describe('mapOrderDetailTierData', () => {
         fillingId: 'filling-1',
         frostingId: 'frosting-1',
         colorId: 'color-1',
+        styleId: 'style-1',
       },
       user,
     );
@@ -30,6 +31,7 @@ describe('mapOrderDetailTierData', () => {
       filling: { id: 'filling-1' },
       frosting: { id: 'frosting-1' },
       color: { id: 'color-1' },
+      style: { id: 'style-1' },
       createdBy: user,
       updatedBy: user,
     });
@@ -55,6 +57,8 @@ describe('buildOrderDetailData', () => {
         frostingId: 'frosting-1',
         colorId: 'color-1',
         styleId: 'style-1',
+        decorationId: 'decoration-1',
+        fruitId: 'fruit-1',
       }),
       order,
       product,
@@ -67,6 +71,8 @@ describe('buildOrderDetailData', () => {
       frosting: { id: 'frosting-1' },
       color: { id: 'color-1' },
       style: { id: 'style-1' },
+      decoration: { id: 'decoration-1' },
+      fruit: { id: 'fruit-1' },
       order,
       product,
       createdBy: user,
@@ -94,11 +100,16 @@ describe('buildOrderDetailData', () => {
     expect(result.discountAuthorizedAt).toBeInstanceOf(Date);
   });
 
-  it('mapea tiers cuando vienen en el DTO', () => {
+  it('mapea tiers cuando vienen en el DTO, incluyendo la forma (style) por piso', () => {
     const result = buildOrderDetailData(
       baseDetailDto({
         tiers: [
-          { position: 1, productSize: '30P', breadTypeId: 'bread-1' },
+          {
+            position: 1,
+            productSize: '30P',
+            breadTypeId: 'bread-1',
+            styleId: 'style-1',
+          },
           { position: 2, productSize: '20P', colorId: 'color-1' },
         ],
       }),
@@ -108,7 +119,11 @@ describe('buildOrderDetailData', () => {
     );
 
     expect(result.tiers).toEqual([
-      expect.objectContaining({ position: 1, breadType: { id: 'bread-1' } }),
+      expect.objectContaining({
+        position: 1,
+        breadType: { id: 'bread-1' },
+        style: { id: 'style-1' },
+      }),
       expect.objectContaining({ position: 2, color: { id: 'color-1' } }),
     ]);
   });

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserRoles } from '../enums/user-role';
+import { findUsersByRoleAndBranch } from '../utils/find-users-by-role-and-branch.util';
 
 @Injectable()
 export class FindAllBakersUseCase {
@@ -17,40 +18,11 @@ export class FindAllBakersUseCase {
     branchId: string
   ): Promise<User[]> {
 
-    const users = await this.userRepository.find({
-      where: {
-        branches: {
-          id: branchId,
-        },
-        role: UserRoles.BAKER
-      },
-      relations: {
-        branch: true,
-        branches: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        lastname: true,
-        username: true,
-        role: true,
-        area: true,
-        phone: true,
-        specialty: true,
-        isActive: true,
-        branch: {
-          id: true,
-          name: true,
-        },
-        branches: {
-          id: true,
-          name: true,
-        },
-        createdAt: true,
-        updatedAt: true,
-      },
-      order: { createdAt: 'DESC', name: 'ASC' },
-    });
+    const users = await findUsersByRoleAndBranch(
+      this.userRepository,
+      UserRoles.BAKER,
+      branchId,
+    );
 
     this.logger.log(
       `Found ${users.length} users matching filters. Returning all results.`,

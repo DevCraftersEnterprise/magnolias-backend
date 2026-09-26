@@ -31,6 +31,18 @@ describe('FindAllFlowersUseCase', () => {
     expect(callArg.where.name).toBeDefined();
   });
 
+  it('incluye price en el select (cliente: el listado no mostraba el precio guardado)', async () => {
+    findAndCountMock.mockResolvedValue([[], 0]);
+
+    await useCase.execute({} as FlowersFilterDto);
+
+    expect(findAndCountMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({ price: true }),
+      }),
+    );
+  });
+
   it('no aplica filtros cuando no vienen definidos', async () => {
     findAndCountMock.mockResolvedValue([[], 0]);
 

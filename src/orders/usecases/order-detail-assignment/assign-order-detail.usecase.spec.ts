@@ -61,6 +61,18 @@ describe('AssignOrderDetailUseCase', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  it('lanza BadRequestException si el pedido está IN_DELIVERY (cliente: no reasignar pastelero en reparto)', async () => {
+    const mocks = createMocks();
+    mocks.orderDetailRepository.findOne.mockResolvedValue({
+      ...orderDetail,
+      order: { ...orderDetail.order, status: OrderStatus.IN_DELIVERY },
+    });
+
+    await expect(
+      mocks.useCase.execute('detail-1', { bakerId: 'baker-1' } as never, user),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('lanza BadRequestException si el pedido está CANCELED', async () => {
     const mocks = createMocks();
     mocks.orderDetailRepository.findOne.mockResolvedValue({

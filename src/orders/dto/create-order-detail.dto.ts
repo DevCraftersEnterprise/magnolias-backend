@@ -112,6 +112,22 @@ export class CreateOrderDetailDto {
   styleId?: string;
 
   @ApiProperty({
+    description: 'ID of the decoration',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'Decoration ID must be a valid UUID' })
+  decorationId?: string;
+
+  @ApiProperty({
+    description: 'ID of the fruit',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'Fruit ID must be a valid UUID' })
+  fruitId?: string;
+
+  @ApiProperty({
     description: 'Indicates if the item has writing',
     example: true,
     default: false,

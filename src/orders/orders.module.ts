@@ -12,6 +12,7 @@ import { UsersModule } from '../users/users.module';
 import { OrderAssignment } from './entities/order-assignment.entity';
 import { OrderCancellation } from './entities/order-cancellation.entity';
 import { OrderDeliveryAddress } from './entities/order-delivery-address.entity';
+import { OrderDeliveryAssignment } from './entities/order-delivery-assignment.entity';
 import { OrderDetailAssignment } from './entities/order-detail-assignment.entity';
 import { OrderDetail } from './entities/order-detail.entity';
 import { OrderDetailTier } from './entities/order-detail-tier.entity';
@@ -20,6 +21,10 @@ import { OrderPayment } from './entities/order-payment.entity';
 import { Order } from './entities/order.entity';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
+import { AssignOrderDeliveryUseCase } from './usecases/order-delivery-assignment/assign-order-delivery.usecase';
+import { ClaimOrderDeliveryUseCase } from './usecases/order-delivery-assignment/claim-order-delivery.usecase';
+import { GetAvailableDeliveriesUseCase } from './usecases/order-delivery-assignment/get-available-deliveries.usecase';
+import { GetDriverAssignmentsUseCase } from './usecases/order-delivery-assignment/get-driver-assignments.usecase';
 import { AssignOrderDetailUseCase } from './usecases/order-detail-assignment/assign-order-detail.usecase';
 import { GetBakerDetailAssignmentsUseCase } from './usecases/order-detail-assignment/get-baker-detail-assignments.usecase';
 import { UpdateProductionStatusUseCase } from './usecases/order-detail-assignment/update-production-status.usecase';
@@ -52,6 +57,10 @@ import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-orde
     GetBakerDetailAssignmentsUseCase,
     UpdateProductionStatusUseCase,
     HideOrderDetailReferenceImageUseCase,
+    AssignOrderDeliveryUseCase,
+    GetDriverAssignmentsUseCase,
+    ClaimOrderDeliveryUseCase,
+    GetAvailableDeliveriesUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -62,6 +71,7 @@ import { HideOrderDetailReferenceImageUseCase } from './usecases/order/hide-orde
       OrderDetailReferenceImage,
       OrderCancellation,
       OrderDeliveryAddress,
+      OrderDeliveryAssignment,
       OrderAssignment,
       OrderFlower,
       OrderPayment,

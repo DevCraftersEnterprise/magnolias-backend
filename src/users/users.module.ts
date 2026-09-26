@@ -14,6 +14,7 @@ import { UpdateUserUseCase } from './usecases/update-user.usecase';
 import { RemoveUserUseCase } from './usecases/remove-user.usecase';
 import { ResetPasswordForUserUseCase } from './usecases/reset-password-for-user.usecase';
 import { FindAllBakersUseCase } from './usecases/find-all-bakers.usecase';
+import { FindAllDriversUseCase } from './usecases/find-all-drivers.usecase';
 
 @Module({
   controllers: [UsersController],
@@ -30,6 +31,7 @@ import { FindAllBakersUseCase } from './usecases/find-all-bakers.usecase';
     RemoveUserUseCase,
     ResetPasswordForUserUseCase,
     FindAllBakersUseCase,
+    FindAllDriversUseCase,
   ],
   imports: [
     TypeOrmModule.forFeature([User]),

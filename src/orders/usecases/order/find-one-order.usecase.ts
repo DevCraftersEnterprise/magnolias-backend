@@ -38,6 +38,8 @@ export class FindOneOrderUseCase {
           },
           frosting: true,
           breadType: true,
+          decoration: true,
+          fruit: true,
           style: true,
           filling: true,
           color: true,
@@ -48,6 +50,7 @@ export class FindOneOrderUseCase {
             filling: true,
             frosting: true,
             color: true,
+            style: true,
           },
           assignments: {
             baker: true,
@@ -62,6 +65,9 @@ export class FindOneOrderUseCase {
         updatedBy: true,
         employeeActions: {
           employee: true,
+        },
+        deliveryAssignments: {
+          driver: true,
         },
       },
       order: {
@@ -98,6 +104,14 @@ export class FindOneOrderUseCase {
         ...action,
         employee: sanitizeBranchEmployee(action.employee),
       })) as typeof order.employeeActions;
+    }
+    if (order.deliveryAssignments) {
+      order.deliveryAssignments = order.deliveryAssignments.map(
+        (assignment) => ({
+          ...assignment,
+          driver: sanitizeUser(assignment.driver) as User,
+        }),
+      ) as typeof order.deliveryAssignments;
     }
     if (order.details) {
       order.details = order.details.map((detail) => ({
