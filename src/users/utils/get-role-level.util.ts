@@ -10,6 +10,8 @@ export function getRoleLevel(role: UserRoles): number {
       return 3;
     case UserRoles.BAKER:
       return 2;
+    case UserRoles.DRIVER:
+      return 2;
     default:
       return 0;
   }

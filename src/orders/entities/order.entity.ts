@@ -20,6 +20,7 @@ import { Customer } from '../../customers/entities/customer.entity';
 import { OrderFlower } from '../../orders/entities/order-flower.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderAssignment } from '../entities/order-assignment.entity';
+import { OrderDeliveryAssignment } from '../entities/order-delivery-assignment.entity';
 import { OrderStatus } from '../enums/order-status.enum';
 import { OrderDeliveryAddress } from './order-delivery-address.entity';
 import { OrderDetail } from './order-detail.entity';
@@ -90,6 +91,15 @@ export class Order {
   })
   @Column({ type: 'timestamptz', nullable: false })
   deliveryDate: Date;
+
+  @ApiProperty({
+    description:
+      'Setup/assembly date (for events), when different from the event date itself',
+    example: '2024-12-30T00:00:00Z',
+    required: false,
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  setupDate?: Date;
 
   @ApiProperty({
     description: 'Specific delivery time (optional)',
@@ -206,6 +216,14 @@ export class Order {
   })
   @Column({ type: 'money', default: 0 })
   setupServiceCost: number;
+
+  @ApiProperty({
+    description:
+      'Additional cost for a special delivery round (RONDA_ESPECIAL)',
+    example: 200.0,
+  })
+  @Column({ type: 'money', default: 0 })
+  specialRoundCost: number;
 
   @ApiProperty({
     description: 'Indicates if the order has a photo reference',
@@ -348,6 +366,14 @@ export class Order {
   @ApiHideProperty()
   @OneToMany(() => OrderAssignment, (assignment) => assignment.order)
   assignments: OrderAssignment[];
+
+  // Asignación de repartidor a nivel de pedido completo (cliente #8).
+  @ApiHideProperty()
+  @OneToMany(
+    () => OrderDeliveryAssignment,
+    (assignment) => assignment.order,
+  )
+  deliveryAssignments: OrderDeliveryAssignment[];
 
   // Registro de qué empleado (persona real, identificada por PIN) realizó
   // cada acción cuando el pedido se crea/edita/entrega/cancela desde una

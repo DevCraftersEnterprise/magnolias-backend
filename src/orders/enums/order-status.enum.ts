@@ -2,6 +2,7 @@ export enum OrderStatus {
   CREATED = 'CREATED',
   IN_PROCESS = 'IN PROCESS',
   DONE = 'DONE',
+  IN_DELIVERY = 'IN DELIVERY',
   DELIVERED = 'DELIVERED',
   CANCELED = 'CANCELED',
 }

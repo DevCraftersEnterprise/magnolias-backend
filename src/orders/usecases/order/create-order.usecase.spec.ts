@@ -543,6 +543,30 @@ describe('CreateOrderUseCase', () => {
             expect(finalOrder.remainingBalance).toBe(130);
         });
 
+        it('suma el costo de ronda especial al total, incluso en tienda (cliente #3)', async () => {
+            const mocks = createMocks();
+            mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);
+            mocks.branchesService.findBranchByTerm.mockResolvedValue(branch);
+            mocks.productsService.findProductByTerm.mockResolvedValue(product);
+
+            await mocks.useCase.execute(
+                baseOrderDto({
+                    isEnTienda: true,
+                    advancePayment: 50,
+                    specialRoundCost: 40,
+                    details: [baseDetail({ price: 100, quantity: 2 })],
+                }),
+                user,
+            );
+
+            const savedOrderCalls = mocks.orderRepository.save.mock.calls;
+            const finalOrder = savedOrderCalls[savedOrderCalls.length - 1][0];
+
+            expect(finalOrder.dessertsTotal).toBe(200);
+            expect(finalOrder.totalAmount).toBe(240);
+            expect(finalOrder.remainingBalance).toBe(190);
+        });
+
         it('crea un OrderPayment con el anticipo', async () => {
             const mocks = createMocks();
             mocks.customerService.findOne.mockResolvedValue(customerWithoutAddress);

@@ -31,6 +31,7 @@ export class FindAllFlowersUseCase {
         name: true,
         description: true,
         isActive: true,
+        price: true,
       },
       take: limit,
       skip: offset,

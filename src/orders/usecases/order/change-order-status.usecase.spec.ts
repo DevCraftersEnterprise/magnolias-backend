@@ -17,6 +17,9 @@ function createMocks() {
         create: jest.fn((data) => ({ ...data })),
         save: jest.fn((entity) => Promise.resolve(entity)),
     };
+    const orderDeliveryAssignmentRepository = {
+        findOne: jest.fn(),
+    };
     const jwtService = {
         verify: jest.fn().mockReturnValue({
             employeeId: 'employee-1',
@@ -28,6 +31,7 @@ function createMocks() {
         orderRepository as never,
         cancellationRepository as never,
         orderEmployeeActionRepository as never,
+        orderDeliveryAssignmentRepository as never,
         jwtService as never,
     );
 
@@ -36,6 +40,7 @@ function createMocks() {
         orderRepository,
         cancellationRepository,
         orderEmployeeActionRepository,
+        orderDeliveryAssignmentRepository,
         jwtService,
     };
 }
@@ -65,6 +70,23 @@ describe('ChangeOrderStatusUseCase', () => {
         ).rejects.toThrow(BadRequestException);
     });
 
+    it('rechaza cancelar un pedido que ya no está en estado Creado (cliente)', async () => {
+        const { useCase, orderRepository } = createMocks();
+        orderRepository.findOne.mockResolvedValue({
+            id: 'order-1',
+            status: OrderStatus.IN_PROCESS,
+        });
+
+        await expect(
+            useCase.execute(
+                { id: 'order-1' } as never,
+                OrderStatus.CANCELED,
+                user,
+                { reason: 'x' } as never,
+            ),
+        ).rejects.toThrow(BadRequestException);
+    });
+
     it('cambia el estado y actualiza updatedBy', async () => {
         const { useCase, orderRepository } = createMocks();
         orderRepository.findOne.mockResolvedValue({
@@ -88,7 +110,7 @@ describe('ChangeOrderStatusUseCase', () => {
         const { useCase, orderRepository, cancellationRepository } = createMocks();
         orderRepository.findOne.mockResolvedValue({
             id: 'order-1',
-            status: OrderStatus.IN_PROCESS,
+            status: OrderStatus.CREATED,
         });
 
         await useCase.execute(
@@ -111,7 +133,7 @@ describe('ChangeOrderStatusUseCase', () => {
         const { useCase, orderRepository, cancellationRepository } = createMocks();
         orderRepository.findOne.mockResolvedValue({
             id: 'order-1',
-            status: OrderStatus.IN_PROCESS,
+            status: OrderStatus.CREATED,
         });
 
         await useCase.execute(
@@ -177,7 +199,8 @@ describe('ChangeOrderStatusUseCase', () => {
                 createMocks();
             orderRepository.findOne.mockResolvedValue({
                 id: 'order-1',
-                status: OrderStatus.DONE,
+                status: OrderStatus.IN_DELIVERY,
+                remainingBalance: '0',
             });
 
             await useCase.execute(
@@ -242,7 +265,8 @@ describe('ChangeOrderStatusUseCase', () => {
             const { useCase, orderRepository, jwtService } = createMocks();
             orderRepository.findOne.mockResolvedValue({
                 id: 'order-1',
-                status: OrderStatus.DONE,
+                status: OrderStatus.IN_DELIVERY,
+                remainingBalance: '0',
             });
 
             await useCase.execute(
@@ -252,6 +276,143 @@ describe('ChangeOrderStatusUseCase', () => {
             );
 
             expect(jwtService.verify).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('validación de repartidor asignado (cliente #8)', () => {
+        const driverUser = { id: 'driver-1', role: 'DRIVER' } as User;
+
+        it('lanza BadRequestException si el repartidor no tiene una entrega asignada', async () => {
+            const { useCase, orderRepository, orderDeliveryAssignmentRepository } =
+                createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.IN_DELIVERY,
+                remainingBalance: '0',
+            });
+            orderDeliveryAssignmentRepository.findOne.mockResolvedValue(null);
+
+            await expect(
+                useCase.execute(
+                    { id: 'order-1' } as never,
+                    OrderStatus.DELIVERED,
+                    driverUser,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('lanza BadRequestException si el repartidor asignado es otro distinto al que marca la entrega', async () => {
+            const { useCase, orderRepository, orderDeliveryAssignmentRepository } =
+                createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.IN_DELIVERY,
+                remainingBalance: '0',
+            });
+            orderDeliveryAssignmentRepository.findOne.mockResolvedValue({
+                driver: { id: 'driver-other' },
+            });
+
+            await expect(
+                useCase.execute(
+                    { id: 'order-1' } as never,
+                    OrderStatus.DELIVERED,
+                    driverUser,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('permite marcar como entregado al repartidor asignado', async () => {
+            const { useCase, orderRepository, orderDeliveryAssignmentRepository } =
+                createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.IN_DELIVERY,
+                remainingBalance: '0',
+            });
+            orderDeliveryAssignmentRepository.findOne.mockResolvedValue({
+                driver: { id: 'driver-1' },
+            });
+
+            const result = await useCase.execute(
+                { id: 'order-1' } as never,
+                OrderStatus.DELIVERED,
+                driverUser,
+            );
+
+            expect(result.status).toBe(OrderStatus.DELIVERED);
+        });
+    });
+
+    describe('validación de estado y saldo antes de entregar (cliente: no entregar con saldo pendiente)', () => {
+        it('rechaza DELIVERED si el pedido tiene saldo pendiente', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.IN_DELIVERY,
+                remainingBalance: '150.00',
+            });
+
+            await expect(
+                useCase.execute(
+                    { id: 'order-1' } as never,
+                    OrderStatus.DELIVERED,
+                    { id: 'admin-1', role: 'ADMIN' } as User,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('rechaza DELIVERED si un pedido con reparto no está en IN_DELIVERY', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.DONE,
+                remainingBalance: '0',
+            });
+
+            await expect(
+                useCase.execute(
+                    { id: 'order-1' } as never,
+                    OrderStatus.DELIVERED,
+                    { id: 'admin-1', role: 'ADMIN' } as User,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('permite DELIVERED desde DONE directo para un pedido en tienda (isEnTienda), sin pasar por IN_DELIVERY', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.DONE,
+                remainingBalance: '0',
+                isEnTienda: true,
+            });
+
+            const result = await useCase.execute(
+                { id: 'order-1' } as never,
+                OrderStatus.DELIVERED,
+                { id: 'admin-1', role: 'ADMIN' } as User,
+            );
+
+            expect(result.status).toBe(OrderStatus.DELIVERED);
+        });
+
+        it('permite DELIVERED desde DONE directo para un pedido de recolección por cliente (isCustomerPickup)', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.DONE,
+                remainingBalance: '0',
+                isCustomerPickup: true,
+            });
+
+            const result = await useCase.execute(
+                { id: 'order-1' } as never,
+                OrderStatus.DELIVERED,
+                { id: 'admin-1', role: 'ADMIN' } as User,
+            );
+
+            expect(result.status).toBe(OrderStatus.DELIVERED);
         });
     });
 });

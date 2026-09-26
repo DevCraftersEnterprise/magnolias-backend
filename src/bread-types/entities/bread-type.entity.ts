@@ -1,5 +1,5 @@
 import { Entity } from 'typeorm';
-import { BaseCatalogEntity } from '../../common/entities/base-catalog.entity';
+import { PricedCatalogEntity } from '../../common/entities/priced-catalog.entity';
 
 @Entity({ name: 'bread_types' })
-export class BreadType extends BaseCatalogEntity {}
+export class BreadType extends PricedCatalogEntity {}

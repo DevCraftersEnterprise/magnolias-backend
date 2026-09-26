@@ -21,6 +21,7 @@ export function mapOrderDetailTierData(
     filling: { id: tier.fillingId },
     frosting: { id: tier.frostingId },
     color: { id: tier.colorId },
+    style: { id: tier.styleId },
     createdBy: user,
     updatedBy: user,
   };
@@ -46,6 +47,8 @@ export function buildOrderDetailData(
     filling: { id: detailDto.fillingId },
     frosting: { id: detailDto.frostingId },
     style: { id: detailDto.styleId },
+    decoration: { id: detailDto.decorationId },
+    fruit: { id: detailDto.fruitId },
     color: { id: detailDto.colorId },
     tiers: detailDto.tiers?.map((tier) => mapOrderDetailTierData(tier, user)),
     order,

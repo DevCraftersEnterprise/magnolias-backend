@@ -24,10 +24,14 @@ Magnolias Backend es la API que sostiene el panel de administración y la tienda
 ### ✨ Características Principales
 
 - 🔐 Autenticación JWT (access/refresh) y sesiones cortas con PIN individual por empleado de sucursal
-- 👥 Control de acceso basado en roles (`SUPER`, `ADMIN`, `EMPLOYEE`, `BAKER`)
+- 👥 Control de acceso basado en roles (`SUPER`, `ADMIN`, `EMPLOYEE`, `BAKER`, `DRIVER`)
 - 🗄️ TypeORM + PostgreSQL, con migraciones manuales (`synchronize: false`)
 - 🔒 Cifrado AES-256-GCM para datos sensibles (teléfonos, cuenta de transferencia) + índice HMAC determinístico para búsqueda/unicidad
 - 🍰 Módulo de pedidos con pisos de pastel independientes, asignación de repostero por línea de producto, estado de producción derivado automáticamente, descuentos por producto con autorización, e imágenes de referencia
+- 🚚 Reparto: los repartidores (`DRIVER`) ven los pedidos "Listos" de su sucursal y los toman ellos mismos (`claim`), con lock pesimista en transacción para que dos repartidores no puedan quedarse con el mismo pedido
+- 🔄 Ciclo de vida del pedido con estados `CREATED → IN PROCESS → DONE ("Listo") → IN DELIVERY → DELIVERED` (o `CANCELED`) y guards de transición (ver [Ciclo de Vida de un Pedido](#ciclo-de-vida-de-un-pedido))
+- 💲 Catálogos con precio (tipo de pan, relleno, cubierta, decoración, fruta, flor) y catálogos de Decoración y Fruta; Forma y Categoría **no** manejan precio
+- 📅 Pedidos de evento con fecha de montaje (`setupDate`) distinta a la fecha del evento, canal de origen del pedido (WhatsApp, Instagram, Facebook, llamada, en persona) y ronda de entrega especial con costo adicional
 - 🛡️ Rate limiting (throttling) por endpoint, incluyendo intentos de PIN
 - 📦 Arquitectura modular y escalable (un módulo por dominio, casos de uso independientes y testeados)
 - 🧪 Cobertura de pruebas unitarias con Jest, gate de calidad con SonarQube Cloud en cada PR
@@ -40,6 +44,7 @@ Magnolias Backend es la API que sostiene el panel de administración y la tienda
 - [Comandos Clave](#comandos-clave)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Migraciones de Base de Datos](#migraciones-de-base-de-datos)
+- [Ciclo de Vida de un Pedido](#ciclo-de-vida-de-un-pedido)
 - [Flujo de Trabajo Git y Convenciones](#flujo-de-trabajo-git-y-convenciones)
 - [Despliegue](#despliegue)
 
@@ -244,19 +249,22 @@ src/
 │   ├── seeds/                  # Datos semilla
 │   ├── data-source.ts          # Fuente de datos principal
 │   └── database.module.ts      # Módulo de base de datos
+├── decorations/                # Catálogo: decoración (con precio)
 ├── fillings/                   # Catálogo: rellenos
-├── flowers/                    # Catálogo: flores (pedidos con "incluye flores")
-├── formats/                    # Generación de reportes/PDF por tipo de pedido
+├── flowers/                    # Catálogo: flores (con precio; pedidos con "incluye flores")
+├── formats/                    # Generación de reportes/PDF por tipo de pedido (incluye fecha/hora de montaje del evento)
 ├── frostings/                  # Catálogo: cubiertas
+├── fruits/                     # Catálogo: fruta (con precio)
 ├── orders/                     # Pedidos: líneas de producto, pisos, asignación por línea,
 │   │                           # estado de producción, descuentos, imágenes de referencia, pagos
 │   └── usecases/
-│       ├── order/                        # Casos de uso a nivel pedido (crear, editar, stats, etc.)
-│       └── order-detail-assignment/      # Asignación de repostero y avance de producción por línea
+│       ├── order/                        # Casos de uso a nivel pedido (crear, editar, cambiar estado, stats, etc.)
+│       ├── order-detail-assignment/      # Asignación de repostero y avance de producción por línea
+│       └── order-delivery-assignment/    # Repartidores: asignación por admin, claim con lock, pedidos disponibles
 ├── printer/                    # Utilidades de impresión de reportes
 ├── products/                   # Productos (categoría, fotos, favorito, visibilidad pública)
 ├── scripts/                    # Scripts de mantenimiento de uso único (ver comandos arriba)
-├── styles/                     # Catálogo: forma
+├── styles/                     # Catálogo: forma (relacionada con los tamaños en que aplica; sin precio)
 └── users/                      # Usuarios del sistema (login, roles, sucursales)
 ```
 
@@ -267,15 +275,13 @@ Este proyecto utiliza migraciones de TypeORM para gestionar cambios en el esquem
 ### Crear una Migración
 
 1. **Modificar tus entidades** - Realiza cambios en tus archivos de entidades
-2. **Generar migración** - Ejecuta el generador de migraciones:
-   ```bash
-   npm run migration:generate src/database/migrations/NombreDescriptivo
-   ```
-3. **Revisar la migración** - Verifica el archivo de migración generado
-4. **Ejecutar la migración** - Aplica la migración a la base de datos:
+2. **Escribir la migración a mano** - Crea el archivo con un timestamp posterior a la última (`178XXXXXXXXXX-NombreDescriptivo.ts` en `src/database/migrations/`) y escribe el SQL en `up`/`down`. `migration:generate` solo sirve como referencia: con columnas `money` arrastra cambios cosméticos que no corresponden.
+3. **Ejecutar la migración** - Aplica la migración a la base de datos:
    ```bash
    npm run migration:run
    ```
+
+> ⚠️ **Enums de Postgres:** `ALTER TYPE ... ADD VALUE` no permite usar el valor nuevo en la misma transacción que lo crea, y TypeORM corre todas las migraciones pendientes de un deploy en una sola transacción. Una migración que agrega un valor de enum **no debe** hacer backfill con ese valor en la misma migración. Para el `down`, quitar un valor exige recrear el tipo; si la columna tiene `DEFAULT` (p. ej. `orders.status`), hay que quitarlo antes del cambio de tipo y volver a ponerlo después.
 
 ### Mejores Prácticas
 
@@ -284,6 +290,44 @@ Este proyecto utiliza migraciones de TypeORM para gestionar cambios en el esquem
 - Prueba las migraciones en desarrollo antes de aplicarlas en producción
 - Nunca modifiques migraciones que ya se han ejecutado en producción
 - Mantén las migraciones pequeñas y enfocadas en un solo cambio
+
+## 🔄 Ciclo de Vida de un Pedido
+
+Estados (`OrderStatus`, enum nativo de Postgres `orders_status_enum`):
+
+| Estado | Valor | Cómo se llega a él |
+|--------|-------|--------------------|
+| Creado | `CREATED` | Al crear el pedido |
+| En proceso | `IN PROCESS` | Automático: en cuanto una línea inicia producción |
+| Listo (antes "Finalizado") | `DONE` | Automático: cuando **todas** las líneas están listas |
+| En proceso de entrega | `IN DELIVERY` | Un repartidor toma el pedido (`claim`), en la misma transacción |
+| Entregado | `DELIVERED` | Acción manual de entrega |
+| Cancelado | `CANCELED` | Acción manual, con motivo |
+
+> El valor interno `DONE` no cambió al renombrar "Finalizado" a "Listo" en la UI, para no romper comparaciones ni datos existentes.
+
+Reglas que aplica el backend (`ChangeOrderStatusUseCase` y los usecases de asignación):
+
+- `CREATED → IN PROCESS → DONE` se derivan del estado de producción de las líneas (`recompute-order-status.util.ts`); esa derivación nunca sobrescribe `IN DELIVERY`, `DELIVERED` ni `CANCELED`.
+- **Cancelar** solo es posible en estado `CREATED`.
+- **Entregar** exige saldo pendiente en 0 (`remainingBalance`) y el estado previo correcto: `IN DELIVERY` para pedidos con reparto, `DONE` directo para pedidos en tienda (`isEnTienda`) o de recolección por el cliente (`isCustomerPickup`). Si quien entrega es un `DRIVER`, debe ser el repartidor asignado.
+- **Asignar/reasignar repostero** y **avanzar la producción de una línea** se bloquean en `IN DELIVERY`, `DELIVERED` y `CANCELED`. **Reasignar repartidor** solo se bloquea en `DELIVERED` y `CANCELED`.
+- Entregar y cancelar desde una cuenta compartida de sucursal (`EMPLOYEE`) exigen el token corto de PIN de empleado (`employeeActionToken`).
+
+### Reparto (repartidores)
+
+| Método | Ruta | Roles | Descripción |
+|--------|------|-------|-------------|
+| `GET` | `/orders/delivery/available` | `DRIVER` | Pedidos `DONE` de la sucursal del repartidor sin repartidor asignado |
+| `POST` | `/orders/:orderId/delivery/claim` | `DRIVER` | El repartidor toma el pedido; pasa a `IN DELIVERY` |
+| `GET` | `/orders/delivery/assignments/:driverId` | `SUPER`, `ADMIN`, `EMPLOYEE`, `DRIVER` | Entregas asignadas a un repartidor (incluye dirección de entrega) |
+| `POST` | `/orders/:orderId/delivery/assign` | `SUPER`, `ADMIN`, `EMPLOYEE` | Asignación/reasignación manual por admin (casos excepcionales) |
+
+`ClaimOrderDeliveryUseCase` es el único lugar del proyecto que usa una transacción explícita (`DataSource.transaction`) con `setLock('pessimistic_write')` sobre el pedido:
+
+- Orden de validaciones: el pedido existe → **ya tomado** (`409 Conflict`) → estado `DONE` → el repartidor pertenece a la sucursal del pedido. "Ya tomado" va antes que el estado porque un pedido tomado ya está en `IN DELIVERY`.
+- El bloqueo usa `INNER JOIN` a la sucursal: Postgres rechaza `FOR UPDATE` sobre el lado nullable de un `LEFT JOIN`.
+- `order_delivery_assignments` tiene `UNIQUE("orderId")` como red de seguridad a nivel de base de datos.
 
 ## 🔀 Flujo de Trabajo Git y Convenciones
 
@@ -350,7 +394,7 @@ Usa nombres de rama descriptivos en kebab-case que indiquen claramente el propó
 **Tipos**:
 
 - `feature/` - Nuevas funcionalidades
-- `bugfix/` - Corrección de errores
+- `fix/` (o `bugfix/`) - Corrección de errores
 - `hotfix/` - Correcciones críticas para producción
 - `refactor/` - Refactorización de código
 - `docs/` - Actualizaciones de documentación
@@ -383,9 +427,9 @@ chore/actualizar-dependencias
 #### 1. Iniciar Nuevo Trabajo
 
 ```bash
-# Actualizar tu rama main local
-git checkout main
-git pull origin main
+# Actualizar tu rama dev local (las ramas de trabajo parten de dev, no de main)
+git checkout dev
+git pull origin dev
 
 # Crear una nueva rama
 git checkout -b feature/nombre-de-tu-funcionalidad
@@ -407,13 +451,13 @@ git push origin feature/nombre-de-tu-funcionalidad
 #### 3. Mantener tu Rama Actualizada
 
 ```bash
-# Obtener últimos cambios de main
-git checkout main
-git pull origin main
+# Obtener últimos cambios de dev
+git checkout dev
+git pull origin dev
 
 # Volver a tu rama y hacer rebase
 git checkout feature/nombre-de-tu-funcionalidad
-git rebase main
+git rebase dev
 
 # Resolver conflictos si los hay, luego continuar
 git rebase --continue
@@ -427,7 +471,7 @@ git push origin feature/nombre-de-tu-funcionalidad --force-with-lease
 1. Sube tu rama al repositorio remoto
 2. Ve a tu repositorio en GitHub/GitLab/Bitbucket
 3. Haz clic en "New Pull Request" o "Create Merge Request"
-4. Selecciona tu rama para fusionar en `main`
+4. Selecciona tu rama para fusionar en `dev`
 5. Completa la plantilla de PR:
    - **Título**: Usa formato de commit convencional
    - **Descripción**: Explica qué y por qué
@@ -459,19 +503,12 @@ git push origin feature/nombre-de-tu-funcionalidad --force-with-lease
 - ✅ Todas las comprobaciones de CI/CD pasan
 - ✅ Al menos una aprobación de un miembro del equipo
 - ✅ Sin conflictos de fusión
-- ✅ La rama está actualizada con main
+- ✅ La rama está actualizada con dev
+- ✅ El Quality Gate de SonarQube Cloud pasa (cobertura de código nuevo ≥ 80 %). Controllers, entidades, módulos y migraciones están excluidos de la cobertura, así que cada usecase/DTO/util nuevo debe traer su `.spec.ts`
 
 **Estrategia de Fusión**:
 
-Usamos **Squash and Merge** para un historial limpio:
-
-```bash
-# GitHub hará esto automáticamente, pero manualmente:
-git checkout main
-git merge --squash feature/nombre-de-tu-funcionalidad
-git commit -m "feat(users): agregar endpoint de perfil de usuario"
-git push origin main
-```
+Usamos **Squash and Merge** para un historial limpio. Lo habitual es abrir el PR contra `dev` y activar auto-merge (`gh pr merge --auto --squash`): se fusiona solo cuando CI y SonarQube pasan. La promoción entre ambientes es `dev` → `staging` → `prod` mediante PRs de promoción.
 
 **Después de Fusionar**:
 
@@ -480,11 +517,11 @@ git push origin main
 git push origin --delete feature/nombre-de-tu-funcionalidad
 
 # Eliminar tu rama local
-git checkout main
+git checkout dev
 git branch -d feature/nombre-de-tu-funcionalidad
 
-# Obtener el último main
-git pull origin main
+# Obtener el último dev
+git pull origin dev
 ```
 
 #### 7. Manejo de Hotfixes
@@ -492,9 +529,9 @@ git pull origin main
 Para correcciones críticas en producción:
 
 ```bash
-# Crear rama hotfix desde main
-git checkout main
-git pull origin main
+# Crear rama hotfix (las reglas de rama no permiten bypass: el hotfix también sigue dev → staging → prod)
+git checkout dev
+git pull origin dev
 git checkout -b hotfix/descripcion-bug-critico
 
 # Hacer tu corrección y commit

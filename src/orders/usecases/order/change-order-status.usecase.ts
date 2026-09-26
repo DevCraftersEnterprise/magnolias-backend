@@ -9,6 +9,7 @@ import { Order } from '../../entities/order.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderCancellation } from '../../entities/order-cancellation.entity';
+import { OrderDeliveryAssignment } from '../../entities/order-delivery-assignment.entity';
 import { OrderEmployeeAction } from '../../entities/order-employee-action.entity';
 import { OrderEmployeeActionType } from '../../enums/order-employee-action-type.enum';
 import { UpdateOrderDto } from '../../dto/update-order.dto';
@@ -17,6 +18,7 @@ import { User } from '../../../users/entities/user.entity';
 import { UserRoles } from '../../../users/enums/user-role';
 import { verifyEmployeeActionToken } from '../../../branch-employees/utils/verify-employee-action-token.util';
 import { CancelOrderDto } from '../../dto/cancel-order.dto';
+import { parseCurrency } from '../../utils/parse-currency.util';
 
 const EMPLOYEE_ACTION_BY_STATUS: Partial<
   Record<OrderStatus, OrderEmployeeActionType>
@@ -36,6 +38,8 @@ export class ChangeOrderStatusUseCase {
     private readonly cancellationRepository: Repository<OrderCancellation>,
     @InjectRepository(OrderEmployeeAction)
     private readonly orderEmployeeActionRepository: Repository<OrderEmployeeAction>,
+    @InjectRepository(OrderDeliveryAssignment)
+    private readonly orderDeliveryAssignmentRepository: Repository<OrderDeliveryAssignment>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -75,6 +79,26 @@ export class ChangeOrderStatusUseCase {
       );
     }
 
+    if (
+      orderStatus === OrderStatus.CANCELED &&
+      order.status !== OrderStatus.CREATED
+    ) {
+      this.logger.warn(
+        `Order ${id} cannot be canceled because its status is ${order.status}`,
+      );
+      throw new BadRequestException(
+        'Solo se puede cancelar un pedido en estado Creado',
+      );
+    }
+
+    if (orderStatus === OrderStatus.DELIVERED) {
+      this.validateReadyForDelivery(order);
+
+      if (user.role === UserRoles.DRIVER) {
+        await this.validateAssignedDriver(id, user);
+      }
+    }
+
     this.logger.log(
       `Changing status of order ID ${id} from ${order.status} to ${orderStatus} by user ${user.id}`,
     );
@@ -105,6 +129,50 @@ export class ChangeOrderStatusUseCase {
     }
 
     return updatedOrder;
+  }
+
+  private validateReadyForDelivery(order: Order): void {
+    const requiresDeliveryFlow = !order.isEnTienda && !order.isCustomerPickup;
+    const expectedStatus = requiresDeliveryFlow
+      ? OrderStatus.IN_DELIVERY
+      : OrderStatus.DONE;
+
+    if (order.status !== expectedStatus) {
+      this.logger.warn(
+        `Order ${order.id} cannot be marked as delivered because its status is ${order.status}`,
+      );
+      throw new BadRequestException(
+        requiresDeliveryFlow
+          ? 'El pedido debe estar en proceso de entrega antes de marcarlo como entregado'
+          : 'El pedido debe estar listo antes de marcarlo como entregado',
+      );
+    }
+
+    if (parseCurrency(order.remainingBalance) > 0) {
+      this.logger.warn(
+        `Order ${order.id} cannot be marked as delivered because it has a pending balance`,
+      );
+      throw new BadRequestException('El pedido tiene saldo pendiente de pago');
+    }
+  }
+
+  private async validateAssignedDriver(
+    orderId: string,
+    user: User,
+  ): Promise<void> {
+    const assignment = await this.orderDeliveryAssignmentRepository.findOne({
+      where: { order: { id: orderId } },
+      relations: { driver: true },
+    });
+
+    if (assignment?.driver.id !== user.id) {
+      this.logger.warn(
+        `Driver ${user.id} is not assigned to order ${orderId} and cannot mark it as delivered`,
+      );
+      throw new BadRequestException(
+        'You are not the driver assigned to this order',
+      );
+    }
   }
 
   private async handleCancellation(

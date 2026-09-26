@@ -693,12 +693,12 @@ export const getDetailTable = (detail: OrderDetail | null): Content => {
 
   const sizeAndFlavorRows: TextTableCell[][] = hasTiers
     ? [
-      ...getTierRows(detail!.tiers!),
+      ...getTierRows(detail.tiers!),
       [
         labelCell('"ESCRITO"', { border: [true, true, true, true] }),
         valueCell(escritoValue, { border: [true, true, true, true] }),
         labelCell('CANTIDAD DE PISOS', { border: [true, true, true, true] }),
-        valueCell(String(detail!.tiers!.length), {
+        valueCell(String(detail.tiers!.length), {
           border: [true, true, true, true],
         }),
       ],
@@ -1298,6 +1298,38 @@ export const getEventoServicesSection = (order: Order): Content => {
             border: [true, true, true, false],
           },
         ],
+        [
+          {
+            text: 'CHAROLAS',
+            fillColor: COLORS.HEADER_LIGHT,
+            fontSize: FONT_SIZE.BODY,
+            bold: true,
+            border: [true, true, true, true],
+          },
+          {
+            text: hasService(EventServiceType.TRAYS),
+            fontSize: FONT_SIZE.BODY,
+            alignment: 'center',
+            border: [true, true, true, true],
+          },
+          {
+            text: 'MESA DE BOCADILLOS',
+            fillColor: COLORS.HEADER_LIGHT,
+            fontSize: FONT_SIZE.BODY,
+            bold: true,
+            border: [true, true, true, true],
+          },
+          {
+            text: hasService(EventServiceType.SNACK_TABLE),
+            fontSize: FONT_SIZE.BODY,
+            alignment: 'center',
+            border: [true, true, true, true],
+          },
+          { text: '', border: [true, true, true, true] },
+          { text: '', border: [true, true, true, true] },
+          { text: '', border: [true, true, true, true] },
+          { text: '', border: [true, true, true, true] },
+        ],
       ],
     },
   };
@@ -1317,13 +1349,24 @@ export const getEventoDataSection = (order: Order): Content => ({
         }),
       ],
       [
-        labelCell('HORA DE MONTAJE', { border: [true, true, true, false] }),
-        valueCell(order.setupTime, { border: [true, true, true, false] }),
+        labelCell('FECHA DE MONTAJE', { border: [true, true, true, true] }),
+        valueCell(
+          toUpperSafe(
+            DateFormatter.getDDMMMMYYYY(order.setupDate ?? order.deliveryDate),
+          ),
+          { border: [true, true, true, true] },
+        ),
+        labelCell('HORA DE MONTAJE', { border: [true, true, true, true] }),
+        valueCell(order.setupTime, { border: [true, true, true, true] }),
+      ],
+      [
         labelCell('ATENDIÓ', { border: [true, true, true, false] }),
         valueCell(
           `${toUpperSafe(order.createdBy?.name)} ${toUpperSafe(order.createdBy?.lastname)}`,
           { border: [true, true, true, false] },
         ),
+        { text: '', border: [true, true, true, false] },
+        { text: '', border: [true, true, true, false] },
       ],
     ],
   },
