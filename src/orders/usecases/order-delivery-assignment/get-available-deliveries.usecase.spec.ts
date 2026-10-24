@@ -47,5 +47,11 @@ describe('GetAvailableDeliveriesUseCase', () => {
     expect(mocks.queryBuilder.andWhere).toHaveBeenCalledWith(
       'deliveryAssignment.id IS NULL',
     );
+    expect(mocks.queryBuilder.andWhere).toHaveBeenCalledWith(
+      'order.isEnTienda = false',
+    );
+    expect(mocks.queryBuilder.andWhere).toHaveBeenCalledWith(
+      'order.isCustomerPickup = false',
+    );
   });
 });

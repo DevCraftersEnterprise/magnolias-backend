@@ -8,6 +8,10 @@ import { OrderStatus } from '../../enums/order-status.enum';
 /**
  * Cliente: pedidos "Listos" (DONE) de la sucursal del repartidor que
  * todavía no tienen repartidor asignado - los que puede tomar.
+ *
+ * Excluye pedidos "En tienda" / de recolección por el cliente: esos nunca
+ * pasan por reparto (van directo de DONE a DELIVERED), así que no deben
+ * ofrecerse como disponibles para que un repartidor los tome.
  */
 @Injectable()
 export class GetAvailableDeliveriesUseCase {
@@ -41,6 +45,8 @@ export class GetAvailableDeliveriesUseCase {
       .where('order.status = :status', { status: OrderStatus.DONE })
       .andWhere('branch.id IN (:...branchIds)', { branchIds })
       .andWhere('deliveryAssignment.id IS NULL')
+      .andWhere('order.isEnTienda = false')
+      .andWhere('order.isCustomerPickup = false')
       .orderBy('order.deliveryDate', 'ASC')
       .getMany();
   }
