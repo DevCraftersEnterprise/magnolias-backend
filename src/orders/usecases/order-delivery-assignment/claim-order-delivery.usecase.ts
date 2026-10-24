@@ -72,6 +72,15 @@ export class ClaimOrderDeliveryUseCase {
         );
       }
 
+      if (order.isEnTienda || order.isCustomerPickup) {
+        this.logger.warn(
+          `Order ${orderId} cannot be claimed because it does not require delivery (isEnTienda/isCustomerPickup)`,
+        );
+        throw new BadRequestException(
+          'Este pedido es de recolección en tienda y no requiere reparto',
+        );
+      }
+
       const hasAccessToBranch = driver.branches?.some(
         (branch) => branch.id === order.branch.id,
       );

@@ -73,6 +73,36 @@ describe('ClaimOrderDeliveryUseCase', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  it('lanza BadRequestException si el pedido es "En tienda" (no requiere reparto)', async () => {
+    const order = {
+      id: 'order-1',
+      status: OrderStatus.DONE,
+      isEnTienda: true,
+      branch: { id: 'branch-1' },
+    };
+    const mocks = createMocks(order);
+    const driver = { id: 'driver-1', branches: [{ id: 'branch-1' }] };
+
+    await expect(
+      mocks.useCase.execute('order-1', {}, driver as never),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('lanza BadRequestException si el pedido es de recolección por el cliente (isCustomerPickup)', async () => {
+    const order = {
+      id: 'order-1',
+      status: OrderStatus.DONE,
+      isCustomerPickup: true,
+      branch: { id: 'branch-1' },
+    };
+    const mocks = createMocks(order);
+    const driver = { id: 'driver-1', branches: [{ id: 'branch-1' }] };
+
+    await expect(
+      mocks.useCase.execute('order-1', {}, driver as never),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('lanza BadRequestException si el repartidor no pertenece a la sucursal del pedido', async () => {
     const order = {
       id: 'order-1',
