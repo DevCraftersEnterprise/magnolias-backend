@@ -37,6 +37,8 @@ import {
   mapOrderDetailTierData,
 } from '../../utils/build-order-detail-data.util';
 import { generateOrderCode } from '../../utils/generate-order-code.util';
+import { computeDerivedOrderStatus } from '../../utils/recompute-order-status.util';
+import { OrderDetailProductionStatus } from '../../enums/order-detail-production-status.enum';
 import { parseCurrency } from '../../utils/parse-currency.util';
 import { verifyDiscountAuthToken } from '../../utils/verify-discount-auth-token.util';
 import { BranchesService } from '../../../branches/branches.service';
@@ -125,12 +127,21 @@ export class UpdateOrderUseCase {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    if (order.status !== OrderStatus.CREATED && details && details.length > 0) {
+    // Cliente: un pedido ya no se puede editar en absoluto una vez que está
+    // Listo para entregar, En proceso de entrega, Entregado o Cancelado.
+    // Mientras está Creado o En proceso sí se puede editar (ver más abajo:
+    // editar una línea que ya arrancó producción la regresa a Pendiente).
+    if (
+      order.status === OrderStatus.DONE ||
+      order.status === OrderStatus.IN_DELIVERY ||
+      order.status === OrderStatus.DELIVERED ||
+      order.status === OrderStatus.CANCELED
+    ) {
       this.logger.error(
-        `Cannot update order with ID ${id} because it is not in CREATED status`,
+        `Cannot update order with ID ${id} because its status is ${order.status}`,
       );
       throw new BadRequestException(
-        `Only orders in CREATED status can be updated`,
+        `No se puede editar un pedido en estado ${order.status}`,
       );
     }
 
@@ -257,6 +268,17 @@ export class UpdateOrderUseCase {
 
       if (payment) order.settlementTotal = payment;
       else if (advancePayment) order.settlementTotal = advancePayment;
+    }
+
+    if (details && details.length > 0) {
+      // Alguna línea pudo haber regresado a PENDING dentro de
+      // handleOrderDetails (ver nota ahí) - recalcula el estado general del
+      // pedido a partir del estado de producción real de sus líneas, igual
+      // que hace UpdateProductionStatusUseCase.
+      order.status = computeDerivedOrderStatus(
+        order.status,
+        order.details.map((d) => d.productionStatus),
+      );
     }
 
     order.updatedBy = user;
@@ -542,6 +564,16 @@ export class UpdateOrderUseCase {
         } as any;
         existingDetail.updatedBy = user;
         existingDetail.discountPercent = incomingPercent;
+
+        // Cliente: si la línea ya había arrancado producción (o ya está
+        // lista) y sucursal la edita, regresa a Pendiente para que el
+        // pastelero tenga que volver a confirmarla, y se marca para que el
+        // tablero le muestre la etiqueta "Modificado desde sucursal" hasta
+        // que la retome.
+        if (existingDetail.productionStatus !== OrderDetailProductionStatus.PENDING) {
+          existingDetail.productionStatus = OrderDetailProductionStatus.PENDING;
+          existingDetail.modifiedAfterProduction = true;
+        }
 
         if (discountChanged) {
           if (hasDiscount) {

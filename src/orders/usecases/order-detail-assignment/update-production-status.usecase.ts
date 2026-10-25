@@ -63,6 +63,9 @@ export class UpdateProductionStatusUseCase {
     await this.authorize(orderDetail, user);
 
     orderDetail.productionStatus = dto.status;
+    // El pastelero tuvo que abrir el detalle para llegar aquí, así que ya
+    // vio la etiqueta "Modificado desde sucursal" si la había - se limpia.
+    orderDetail.modifiedAfterProduction = false;
     const savedDetail = await this.orderDetailRepository.save(orderDetail);
 
     await this.recomputeOrderStatus(orderDetail.order.id);
