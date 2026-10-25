@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UpdateOrderUseCase } from './update-order.usecase';
 import { OrderStatus } from '../../enums/order-status.enum';
+import { OrderDetailProductionStatus } from '../../enums/order-detail-production-status.enum';
 import type { User } from '../../../users/entities/user.entity';
 import type { UpdateOrderDto } from '../../dto/update-order.dto';
 import * as cloudinaryUtil from '../../../common/utils/upload-to-cloudinary';
@@ -144,10 +145,27 @@ describe('UpdateOrderUseCase', () => {
         );
     });
 
-    it('lanza BadRequestException si el pedido no está en CREATED y se intentan actualizar detalles', async () => {
+    it.each([
+        OrderStatus.DONE,
+        OrderStatus.IN_DELIVERY,
+        OrderStatus.DELIVERED,
+        OrderStatus.CANCELED,
+    ])('lanza BadRequestException si el pedido está %s (ya no se puede editar en absoluto)', async (status) => {
+        const mocks = createMocks();
+        mocks.orderRepository.findOne.mockResolvedValue(baseOrder({ status }));
+
+        await expect(
+            mocks.useCase.execute(baseDto({ setupServiceCost: 50 }), user),
+        ).rejects.toThrow(BadRequestException);
+    });
+
+    it('permite editar detalles de un pedido en IN_PROCESS (cliente: ya no solo CREATED)', async () => {
         const mocks = createMocks();
         mocks.orderRepository.findOne.mockResolvedValue(
             baseOrder({ status: OrderStatus.IN_PROCESS }),
+        );
+        mocks.productsService.findProductByTerm.mockImplementation((id: string) =>
+            Promise.resolve({ id }),
         );
 
         await expect(
@@ -155,10 +173,10 @@ describe('UpdateOrderUseCase', () => {
                 baseDto({ details: [{ productId: 'p1', price: 10, quantity: 1 }] as never }),
                 user,
             ),
-        ).rejects.toThrow(BadRequestException);
+        ).resolves.toBeDefined();
     });
 
-    it('permite actualizar campos que no son detalles aunque el pedido no esté en CREATED', async () => {
+    it('permite actualizar campos que no son detalles aunque el pedido esté en IN_PROCESS', async () => {
         const mocks = createMocks();
         mocks.orderRepository.findOne.mockResolvedValue(
             baseOrder({ status: OrderStatus.IN_PROCESS }),
@@ -167,6 +185,37 @@ describe('UpdateOrderUseCase', () => {
         await expect(
             mocks.useCase.execute(baseDto({ setupServiceCost: 50 }), user),
         ).resolves.toBeDefined();
+    });
+
+    it('editar una línea que ya arrancó producción la regresa a PENDING, la marca modifiedAfterProduction y recalcula el estado del pedido', async () => {
+        const mocks = createMocks();
+        const existingDetail = {
+            product: { id: 'product-1' },
+            quantity: 1,
+            price: 50,
+            breadType: {}, filling: {}, frosting: {}, style: {}, color: {},
+            productionStatus: OrderDetailProductionStatus.IN_PROCESS,
+            modifiedAfterProduction: false,
+        };
+        mocks.orderRepository.findOne.mockResolvedValue(
+            baseOrder({ status: OrderStatus.IN_PROCESS, details: [existingDetail] }),
+        );
+        mocks.productsService.findProductByTerm.mockImplementation((id: string) =>
+            Promise.resolve({ id }),
+        );
+
+        const result = await mocks.useCase.execute(
+            baseDto({
+                details: [
+                    { productId: 'product-1', price: 90, quantity: 2 },
+                ] as never,
+            }),
+            user,
+        );
+
+        expect(existingDetail.productionStatus).toBe(OrderDetailProductionStatus.PENDING);
+        expect(existingDetail.modifiedAfterProduction).toBe(true);
+        expect(result.status).toBe(OrderStatus.CREATED);
     });
 
     describe('transferAccount', () => {

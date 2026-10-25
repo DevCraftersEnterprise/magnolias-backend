@@ -139,6 +139,26 @@ describe('UpdateProductionStatusUseCase', () => {
     ).resolves.toBeDefined();
   });
 
+  it('limpia modifiedAfterProduction al avanzar la línea (ya la vio el pastelero)', async () => {
+    const mocks = createMocks();
+    mocks.orderDetailRepository.findOne.mockResolvedValue(
+      baseDetail({ modifiedAfterProduction: true }),
+    );
+    mocks.orderRepository.findOne.mockResolvedValue({
+      id: 'order-1',
+      status: OrderStatus.CREATED,
+      details: [{ productionStatus: OrderDetailProductionStatus.IN_PROCESS }],
+    });
+
+    const result = await mocks.useCase.execute(
+      'detail-1',
+      { status: OrderDetailProductionStatus.IN_PROCESS } as never,
+      assignedBaker,
+    );
+
+    expect(result.modifiedAfterProduction).toBe(false);
+  });
+
   it('rechaza a un repostero distinto del asignado', async () => {
     const mocks = createMocks();
     mocks.orderDetailRepository.findOne.mockResolvedValue(baseDetail());

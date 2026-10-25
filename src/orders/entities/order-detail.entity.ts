@@ -147,6 +147,15 @@ export class OrderDetail {
   productionStatus: OrderDetailProductionStatus;
 
   @ApiProperty({
+    description:
+      'True while sucursal edited this line after it had already left PENDING production status, until the baker re-confirms it',
+    example: false,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  modifiedAfterProduction: boolean;
+
+  @ApiProperty({
     description: 'Indicates if the order detail is active',
     example: true,
   })
