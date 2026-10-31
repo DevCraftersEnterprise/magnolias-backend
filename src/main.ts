@@ -119,4 +119,7 @@ async function bootstrap() {
 
   logger.log(`Application is running on port ${PORT}`);
 }
-bootstrap();
+bootstrap().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

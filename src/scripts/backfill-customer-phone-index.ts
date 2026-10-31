@@ -130,5 +130,8 @@ export async function main(): Promise<void> {
 }
 
 if (require.main === module) {
-  main();
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 }
