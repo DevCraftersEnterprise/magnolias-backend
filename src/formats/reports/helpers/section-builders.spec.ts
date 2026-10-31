@@ -37,21 +37,21 @@ describe('getEventoCakeSection', () => {
         );
     });
 
-    it('traduce la posición del pompeado al español (no el valor crudo del enum)', () => {
+    it('traduce la posición de la pompa al español (no el valor crudo del enum)', () => {
         const detail = buildDetail({
-            pipingLocation: PipingLocation.TOP_BORDER,
+            pipingLocation: PipingLocation.TOP,
         });
 
-        expect(valueForLabel(detail, 'POSICIÓN POMPEADO')).toBe(
-            'BORDE SUPERIOR',
+        expect(valueForLabel(detail, 'POSICIÓN POMPA')).toBe(
+            'ARRIBA',
         );
     });
 
-    it('deja las celdas vacías cuando no hay escrito ni pompeado', () => {
+    it('deja las celdas vacías cuando no hay escrito ni pompa', () => {
         const detail = buildDetail();
 
         expect(valueForLabel(detail, 'UBICACIÓN DEL ESCRITO')).toBe('');
-        expect(valueForLabel(detail, 'POSICIÓN POMPEADO')).toBe('');
+        expect(valueForLabel(detail, 'POSICIÓN POMPA')).toBe('');
     });
 });
 

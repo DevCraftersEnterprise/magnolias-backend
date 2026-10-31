@@ -1,11 +1,10 @@
 /**
- * Ubicación del pompeado (decoración con manga)
+ * Ubicación de la Pompa (antes "Decoración con manga"). Cliente: solo estas
+ * 4 opciones - Arriba, Abajo, Ambos, Costado (reunión 24 oct 2026).
  */
 export enum PipingLocation {
-  TOP_BORDER = 'TOP_BORDER',
-  BOTTOM_BORDER = 'BOTTOM_BORDER',
-  FULL_BORDER = 'FULL_BORDER',
-  CENTER = 'CENTER',
-  FULL_DESING = 'FULL_DESING',
-  NONE = 'NONE',
+  TOP = 'TOP',
+  BOTTOM = 'BOTTOM',
+  BOTH = 'BOTH',
+  SIDE = 'SIDE',
 }
