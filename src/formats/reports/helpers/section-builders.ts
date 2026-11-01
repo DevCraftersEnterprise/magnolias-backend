@@ -766,7 +766,7 @@ export const getDetailTable = (detail: OrderDetail | null): Content => {
           ),
         ],
         [
-          labelCell('FORMA Y COLOR DE POMPEADO', {
+          labelCell('FORMA Y COLOR DE POMPA', {
             border: [true, true, true, false],
           }),
           valueCell(
@@ -777,7 +777,7 @@ export const getDetailTable = (detail: OrderDetail | null): Content => {
               border: [true, true, true, false],
             },
           ),
-          labelCell('POSICIÓN POMPEADO', { border: [true, true, true, false] }),
+          labelCell('POSICIÓN POMPA', { border: [true, true, true, false] }),
           valueCell(
             detail?.pipingLocation
               ? EnumTransformer.translatePipingLocation(
@@ -1467,13 +1467,13 @@ export const getEventoCakeSection = (detail: OrderDetail): Content[] => [
         [
           labelCell('RELLENO'),
           valueCell(toUpperSafe(detail.filling?.name)),
-          labelCell('FORMA Y COLOR DE POMPEADO'),
+          labelCell('FORMA Y COLOR DE POMPA'),
           valueCell(''),
         ],
         [
           labelCell('CUBIERTA SABOR'),
           valueCell(toUpperSafe(detail.frosting?.name)),
-          labelCell('POSICIÓN POMPEADO'),
+          labelCell('POSICIÓN POMPA'),
           valueCell(
             detail.pipingLocation
               ? EnumTransformer.translatePipingLocation(

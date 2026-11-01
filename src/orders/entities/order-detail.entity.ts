@@ -92,8 +92,8 @@ export class OrderDetail {
   writingLocation?: WritingLocation;
 
   @ApiProperty({
-    description: 'Location of piping (decorative frosting)',
-    example: PipingLocation.TOP_BORDER,
+    description: 'Location of the Pompa (decorative frosting)',
+    example: PipingLocation.TOP,
     enum: PipingLocation,
     required: false,
   })
@@ -145,6 +145,15 @@ export class OrderDetail {
     default: OrderDetailProductionStatus.PENDING,
   })
   productionStatus: OrderDetailProductionStatus;
+
+  @ApiProperty({
+    description:
+      'True while sucursal edited this line after it had already left PENDING production status, until the baker re-confirms it',
+    example: false,
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  modifiedAfterProduction: boolean;
 
   @ApiProperty({
     description: 'Indicates if the order detail is active',

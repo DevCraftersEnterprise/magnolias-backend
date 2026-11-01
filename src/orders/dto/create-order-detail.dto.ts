@@ -159,8 +159,8 @@ export class CreateOrderDetailDto {
   writingLocation?: WritingLocation;
 
   @ApiProperty({
-    description: 'Location of piping decoration',
-    example: PipingLocation.TOP_BORDER,
+    description: 'Location of the Pompa (piping decoration)',
+    example: PipingLocation.TOP,
     enum: PipingLocation,
     required: false,
   })

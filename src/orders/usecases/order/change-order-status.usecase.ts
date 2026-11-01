@@ -148,7 +148,10 @@ export class ChangeOrderStatusUseCase {
       );
     }
 
-    if (parseCurrency(order.remainingBalance) > 0) {
+    // Cliente: en tienda el cliente puede liquidar el saldo al recoger, así
+    // que ahí sí se permite marcar como entregado con saldo pendiente.
+    // Domicilio y evento deben seguir liquidados antes de entregar.
+    if (!order.isEnTienda && parseCurrency(order.remainingBalance) > 0) {
       this.logger.warn(
         `Order ${order.id} cannot be marked as delivered because it has a pending balance`,
       );

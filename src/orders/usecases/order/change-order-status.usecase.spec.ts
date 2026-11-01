@@ -397,6 +397,42 @@ describe('ChangeOrderStatusUseCase', () => {
             expect(result.status).toBe(OrderStatus.DELIVERED);
         });
 
+        it('permite DELIVERED con saldo pendiente para un pedido en tienda (isEnTienda) - se liquida al recoger', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.DONE,
+                remainingBalance: '150.00',
+                isEnTienda: true,
+            });
+
+            const result = await useCase.execute(
+                { id: 'order-1' } as never,
+                OrderStatus.DELIVERED,
+                { id: 'admin-1', role: 'ADMIN' } as User,
+            );
+
+            expect(result.status).toBe(OrderStatus.DELIVERED);
+        });
+
+        it('rechaza DELIVERED con saldo pendiente para un pedido de recolección por cliente (isCustomerPickup) - no es en tienda', async () => {
+            const { useCase, orderRepository } = createMocks();
+            orderRepository.findOne.mockResolvedValue({
+                id: 'order-1',
+                status: OrderStatus.DONE,
+                remainingBalance: '150.00',
+                isCustomerPickup: true,
+            });
+
+            await expect(
+                useCase.execute(
+                    { id: 'order-1' } as never,
+                    OrderStatus.DELIVERED,
+                    { id: 'admin-1', role: 'ADMIN' } as User,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
         it('permite DELIVERED desde DONE directo para un pedido de recolección por cliente (isCustomerPickup)', async () => {
             const { useCase, orderRepository } = createMocks();
             orderRepository.findOne.mockResolvedValue({

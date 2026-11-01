@@ -21,12 +21,10 @@ export class EnumTransformer {
 
   static translatePipingLocation(location: PipingLocation): string {
     const translations: Record<PipingLocation, string> = {
-      [PipingLocation.TOP_BORDER]: 'Borde superior',
-      [PipingLocation.BOTTOM_BORDER]: 'Borde inferior',
-      [PipingLocation.FULL_BORDER]: 'Borde completo',
-      [PipingLocation.CENTER]: 'Centro',
-      [PipingLocation.FULL_DESING]: 'Diseño completo',
-      [PipingLocation.NONE]: 'Ninguno',
+      [PipingLocation.TOP]: 'Arriba',
+      [PipingLocation.BOTTOM]: 'Abajo',
+      [PipingLocation.BOTH]: 'Ambos',
+      [PipingLocation.SIDE]: 'Costado',
     };
 
     return translations[location] || 'Desconocido';
